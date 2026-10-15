@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bitnode - Búsqueda global</title>
+<!-- Google Fonts: Space Grotesk, Inter, Public Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Public+Sans:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#07B478",
+            "primary-container": "rgba(7, 180, 120, 0.12)",
+            secondary: "#518166",
+            tertiary: "#FF9676",
+            neutral: "#717973",
+            "surface-darkest": "#0b0f0d",
+            surface: "#0f1412",
+            "surface-container": "#141a18",
+            "surface-container-high": "#1a221f",
+            "surface-container-highest": "#222c28",
+            "on-surface": "#e1e7e3",
+            "on-surface-variant": "#8ca094",
+            "outline-variant": "#26352e",
+          },
+          borderRadius: {
+            DEFAULT: "0.125rem",
+            lg: "0.25rem",
+            xl: "0.5rem",
+            full: "0.75rem"
+          },
+          fontFamily: {
+            headline: ["Space Grotesk", "sans-serif"],
+            display: ["Space Grotesk", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Public Sans", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-size: 16px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    mark.highlight {
+      background-color: rgba(7, 180, 120, 0.22);
+      color: #07B478;
+      font-weight: 600;
+      padding: 0 2px;
+      border-radius: 2px;
+    }
+    /* Custom scrollbar for dark compact aesthetic */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f1412;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1a221f;
+      border-radius: 2px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #26352e;
+    }
+  </style>
+</head>
+<body class="bg-surface-darkest text-on-surface font-body text-xs antialiased h-screen w-screen overflow-hidden flex flex-col select-none">
+<!-- Top Window Header: Single line breadcrumb -->
+<header class="w-full h-8 bg-surface border-b border-outline-variant/30 flex items-center justify-between px-3 shrink-0 z-30">
+<div class="flex items-center gap-2">
+<span class="font-headline font-semibold text-xs tracking-tight text-on-surface">Bitnode</span>
+<span class="text-neutral/50 text-[10px]">/</span>
+<span class="text-on-surface-variant text-xs">Búsqueda global</span>
+</div>
+<div class="flex items-center gap-3 text-[11px] text-neutral">
+<span class="flex items-center gap-1 font-mono text-[10px] bg-surface-container-high px-1.5 py-0.5 rounded border border-outline-variant/40 text-on-surface-variant">
+        Cmd+K
+      </span>
+</div>
+</header>
+<!-- App Body Layout -->
+<div class="flex-1 flex overflow-hidden relative">
+<!-- Fixed Left Sidebar: Compact Bitnode Identity -->
+<aside class="docked full-height left-0 w-56 flex flex-col bg-surface-container border-r border-outline-variant/30 shrink-0 h-full justify-between p-3 select-none z-20">
+<!-- Top section with brand & search trigger -->
+<div class="flex flex-col gap-3">
+<!-- Brand & subtle status dot -->
+<div class="flex items-center justify-between px-1">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary/80 ring-2 ring-primary/20"></span>
+<span class="font-headline font-bold text-sm tracking-wide text-on-surface">Bitnode</span>
+</div>
+<span class="font-label text-[10px] text-neutral tracking-tight">Productividad</span>
+</div>
+<!-- Global Search Trigger / Active Input State -->
+<div class="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-surface-container-high border border-primary/40 text-on-surface font-medium text-xs cursor-default">
+<div class="flex items-center gap-2 truncate">
+<span class="material-symbols-outlined text-primary" data-icon="search">search</span>
+<span class="truncate text-on-surface font-medium">Buscar...</span>
+</div>
+<span class="font-mono text-[9px] text-primary/80 bg-primary/10 px-1 py-0.2 rounded">⌘K</span>
+</div>
+<!-- Navigation Section -->
+<nav class="flex flex-col gap-0.5 pt-1">
+<!-- Inactive Tab: Hoy -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="today">today</span>
+<span>Hoy</span>
+</a>
+<!-- Inactive Tab: Inbox -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="inbox">inbox</span>
+<span>Inbox</span>
+</a>
+<!-- Inactive Tab: Clientes -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span>Clientes</span>
+</a>
+<!-- Inactive Tab: Proyectos -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="folder_open">folder_open</span>
+<span>Proyectos</span>
+</a>
+<!-- Inactive Tab: Contactos -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="contacts">contacts</span>
+<span>Contactos</span>
+</a>
+<!-- Inactive Tab: Notas -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="note">note</span>
+<span>Notas</span>
+</a>
+<!-- Inactive Tab: Tiempo -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="timer">timer</span>
+<span>Tiempo</span>
+</a>
+<!-- Inactive Tab: Finanzas -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance">account_balance</span>
+<span>Finanzas</span>
+</a>
+<!-- Inactive Tab: Calendario -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+<span>Calendario</span>
+</a>
+<!-- Inactive Tab: Actividad -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span>Actividad</span>
+</a>
+</nav>
+</div>
+<!-- Sidebar Footer: Only Configuración -->
+<div class="pt-2 border-t border-outline-variant/30">
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Configuración</span>
+</a>
+</div>
+</aside>
+<!-- Main Workspace Canvas / Overlay Context -->
+<main class="flex-1 bg-surface-darkest overflow-y-auto flex flex-col items-center justify-start p-4 md:p-6 lg:p-8 relative">
+<!-- Central Focused Modal / Search Command Palette Container -->
+<div class="w-full max-w-4xl bg-surface border border-outline-variant/50 rounded-lg shadow-2xl flex flex-col overflow-hidden">
+<!-- Search Input Bar & Keystroke indicators -->
+<div class="p-3.5 bg-surface-container border-b border-outline-variant/40 flex flex-col gap-3">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="search">search</span>
+<input class="w-full bg-transparent border-0 p-0 text-sm md:text-base font-medium text-on-surface focus:ring-0 focus:outline-none placeholder-neutral tracking-tight" readonly="" type="text" value="postgres migración"/>
+<div class="flex items-center gap-1.5 shrink-0 text-neutral">
+<span class="flex items-center gap-1 font-mono text-[10px] bg-surface-container-high px-1.5 py-0.5 rounded border border-outline-variant/40 text-on-surface-variant">
+                ↑↓ navegar
+              </span>
+<span class="flex items-center gap-1 font-mono text-[10px] bg-surface-container-high px-1.5 py-0.5 rounded border border-outline-variant/40 text-on-surface-variant">
+                ↵ abrir
+              </span>
+<span class="flex items-center gap-1 font-mono text-[10px] bg-surface-container-high px-1.5 py-0.5 rounded border border-outline-variant/40 text-on-surface-variant">
+                esc salir
+              </span>
+</div>
+</div>
+<!-- Entity Filters & Archived Toggle Row -->
+<div class="flex items-center justify-between pt-1 border-t border-outline-variant/20 gap-2 flex-wrap">
+<div class="flex items-center gap-1 overflow-x-auto py-0.5">
+<button class="px-2 py-0.5 rounded text-[11px] font-medium bg-primary/20 text-primary border border-primary/30">Todas</button>
+<button class="px-2 py-0.5 rounded text-[11px] font-normal text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high">Tareas</button>
+<button class="px-2 py-0.5 rounded text-[11px] font-normal text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high">Proyectos</button>
+<button class="px-2 py-0.5 rounded text-[11px] font-normal text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high">Clientes</button>
+<button class="px-2 py-0.5 rounded text-[11px] font-normal text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high">Contactos</button>
+<button class="px-2 py-0.5 rounded text-[11px] font-normal text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high">Notas</button>
+<button class="px-2 py-0.5 rounded text-[11px] font-normal text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high">Tiempo</button>
+<button class="px-2 py-0.5 rounded text-[11px] font-normal text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high">Finanzas</button>
+<button class="px-2 py-0.5 rounded text-[11px] font-normal text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high">Eventos</button>
+</div>
+<!-- Toggle: Incluir archivados/cerrados -->
+<label class="flex items-center gap-2 cursor-pointer select-none text-[11px] text-on-surface-variant shrink-0">
+<input class="w-3.5 h-3.5 rounded-sm bg-surface-container-high border-outline-variant/60 text-primary focus:ring-0 focus:ring-offset-0" type="checkbox"/>
+<span>Incluir archivados/cerrados</span>
+</label>
+</div>
+</div>
+<!-- Search Results Scroll Area -->
+<div class="divide-y divide-outline-variant/30 max-h-[696px] overflow-y-auto p-3 flex flex-col gap-4">
+<!-- 1. GRUPO: TAREAS (2 resultados) -->
+<section class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between px-2 text-on-surface-variant pb-1">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-secondary" data-icon="task_alt">task_alt</span>
+<span class="font-headline font-semibold text-[11px] tracking-wider uppercase text-neutral">Tareas</span>
+<span class="text-[10px] text-neutral/70 font-mono">(2)</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<!-- Fila 1: Teclado seleccionado con foco y flecha -->
+<div class="group relative flex items-start gap-2.5 p-2 rounded bg-surface-container-high border-l-2 border-primary border-t border-r border-b border-outline-variant/40 transition-colors">
+<span class="text-primary font-mono font-bold text-xs select-none pt-0.5">›</span>
+<div class="flex-1 min-w-0">
+<div class="flex items-baseline justify-between gap-2">
+<span class="font-medium text-xs text-on-surface truncate">Migración de base de datos Postgres a RDS en AWS</span>
+<span class="text-[10px] font-mono text-neutral bg-surface-container px-1 py-0.2 rounded border border-outline-variant/30 shrink-0">↵ Enter</span>
+</div>
+<div class="text-[11px] text-secondary font-medium tracking-tight mt-0.5">
+                    Seguros Bolívar TI · Cloud Lift
+                  </div>
+<p class="text-[11px] text-on-surface-variant mt-1 leading-snug">
+                    ...plan de trabajo para ejecutar la <mark class="highlight">migración</mark> de la instancia de <mark class="highlight">Postgres</mark> hacia RDS Multi-AZ...
+                  </p>
+</div>
+</div>
+<!-- Fila 2: Hover con acciones directas a la derecha -->
+<div class="group flex items-start justify-between gap-2.5 p-2 rounded hover:bg-surface-container-high/60 border border-transparent hover:border-outline-variant/40 transition-colors">
+<div class="flex-1 min-w-0 pl-3">
+<span class="font-medium text-xs text-on-surface block truncate">Validación de esquema y réplica en migración Postgres</span>
+<div class="text-[11px] text-secondary font-medium tracking-tight mt-0.5">
+                    Seguros Bolívar TI · Cloud Lift
+                  </div>
+<p class="text-[11px] text-on-surface-variant mt-1 leading-snug">
+                    ...comprobar paridad de índices de <mark class="highlight">postgres</mark> tras la <mark class="highlight">migración</mark> inicial...
+                  </p>
+</div>
+<!-- Inline Action Pills on Hover -->
+<div class="flex items-center gap-1 shrink-0 opacity-80 group-hover:opacity-100 transition-opacity self-center">
+<button class="px-2 py-0.5 text-[10px] bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/40 rounded text-on-surface-variant hover:text-on-surface">
+                    Abrir
+                  </button>
+<button class="px-2 py-0.5 text-[10px] bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/40 rounded text-on-surface-variant hover:text-on-surface">
+                    Copiar enlace
+                  </button>
+</div>
+</div>
+</div>
+<div class="px-3 pt-0.5">
+<a class="text-[10px] text-neutral hover:text-primary transition-colors flex items-center gap-1 w-fit" href="#">
+<span>Ver todos los resultados de Tareas</span>
+<span class="text-[9px]">→</span>
+</a>
+</div>
+</section>
+<!-- 2. GRUPO: PROYECTOS (1 resultado) -->
+<section class="flex flex-col gap-1.5 pt-3">
+<div class="flex items-center justify-between px-2 text-on-surface-variant pb-1">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-secondary" data-icon="folder_open">folder_open</span>
+<span class="font-headline font-semibold text-[11px] tracking-wider uppercase text-neutral">Proyectos</span>
+<span class="text-[10px] text-neutral/70 font-mono">(1)</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-start justify-between gap-2.5 p-2 rounded hover:bg-surface-container-high/60 border border-transparent hover:border-outline-variant/40 transition-colors">
+<div class="flex-1 min-w-0 pl-3">
+<span class="font-medium text-xs text-on-surface block truncate">Migración de Base de Datos Postgres a RDS</span>
+<div class="text-[11px] text-secondary font-medium tracking-tight mt-0.5">
+                    Cliente: Seguros Bolívar TI
+                  </div>
+<p class="text-[11px] text-on-surface-variant mt-1 leading-snug">
+                    ...proyecto para coordinar la <mark class="highlight">migración</mark> integral de motores relacionales <mark class="highlight">Postgres</mark>...
+                  </p>
+</div>
+<div class="flex items-center gap-1 shrink-0 self-center">
+<button class="px-2 py-0.5 text-[10px] bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/40 rounded text-on-surface-variant hover:text-on-surface">
+                    Abrir
+                  </button>
+</div>
+</div>
+</div>
+<div class="px-3 pt-0.5">
+<a class="text-[10px] text-neutral hover:text-primary transition-colors flex items-center gap-1 w-fit" href="#">
+<span>Ver todos los resultados de Proyectos</span>
+<span class="text-[9px]">→</span>
+</a>
+</div>
+</section>
+<!-- 3. GRUPO: NOTAS (1 resultado) -->
+<section class="flex flex-col gap-1.5 pt-3">
+<div class="flex items-center justify-between px-2 text-on-surface-variant pb-1">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-secondary" data-icon="note">note</span>
+<span class="font-headline font-semibold text-[11px] tracking-wider uppercase text-neutral">Notas</span>
+<span class="text-[10px] text-neutral/70 font-mono">(1)</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-start justify-between gap-2.5 p-2 rounded hover:bg-surface-container-high/60 border border-transparent hover:border-outline-variant/40 transition-colors">
+<div class="flex-1 min-w-0 pl-3">
+<span class="font-medium text-xs text-on-surface block truncate">Checklist y rollback de migración Postgres a RDS</span>
+<div class="text-[11px] text-secondary font-medium tracking-tight mt-0.5">
+                    Proyecto: Migración de Base de Datos Postgres a RDS
+                  </div>
+<p class="text-[11px] text-on-surface-variant mt-1 leading-snug">
+                    ...procedimiento de fallback si la <mark class="highlight">migración</mark> del cluster de base de datos <mark class="highlight">Postgres</mark> presenta timeout...
+                  </p>
+</div>
+<div class="flex items-center gap-1 shrink-0 self-center">
+<button class="px-2 py-0.5 text-[10px] bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/40 rounded text-on-surface-variant hover:text-on-surface">
+                    Abrir
+                  </button>
+</div>
+</div>
+</div>
+<div class="px-3 pt-0.5">
+<a class="text-[10px] text-neutral hover:text-primary transition-colors flex items-center gap-1 w-fit" href="#">
+<span>Ver todos los resultados de Notas</span>
+<span class="text-[9px]">→</span>
+</a>
+</div>
+</section>
+<!-- 4. GRUPO: FINANZAS (1 resultado) -->
+<section class="flex flex-col gap-1.5 pt-3">
+<div class="flex items-center justify-between px-2 text-on-surface-variant pb-1">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-secondary" data-icon="account_balance">account_balance</span>
+<span class="font-headline font-semibold text-[11px] tracking-wider uppercase text-neutral">Finanzas</span>
+<span class="text-[10px] text-neutral/70 font-mono">(1)</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-start justify-between gap-2.5 p-2 rounded hover:bg-surface-container-high/60 border border-transparent hover:border-outline-variant/40 transition-colors">
+<div class="flex-1 min-w-0 pl-3">
+<span class="font-medium text-xs text-on-surface block truncate">Pago final migración PostgreSQL a RDS</span>
+<div class="text-[11px] text-secondary font-medium tracking-tight mt-0.5">
+                    Seguros Bolívar TI · 9.200.000 COP
+                  </div>
+<p class="text-[11px] text-on-surface-variant mt-1 leading-snug">
+                    ...honorarios pactados para el hito de corte y <mark class="highlight">migración</mark> de base de datos de producción <mark class="highlight">Postgres</mark>...
+                  </p>
+</div>
+<div class="flex items-center gap-1 shrink-0 self-center">
+<button class="px-2 py-0.5 text-[10px] bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/40 rounded text-on-surface-variant hover:text-on-surface">
+                    Abrir
+                  </button>
+</div>
+</div>
+</div>
+<div class="px-3 pt-0.5">
+<a class="text-[10px] text-neutral hover:text-primary transition-colors flex items-center gap-1 w-fit" href="#">
+<span>Ver todos los resultados de Finanzas</span>
+<span class="text-[9px]">→</span>
+</a>
+</div>
+</section>
+<!-- 5. GRUPOS SIN COINCIDENCIAS (Tenues / Colapsados) -->
+<section class="pt-3 border-t border-outline-variant/20 flex flex-col gap-1">
+<span class="text-[10px] uppercase font-headline tracking-wider text-neutral/60 px-2 font-medium">Otras entidades</span>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-2 pt-1 px-2">
+<div class="flex items-center justify-between p-2 rounded bg-surface-container/50 border border-outline-variant/20">
+<div class="flex items-center gap-1.5 text-neutral/60">
+<span class="material-symbols-outlined text-[13px]" data-icon="group">group</span>
+<span class="text-xs">Clientes</span>
+</div>
+<span class="text-[10px] text-neutral/40 italic">Sin coincidencias</span>
+</div>
+<div class="flex items-center justify-between p-2 rounded bg-surface-container/50 border border-outline-variant/20">
+<div class="flex items-center gap-1.5 text-neutral/60">
+<span class="material-symbols-outlined text-[13px]" data-icon="contacts">contacts</span>
+<span class="text-xs">Contactos</span>
+</div>
+<span class="text-[10px] text-neutral/40 italic">Sin coincidencias</span>
+</div>
+<div class="flex items-center justify-between p-2 rounded bg-surface-container/50 border border-outline-variant/20">
+<div class="flex items-center gap-1.5 text-neutral/60">
+<span class="material-symbols-outlined text-[13px]" data-icon="timer">timer</span>
+<span class="text-xs">Tiempo</span>
+</div>
+<span class="text-[10px] text-neutral/40 italic">Sin coincidencias</span>
+</div>
+<div class="flex items-center justify-between p-2 rounded bg-surface-container/50 border border-outline-variant/20">
+<div class="flex items-center gap-1.5 text-neutral/60">
+<span class="material-symbols-outlined text-[13px]" data-icon="event">event</span>
+<span class="text-xs">Eventos</span>
+</div>
+<span class="text-[10px] text-neutral/40 italic">Sin coincidencias</span>
+</div>
+</div>
+</section>
+</div>
+<!-- Palette Footer Status -->
+<div class="px-3 py-2 bg-surface-container border-t border-outline-variant/40 flex items-center justify-between text-[11px] text-neutral">
+<div class="flex items-center gap-2">
+<span>5 coincidencias encontradas en 4 entidades</span>
+</div>
+<div class="flex items-center gap-2 text-[10px]">
+<span>Tabular para navegar filtros</span>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Bottom App Status Bar: Only 'Datos en este equipo' -->
+<footer class="w-full h-6 bg-surface-darkest border-t border-outline-variant/30 flex items-center justify-between px-3 shrink-0 z-30 text-[10px] text-neutral select-none">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[12px] text-primary/70" data-icon="check_circle">check_circle</span>
+<span class="tracking-tight text-neutral">Datos en este equipo</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-neutral/40">Modo local</span>
+</div>
+</footer>
+</body></html>

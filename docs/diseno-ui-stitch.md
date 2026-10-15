@@ -4,7 +4,7 @@ Diseñar Bitnode con Stitch fuera de esta sesión. Dirección elegida por el usu
 
 ## Estado del diseño
 
-Los prompts se acotan a una pantalla para avanzar en el diseño de la app, no como una etapa de experimentos independiente. La descripción anterior de este trabajo como "solo pruebas" fue una interpretación equivocada del asistente, aclarada por el usuario. Tema oscuro compacto es una preferencia confirmada; el acento verde, navegación y composición de las capturas siguen pendientes de selección final.
+Los prompts se acotan a una pantalla para avanzar en el diseño de la app, no como una etapa de experimentos independiente. La descripción anterior de este trabajo como "solo pruebas" fue una interpretación equivocada del asistente, aclarada por el usuario. Tema oscuro compacto, acento verde y navegación lateral del escritorio están aprobados como base de trabajo. La composición final, medidas y estados de cada pantalla siguen pendientes de revisión.
 
 Proyecto compartido: `16570682568620864378`. Pantalla compartida: `9aadb28a8d7c4d6f87e1fd280098e969`. No se pudo visualizar directamente mediante el enlace; la revisión se hizo sobre capturas locales. No asumir que todas las variantes posteriores tienen ese mismo ID.
 
@@ -15,6 +15,23 @@ Proyecto compartido: `16570682568620864378`. Pantalla compartida: `9aadb28a8d7c4
 | Corrección de formato y reglas | Pasó a escritorio con sidebar y habilitó temporizadores en bloqueadas. Conservó parte del contenido ajeno y añadió explicaciones visibles de las reglas. |
 | Cuatro cambios puntuales | Quitó ruta/version/indicador técnico, Tech Lead y explicaciones de temporizadores. Conservó botones, pero no separó encabezados de fechas. |
 | Corrección con medidas explícitas | Separó Planificada/Límite visualmente en las tres tablas. Aumentó truncamiento de títulos/motivos; la resolución de exportación cambió. No se verificaron medidas exactas ni CSS. |
+
+## Acuerdos de producto posteriores
+
+P1–P6 y P8–P12 del [diseño técnico](diseno-tecnico-local.md#preguntas-finales) ya están respondidas. Mantener hora Colombia, enlaces repetidos permitidos, búsqueda alfabética, Inbox página propia y acceso global solo agregar. Iniciar timer en Nueva la pasa a En curso; Bloqueada/Revisión conservan estado. Nota borrada definitivamente desaparece también de Actividad. Restore conserva contraseña actual y cierra timers de copia. Estos acuerdos no aprueban pantallas ni medidas.
+
+P7 sigue pendiente de aclaración: no fijar un nuevo desempate de Hoy por inferencia.
+
+## Paleta entregada por el usuario
+
+| Token | Color | Estado |
+|---|---|---|
+| Primary | `#07B478` | Confirmado. |
+| Secondary | `#518166` | Confirmado. |
+| Tertiary | `#FF9676` | Confirmado en respuesta posterior. |
+| Neutral | `#717973` | Confirmado tras aclarar la etiqueta inicial de Tertiary. |
+
+Conservar los nombres entregados. No convertir Tertiary automáticamente en error o advertencia, ni Neutral en fondo o texto de cualquier contraste. Fondos, texto, estados y contraste se definen por separado; no están aprobados por entregar esta paleta.
 
 ## Método para diseñar por pantalla
 
@@ -46,17 +63,21 @@ Diseña Bitnode, una aplicación personal de productividad local en macOS.
 La interfaz es web, en español, y luego se implementará en Angular.
 Un solo usuario. No diseñes una landing de marketing.
 
-Dirección visual aprobada: tema oscuro y compacto, orientado a trabajo diario.
-Propuesta visual inicial: superficies carbón, texto claro, acento azul discreto,
-bordes sutiles, listas densas pero legibles y jerarquía tipográfica sencilla.
+Base visual aprobada: escritorio oscuro compacto, acento verde y navegación lateral.
+Conserva esta dirección al diseñar cada pantalla; no implica cierre del diseño.
+Paleta confirmada: primary #07B478, secondary #518166,
+tertiary #FF9676 y neutral #717973.
+No asignes colores automáticamente a error/advertencia. Propón superficies oscuras
+y texto legible por separado y comprueba el contraste de sus combinaciones.
+Bordes sutiles, listas densas pero legibles y jerarquía tipográfica sencilla.
 No uses gradientes decorativos, ilustraciones hero, grandes tarjetas KPI ni
 espacios vacíos excesivos. Usa iconos con etiquetas, no significado solo por color.
-El acento y demás tokens se revisarán sobre el primer diseño.
+Las medidas exactas y demás tokens se revisarán sobre el diseño.
 
 Genera primero escritorio con viewport de 1440 px y navegación lateral,
 no una pantalla móvil. Genera adaptación estrecha a 390 px solo si se solicita
 como variante separada.
-Sidebar propuesta: Hoy, Inbox, Clientes, Proyectos, Contactos, Notas, Tiempo,
+Navegación lateral como base aprobada. Secciones: Hoy, Inbox, Clientes, Proyectos, Contactos, Notas, Tiempo,
 Finanzas, Calendario, Actividad. Búsqueda global y Configuración accesibles.
 La navegación puede revisarse, pero no añadas módulos al producto.
 Usa patrones consistentes de listas, detalle, formularios y confirmaciones.
@@ -73,6 +94,10 @@ Tareas requieren proyecto; proyecto pertenece a un cliente fijo.
 Estados: Nueva, En curso, Bloqueada, En revisión, Completada, Cancelada.
 Prioridad: Sin prioridad, Baja, Media, Alta; sin prioridad por defecto.
 Planificación y fecha límite son campos diferentes, cada uno con hora opcional.
+Usa siempre horario de Colombia, sin selector de zona.
+Iniciar temporizador de Nueva la pasa a En curso; Bloqueada/En revisión conservan estado.
+Inbox tiene página propia; desde otras pantallas solo se pueden agregar capturas.
+Referencias URL repetidas permitidas. Búsqueda en orden alfabético.
 Mostrar errores, avisos no bloqueantes, loading, vacío y conflictos de edición.
 Acciones destructivas o compuestas muestran efectos concretos antes de confirmar.
 No añadas funciones por llenar espacio. Usa datos ficticios colombianos.
@@ -123,14 +148,16 @@ Eliminar tareas es irrecuperable aunque se retengan 30 días. No mostrar Restaur
 ### 3. Inbox
 
 ```text
-Diseña Inbox global, sin scope ni proyecto obligatorio para capturar.
+Diseña página propia de Inbox, sin scope ni proyecto obligatorio para capturar.
+Desde el resto de pantallas solo hay captura rápida para agregar contenido;
+no desplegar la bandeja ni ofrecer procesamiento como widget global.
 Lista de capturas con título y cuerpo editable. Acciones: crear tarea, crear nota,
 añadir a tarea/nota existente o descartar con confirmación.
 Al añadir a existente, mostrar contenido de destino y captura, permitir editar
 la combinación antes de guardar, sin reemplazo ni agregado silencioso.
 Convertir a tarea exige proyecto. Mostrar error de guardado sin perder la captura.
-La edición al crear destino nuevo y conservación transaccional ante fallo son
-propuestas a revisar, no reglas nuevas aprobadas. Señálalas en notas del diseño.
+Permite editar contenido antes de crear tarea/nota. Guardar destino y retirar
+captura es una operación atómica; ante fallo conserva la captura. Reglas aprobadas.
 No mostrar historial de capturas procesadas ni estados persistentes adicionales.
 ```
 
@@ -177,7 +204,7 @@ Usar el mismo prompt base y pedir cada pantalla por separado. Estos requisitos s
 | Tiempo | Entradas manuales fecha/minutos, mínimo1; lista de temporizadores simultáneos, uno por tarea y uno directo por proyecto. Indicar límite12h y sumas de intervalos solapados. Tiempo de tarea eliminada solo lectura, fuera de totales. |
 | Finanzas | Income/expense como Ingreso/Gasto, importe entero positivo, COP por defecto y USD, fecha hoy editable, concepto opcional, vínculo cliente/proyecto opcional. Mostrar original y equivalente o pendiente. Solo total en pesos; no categorías ni subtotales por moneda. Confirmar edición de tasa y limpiar tasa al cambiar moneda. |
 | Calendario | Planificación y límite con marcadores distintos; tareas cerradas como conteos pulsables. Arrastrar tarea solo modifica planificación. Eventos simples con hora o día completo, último día inclusivo, cero duración válido, contexto opcional único. Sin recurrencia ni recordatorios. |
-| Consulta | Búsqueda en entidades aprobadas, todos los términos, filtros de archivados/cerrados; Actividad con detalle antes/después solo de notas/etiquetas/Inbox/tiempo/finanzas/eventos. No añadir timeline de acciones de tareas/clientes/proyectos/contactos. |
+| Consulta | Búsqueda en entidades aprobadas, todos los términos, filtros de archivados/cerrados; Actividad con detalle antes/después solo de notas/etiquetas/Inbox/tiempo/finanzas/eventos. No añadir timeline de acciones de tareas/clientes/proyectos/contactos. Orden búsqueda alfabético; actividad de nota desaparece cuando la nota se borra definitivamente. |
 | Recuperación | Papelera restaurable de notas/eventos; nota restaurada activa. Tareas eliminadas, si se muestran, en sección separada solo consulta durante retención, sin acción restaurar. |
 | Operación | Login con contraseña local, configuración de acceso LAN/HTTPS, backup manual y explicación de restore por CLI con servidor detenido. Sin tokens personales ni promesa de cerrar sesión al cerrar navegador. |
 

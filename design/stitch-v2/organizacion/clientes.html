@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bitnode - Clientes</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Public+Sans:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              DEFAULT: "#07B478",
+              container: "rgba(7, 180, 120, 0.12)",
+              hover: "#069f6a"
+            },
+            secondary: {
+              DEFAULT: "#518166",
+              container: "rgba(81, 129, 102, 0.15)"
+            },
+            tertiary: {
+              DEFAULT: "#FF9676",
+              container: "rgba(255, 150, 118, 0.12)"
+            },
+            surface: {
+              DEFAULT: "#0d1117",
+              container: "#111518",
+              "container-high": "#161b22",
+              "container-highest": "#21262d"
+            },
+            "on-surface": "#e6edf3",
+            "on-surface-variant": "#717973",
+            "outline-variant": "rgba(255, 255, 255, 0.08)"
+          },
+          borderRadius: {
+            DEFAULT: "0.125rem",
+            lg: "0.25rem",
+            xl: "0.5rem",
+            full: "0.75rem"
+          },
+          fontFamily: {
+            headline: ["Space Grotesk", "sans-serif"],
+            display: ["Space Grotesk", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Public Sans", "sans-serif"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-size: 16px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    /* Estilos sutiles de scrollbar estilo dev tool */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #21262d;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #30363d;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-body text-xs antialiased overflow-hidden select-none h-screen flex">
+<!-- SIDEBAR LATERAL IZQUIERDO -->
+<aside class="w-56 h-screen flex flex-col justify-between bg-surface-container border-r border-outline-variant/30 flex-shrink-0">
+<!-- Top & Navigation Links -->
+<div class="p-3 flex flex-col gap-3">
+<!-- Window Controls & Header Logo -->
+<div class="flex items-center gap-2 pt-1 pb-1">
+<div class="flex items-center gap-1.5 mr-2">
+<span class="w-2.5 h-2.5 rounded-full bg-[#ff5f56] inline-block opacity-80 hover:opacity-100 cursor-pointer"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-[#ffbd2e] inline-block opacity-80 hover:opacity-100 cursor-pointer"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-[#27c93f] inline-block opacity-80 hover:opacity-100 cursor-pointer"></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="font-headline font-bold text-xs tracking-wide text-on-surface">Bitnode</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+</div>
+</div>
+<!-- Quick Search input -->
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" style="font-size: 14px;">search</span>
+<input class="w-full bg-surface-container-high text-on-surface placeholder:text-on-surface-variant text-[11px] rounded py-1 pl-7 pr-2 border border-outline-variant/20 focus:outline-none focus:border-primary/40 transition-colors" placeholder="Buscar tareas, notas..." readonly="" tabindex="-1" type="text"/>
+</div>
+<!-- Navigation tabs (10 exactas según Shared Components JSON) -->
+<nav aria-label="Navegación principal" class="flex flex-col gap-0.5 mt-1">
+<!-- 1. Hoy -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">today</span>
+<span class="font-label text-xs">Hoy</span>
+</a>
+<!-- 2. Inbox -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">inbox</span>
+<span class="font-label text-xs">Inbox</span>
+</a>
+<!-- 3. Clientes (ACTIVA según active state logic) -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded bg-surface-container-high text-on-surface font-medium text-xs border border-outline-variant/30 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="font-label text-xs text-on-surface font-medium">Clientes</span>
+</a>
+<!-- 4. Proyectos -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">folder_open</span>
+<span class="font-label text-xs">Proyectos</span>
+</a>
+<!-- 5. Contactos -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">contacts</span>
+<span class="font-label text-xs">Contactos</span>
+</a>
+<!-- 6. Notas -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">note</span>
+<span class="font-label text-xs">Notas</span>
+</a>
+<!-- 7. Tiempo -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">timer</span>
+<span class="font-label text-xs">Tiempo</span>
+</a>
+<!-- 8. Finanzas -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">account_balance</span>
+<span class="font-label text-xs">Finanzas</span>
+</a>
+<!-- 9. Calendario -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label text-xs">Calendario</span>
+</a>
+<!-- 10. Actividad -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label text-xs">Actividad</span>
+</a>
+</nav>
+</div>
+<!-- Pie del Sidebar & Barra de Estado Local -->
+<div class="p-3 border-t border-outline-variant/20 flex flex-col gap-2">
+<!-- Configuración -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label text-xs">Configuración</span>
+</a>
+<!-- Barra de estado inferior izquierda -->
+<div class="px-2.5 pt-1.5 flex items-center gap-1.5 text-[11px] text-primary/80 font-body select-none">
+<span class="text-primary font-bold">✔</span>
+<span>Datos en este equipo</span>
+</div>
+</div>
+</aside>
+<!-- CONTENIDO PRINCIPAL -->
+<main class="flex-1 flex flex-col h-screen overflow-hidden bg-surface">
+<!-- Header Superior Limpio / Top Navigation Shell -->
+<header class="w-full h-10 flex items-center justify-between px-6 border-b border-outline-variant/30 flex-shrink-0 bg-surface">
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1 text-on-surface-variant text-[11px]">
+<span class="hover:text-on-surface cursor-pointer">Bitnode</span>
+<span class="text-outline-variant">/</span>
+<span class="text-on-surface font-medium">Clientes</span>
+</div>
+</div>
+<!-- Trailing Top bar actions -->
+<div class="flex items-center gap-2">
+<button class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Filtros avanzados">
+<span class="material-symbols-outlined" style="font-size: 15px;">tune</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Opciones">
+<span class="material-symbols-outlined" style="font-size: 15px;">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Canvas Central: Título y Controles -->
+<div class="flex-1 overflow-y-auto px-8 py-6 flex flex-col gap-5">
+<!-- Encabezado de Sección Clientes -->
+<div class="flex items-center justify-between pb-1">
+<div>
+<h1 class="font-headline font-semibold text-lg text-on-surface tracking-tight leading-none">Clientes</h1>
+</div>
+<button class="flex items-center gap-1.5 bg-primary text-[#0d1117] font-headline font-semibold text-xs px-3 py-1.5 rounded hover:bg-primary-hover active:scale-[0.98] transition-all duration-100 shadow-sm">
+<span class="material-symbols-outlined font-bold" style="font-size: 15px;">add</span>
+<span>+ Nuevo cliente</span>
+</button>
+</div>
+<!-- Fila de Controles (Búsqueda y Toggle) -->
+<div class="flex items-center justify-between gap-4 py-1">
+<!-- Input Buscar clientes -->
+<div class="relative w-72">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" style="font-size: 14px;">search</span>
+<input class="w-full bg-surface-container text-on-surface placeholder:text-on-surface-variant text-xs rounded py-1.5 pl-8 pr-8 border border-outline-variant/30 focus:outline-none focus:border-primary/50 transition-colors" placeholder="Buscar clientes..." type="text"/>
+<span class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-on-surface-variant border border-outline-variant/30 px-1 py-0.2 rounded font-mono">/</span>
+</div>
+<!-- Toggle Mostrar archivados -->
+<label class="flex items-center gap-2 cursor-pointer select-none">
+<span class="text-xs text-on-surface-variant font-label">Mostrar archivados</span>
+<div class="relative inline-flex items-center">
+<input class="sr-only peer" id="toggleArchivados" type="checkbox"/>
+<!-- Background bar del switch -->
+<div class="w-7 h-4 bg-surface-container-highest peer-checked:bg-primary/80 rounded-full transition-colors duration-150 border border-outline-variant/40"></div>
+<!-- Thumb -->
+<div class="w-2.5 h-2.5 bg-on-surface-variant peer-checked:bg-surface rounded-full absolute left-0.5 top-0.5 peer-checked:translate-x-3 transition-transform duration-150"></div>
+</div>
+</label>
+</div>
+<!-- Tabla Densa de Clientes -->
+<div class="w-full border border-outline-variant/30 rounded overflow-hidden bg-surface-container/30">
+<table class="w-full border-collapse text-left">
+<thead>
+<tr class="border-b border-outline-variant/30 bg-surface-container/80 text-[11px] font-label text-on-surface-variant uppercase tracking-wider">
+<th class="py-2 px-3 font-medium">Nombre del cliente</th>
+<th class="py-2 px-3 font-medium w-28">Scope</th>
+<th class="py-2 px-3 font-medium w-24">Proyectos</th>
+<th class="py-2 px-3 font-medium w-24">Contactos</th>
+<th class="py-2 px-3 font-medium w-24">Estado</th>
+<th class="py-2 px-3 font-medium text-right w-40"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20 font-body text-xs">
+<!-- Fila 1: Tuya S.A. -->
+<tr class="hover:bg-surface-container-high/40 transition-colors group">
+<td class="py-2 px-3 font-medium text-on-surface">
+                Tuya S.A. Compañía de Financiamiento
+              </td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#16221d] text-[#6ee7b7] border border-[#07b478]/20">
+                  Trabajo
+                </span>
+</td>
+<td class="py-2 px-3 text-on-surface-variant font-mono">4</td>
+<td class="py-2 px-3 text-on-surface-variant font-mono">5</td>
+<td class="py-2 px-3">
+<div class="flex items-center gap-1.5 text-on-surface text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+<span>Activo</span>
+</div>
+</td>
+<td class="py-2 px-3 text-right"></td>
+</tr>
+<!-- Fila 2: Seguros Bolívar TI (EXACTAMENTE ESTA FILA EN ESTADO HOVER VISIBLE ACTIVO) -->
+<tr class="bg-[#1c2128] transition-colors relative border-y border-outline-variant/40">
+<td class="py-2 px-3 font-medium text-on-surface">
+                Seguros Bolívar TI
+              </td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#16221d] text-[#6ee7b7] border border-[#07b478]/20">
+                  Trabajo
+                </span>
+</td>
+<td class="py-2 px-3 text-on-surface-variant font-mono">2</td>
+<td class="py-2 px-3 text-on-surface-variant font-mono">3</td>
+<td class="py-2 px-3">
+<div class="flex items-center gap-1.5 text-on-surface text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+<span>Activo</span>
+</div>
+</td>
+<td class="py-2 px-3 text-right">
+<!-- Botones de acción desplegados por estado Hover -->
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-2 py-0.5 rounded bg-surface-container-highest hover:bg-surface-container-highest/80 text-on-surface text-[11px] font-medium border border-outline-variant/30 transition-colors">
+                    Abrir
+                  </button>
+<div class="relative inline-block text-left">
+<button class="p-1 rounded bg-surface-container-highest hover:bg-surface-container-highest/80 text-on-surface border border-outline-variant/30 flex items-center transition-colors" title="Más opciones">
+<span class="material-symbols-outlined" style="font-size: 14px;">more_horiz</span>
+</button>
+<!-- Menú contextual visible del hover -->
+<div class="absolute right-0 top-full mt-1 w-28 bg-[#161b22] border border-outline-variant/40 rounded shadow-xl py-1 z-30">
+<a class="flex items-center gap-2 px-2.5 py-1 text-[11px] text-on-surface hover:bg-surface-container-highest transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-size: 13px;">edit</span>
+<span>Editar</span>
+</a>
+<a class="flex items-center gap-2 px-2.5 py-1 text-[11px] text-tertiary hover:bg-surface-container-highest transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-size: 13px;">archive</span>
+<span>Archivar</span>
+</a>
+</div>
+</div>
+</div>
+</td>
+</tr>
+<!-- Fila 3: Compensar EPS -->
+<tr class="hover:bg-surface-container-high/40 transition-colors group">
+<td class="py-2 px-3 font-medium text-on-surface">
+                Compensar EPS (Portal Autoservicio)
+              </td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#16221d] text-[#6ee7b7] border border-[#07b478]/20">
+                  Trabajo
+                </span>
+</td>
+<td class="py-2 px-3 text-on-surface-variant font-mono">1</td>
+<td class="py-2 px-3 text-on-surface-variant font-mono">2</td>
+<td class="py-2 px-3">
+<div class="flex items-center gap-1.5 text-on-surface text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+<span>Activo</span>
+</div>
+</td>
+<td class="py-2 px-3 text-right"></td>
+</tr>
+<!-- Fila 4: Infraestructura Daviplata -->
+<tr class="hover:bg-surface-container-high/40 transition-colors group">
+<td class="py-2 px-3 font-medium text-on-surface">
+                Infraestructura Daviplata
+              </td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#16221d] text-[#6ee7b7] border border-[#07b478]/20">
+                  Trabajo
+                </span>
+</td>
+<td class="py-2 px-3 text-on-surface-variant font-mono">3</td>
+<td class="py-2 px-3 text-on-surface-variant font-mono">1</td>
+<td class="py-2 px-3">
+<div class="flex items-center gap-1.5 text-on-surface text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+<span>Activo</span>
+</div>
+</td>
+<td class="py-2 px-3 text-right"></td>
+</tr>
+<!-- Fila 5: Consultoría Arquitectura Cloud Personal -->
+<tr class="hover:bg-surface-container-high/40 transition-colors group">
+<td class="py-2 px-3 font-medium text-on-surface">
+                Consultoría Arquitectura Cloud Personal
+              </td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#241e17] text-[#ffd188] border border-[#e59b34]/20">
+                  Personal
+                </span>
+</td>
+<td class="py-2 px-3 text-on-surface-variant font-mono">1</td>
+<td class="py-2 px-3 text-on-surface-variant font-mono">0</td>
+<td class="py-2 px-3">
+<div class="flex items-center gap-1.5 text-on-surface text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+<span>Activo</span>
+</div>
+</td>
+<td class="py-2 px-3 text-right"></td>
+</tr>
+<!-- Fila 6: Laboratorio Microservicios Juan C. -->
+<tr class="hover:bg-surface-container-high/40 transition-colors group">
+<td class="py-2 px-3 font-medium text-on-surface">
+                Laboratorio Microservicios Juan C.
+              </td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#241e17] text-[#ffd188] border border-[#e59b34]/20">
+                  Personal
+                </span>
+</td>
+<td class="py-2 px-3 text-on-surface-variant font-mono">0</td>
+<td class="py-2 px-3 text-on-surface-variant font-mono">0</td>
+<td class="py-2 px-3">
+<div class="flex items-center gap-1.5 text-on-surface text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+<span>Activo</span>
+</div>
+</td>
+<td class="py-2 px-3 text-right"></td>
+</tr>
+<!-- Fila 7: Facturación Electrónica DIAN Alpina -->
+<tr class="hover:bg-surface-container-high/40 transition-colors group">
+<td class="py-2 px-3 font-medium text-on-surface">
+                Facturación Electrónica DIAN Alpina
+              </td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#16221d] text-[#6ee7b7] border border-[#07b478]/20">
+                  Trabajo
+                </span>
+</td>
+<td class="py-2 px-3 text-on-surface-variant font-mono">2</td>
+<td class="py-2 px-3 text-on-surface-variant font-mono">4</td>
+<td class="py-2 px-3">
+<div class="flex items-center gap-1.5 text-on-surface text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+<span>Activo</span>
+</div>
+</td>
+<td class="py-2 px-3 text-right"></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</main>
+<script>
+    // Atajo de teclado nativo rápido para el buscador
+    window.addEventListener('keydown', (e) => {
+      if (e.key === '/' && document.activeElement.tagName !== 'INPUT') {
+        e.preventDefault();
+        const searchInput = document.querySelector('input[placeholder="Buscar clientes..."]');
+        if (searchInput) searchInput.focus();
+      }
+    });
+  </script>
+</body></html>

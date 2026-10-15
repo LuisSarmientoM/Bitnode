@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bitnode - Inbox</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Public+Sans:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface": "#101314",
+            "surface-container": "#141718",
+            "surface-container-high": "#1c2022",
+            "surface-container-highest": "#24292c",
+            "outline-variant": "#2f363a",
+            "on-surface": "#e5e7eb",
+            "on-surface-variant": "#9ca3af",
+            "primary": "#07B478",
+            "primary-container": "rgba(7, 180, 120, 0.15)",
+            "on-primary": "#051f15",
+            "on-primary-container": "#07B478"
+          },
+          borderRadius: {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          fontFamily: {
+            "headline": ["Space Grotesk", "sans-serif"],
+            "display": ["Space Grotesk", "sans-serif"],
+            "body": ["Inter", "sans-serif"],
+            "label": ["Public Sans", "sans-serif"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 350, 'GRAD' 0, 'opsz' 20;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .material-symbols-outlined.fill {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-body text-xs antialiased overflow-hidden select-none">
+<div class="flex h-screen w-screen bg-[#0e1011]">
+<!-- Sidebar Navigation -->
+<aside class="w-56 flex-shrink-0 flex flex-col justify-between bg-surface-container border-r border-outline-variant/30 select-none">
+<div class="flex flex-col p-3">
+<!-- Brand Header -->
+<div class="flex items-center gap-2 px-2 py-1 mb-3">
+<span class="w-2 h-2 rounded-full bg-[#07B478] shadow-[0_0_8px_rgba(7,180,120,0.6)]"></span>
+<span class="font-headline font-bold text-sm tracking-wide text-on-surface">Bitnode</span>
+</div>
+<!-- Search input -->
+<div class="relative mb-3">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[15px]">search</span>
+<input class="w-full bg-[#181c1e] text-xs text-on-surface placeholder:text-on-surface-variant/60 rounded-lg pl-7 pr-2.5 py-1.5 border border-outline-variant/30 focus:border-[#07B478]/50 focus:outline-none focus:ring-0 transition-colors" placeholder="Buscar tareas, notas..." readonly="" type="text"/>
+</div>
+<!-- Navigation items list -->
+<nav class="flex flex-col gap-0.5">
+<!-- Hoy -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]">today</span>
+<span>Hoy</span>
+</a>
+<!-- Inbox (ACTIVE TAB) -->
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-surface-container-high text-on-surface font-medium text-xs" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined fill text-[17px] text-[#07B478]">inbox</span>
+<span>Inbox</span>
+</div>
+<span class="text-[10px] font-semibold bg-[#07B478]/15 text-[#07B478] px-1.5 py-0.2 rounded-full">4</span>
+</a>
+<!-- Clientes -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]">group</span>
+<span>Clientes</span>
+</a>
+<!-- Proyectos -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]">folder_open</span>
+<span>Proyectos</span>
+</a>
+<!-- Contactos -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]">contacts</span>
+<span>Contactos</span>
+</a>
+<!-- Notas -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]">note</span>
+<span>Notas</span>
+</a>
+<!-- Tiempo -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]">timer</span>
+<span>Tiempo</span>
+</a>
+<!-- Finanzas -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]">account_balance</span>
+<span>Finanzas</span>
+</a>
+<!-- Calendario -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]">calendar_today</span>
+<span>Calendario</span>
+</a>
+<!-- Actividad -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]">history</span>
+<span>Actividad</span>
+</a>
+</nav>
+</div>
+<!-- Bottom of Sidebar: Only Configuración -->
+<div class="p-3 border-t border-outline-variant/20">
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]">settings</span>
+<span>Configuración</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Work Area -->
+<div class="flex-1 flex flex-col justify-between overflow-hidden bg-surface">
+<main class="flex-1 flex flex-col p-6 max-w-5xl w-full mx-auto overflow-y-auto">
+<!-- Header row -->
+<header class="flex items-center justify-between pb-6 mb-2 border-b border-outline-variant/20">
+<h1 class="font-headline font-semibold text-lg text-white/90 tracking-tight">Inbox</h1>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#07B478] hover:bg-[#06a36c] text-[#051f15] font-semibold text-xs transition-colors duration-150 active:scale-[0.98]">
+<span class="material-symbols-outlined text-[16px] leading-none">add</span>
+<span>Capturar ⌘N</span>
+</button>
+</header>
+<!-- Compact Rows Container (Exactly 4 items) -->
+<section class="flex flex-col border border-outline-variant/30 rounded-lg bg-surface-container/60 divide-y divide-outline-variant/20 overflow-hidden">
+<!-- Row 1: Normal state -->
+<article class="flex items-center justify-between px-4 py-3 hover:bg-surface-container-high/40 transition-colors">
+<div class="flex items-center gap-3.5 min-w-0 pr-4">
+<span class="material-symbols-outlined text-on-surface-variant/70 text-[18px] flex-shrink-0">adjust</span>
+<p class="text-xs text-on-surface truncate font-normal">
+                Credenciales temporales de bastion host en AWS us-east-1 para despliegue Tuya
+              </p>
+</div>
+<div class="flex items-center gap-4 flex-shrink-0 text-on-surface-variant text-[11px]">
+<span class="font-normal text-on-surface-variant/70">Atajo global</span>
+<span class="text-on-surface-variant/50 font-normal">Hoy 10:14</span>
+</div>
+</article>
+<!-- Row 2: Simulated HOVER state (Actions visible + background highlight) -->
+<article class="flex items-center justify-between px-4 py-3 bg-surface-container-high/90 border-l-2 border-l-[#07B478] transition-colors">
+<div class="flex items-center gap-3.5 min-w-0 pr-4">
+<span class="material-symbols-outlined text-[#07B478] text-[18px] flex-shrink-0">adjust</span>
+<p class="text-xs text-white font-medium truncate">
+                Revisar logs de latencia en webhook de PSE tras migración a Kubernetes
+              </p>
+</div>
+<div class="flex items-center gap-2.5 flex-shrink-0">
+<span class="text-[11px] text-on-surface-variant/70 mr-1">Portapapeles</span>
+<span class="text-[11px] text-on-surface-variant/50 mr-2">Hoy 09:28</span>
+<!-- Hover action buttons -->
+<div class="flex items-center gap-1.5">
+<button class="px-2.5 py-1 rounded bg-[#20272b] hover:bg-[#283136] text-on-surface hover:text-white border border-outline-variant/40 text-[11px] font-medium transition-colors">
+                  Crear tarea
+                </button>
+<button class="px-2.5 py-1 rounded bg-[#20272b] hover:bg-[#283136] text-on-surface hover:text-white border border-outline-variant/40 text-[11px] font-medium transition-colors">
+                  Añadir a existente
+                </button>
+<button class="p-1 rounded hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface transition-colors" title="Opciones">
+<span class="material-symbols-outlined text-[17px]">more_horiz</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Row 3: With subtle save error line -->
+<article class="flex flex-col px-4 py-3 hover:bg-surface-container-high/40 transition-colors gap-1.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3.5 min-w-0 pr-4">
+<span class="material-symbols-outlined text-on-surface-variant/70 text-[18px] flex-shrink-0">adjust</span>
+<p class="text-xs text-on-surface truncate font-normal">
+                  Snippet curl para pruebas de endpoint de liquidación Daviplata
+                </p>
+</div>
+<div class="flex items-center gap-4 flex-shrink-0 text-on-surface-variant text-[11px]">
+<span class="font-normal text-on-surface-variant/70">Entrada manual</span>
+<span class="text-on-surface-variant/50 font-normal">Ayer 18:45</span>
+</div>
+</div>
+<!-- Subtle error feedback line directly beneath the item -->
+<div class="flex items-center gap-1.5 pl-8 text-[11px] text-amber-400/90">
+<span class="material-symbols-outlined text-[14px]">warning</span>
+<span>No se pudo guardar.</span>
+<button class="underline hover:text-amber-300 font-medium ml-0.5 cursor-pointer">
+                Reintentar
+              </button>
+</div>
+</article>
+<!-- Row 4: Normal state -->
+<article class="flex items-center justify-between px-4 py-3 hover:bg-surface-container-high/40 transition-colors">
+<div class="flex items-center gap-3.5 min-w-0 pr-4">
+<span class="material-symbols-outlined text-on-surface-variant/70 text-[18px] flex-shrink-0">adjust</span>
+<p class="text-xs text-on-surface truncate font-normal">
+                Notas de reunión técnica arquitectura microservicios con equipo de Carvajal
+              </p>
+</div>
+<div class="flex items-center gap-4 flex-shrink-0 text-on-surface-variant text-[11px]">
+<span class="font-normal text-on-surface-variant/70">Portapapeles</span>
+<span class="text-on-surface-variant/50 font-normal">Ayer 16:10</span>
+</div>
+</article>
+</section>
+</main>
+<!-- Bottom status bar -->
+<footer class="h-7 px-4 border-t border-outline-variant/20 bg-surface-container flex items-center justify-start select-none">
+<div class="flex items-center gap-1.5 text-on-surface-variant/80 text-[11px]">
+<span class="material-symbols-outlined text-[13px] text-[#07B478]">check</span>
+<span>Datos en este equipo</span>
+</div>
+</footer>
+</div>
+</div>
+</body></html>

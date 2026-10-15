@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bitnode — Actividad</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Public+Sans:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            surface: "#0c0f12",
+            "surface-container": "#111518",
+            "surface-container-high": "#161b20",
+            "surface-container-highest": "#1c2329",
+            "outline-variant": "#283138",
+            "outline": "#1e2429",
+            primary: "#07B478",
+            "primary-container": "#073a28",
+            secondary: "#518166",
+            tertiary: "#FF9676",
+            "on-surface": "#e1e4e6",
+            "on-surface-variant": "#717973",
+          },
+          borderRadius: {
+            DEFAULT: "0.125rem",
+            lg: "0.25rem",
+            xl: "0.5rem",
+            full: "0.75rem"
+          },
+          fontFamily: {
+            headline: ["Space Grotesk", "sans-serif"],
+            display: ["Space Grotesk", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Public Sans", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 16px;
+      line-height: 1;
+    }
+    .material-symbols-outlined.fill {
+      font-variation-settings: 'FILL' 1;
+    }
+    /* Monospace tabular layout for time stamps and before/after comparisons */
+    .tabular-nums {
+      font-feature-settings: "tnum" 1;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-body antialiased min-h-screen flex selection:bg-primary/20 selection:text-primary">
+<!-- Left Sidebar (SideNavBar Shared Anchor) -->
+<aside class="docked full-height left-0 w-56 flex flex-col h-screen bg-surface-container border-r border-outline-variant/30 select-none flex-shrink-0 z-20">
+<div class="h-screen flex flex-col justify-between p-3 select-none">
+<!-- Top Group: Logo, Search, Navigation -->
+<div class="space-y-3">
+<!-- Brand Header -->
+<div class="px-2.5 pt-1.5 pb-1 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-5 h-5 rounded bg-primary/10 border border-primary/30 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[14px]">grid_view</span>
+</div>
+<div>
+<div class="font-headline font-bold text-sm tracking-wide text-on-surface">Bitnode</div>
+<div class="text-[10px] text-on-surface-variant tracking-tight uppercase font-medium leading-none">Productividad</div>
+</div>
+</div>
+<span class="text-[10px] font-mono text-on-surface-variant/60 bg-surface-container-high px-1.5 py-0.5 rounded border border-outline/60">v1.4</span>
+</div>
+<!-- Search Bar Input Shortcut -->
+<div class="px-1">
+<div class="relative flex items-center w-full bg-surface/60 border border-outline rounded px-2.5 py-1.5 text-xs text-on-surface-variant hover:border-outline-variant/60 transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-on-surface text-[14px] mr-2">search</span>
+<span class="text-xs text-on-surface-variant/70 font-label flex-1">Buscar...</span>
+<kbd class="font-mono text-[10px] text-on-surface-variant/80 bg-surface-container-high px-1 rounded border border-outline">/</kbd>
+</div>
+</div>
+<!-- Navigation Tabs: Exact 10 items from JSON, Active: 'Actividad' -->
+<nav aria-label="Navegación principal" class="space-y-0.5 pt-1">
+<!-- 1. Hoy -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">today</span>
+<span class="font-label text-xs tracking-tight">Hoy</span>
+</a>
+<!-- 2. Inbox -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">inbox</span>
+<span class="font-label text-xs tracking-tight">Inbox</span>
+</a>
+<!-- 3. Clientes -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label text-xs tracking-tight">Clientes</span>
+</a>
+<!-- 4. Proyectos -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">folder_open</span>
+<span class="font-label text-xs tracking-tight">Proyectos</span>
+</a>
+<!-- 5. Contactos -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">contacts</span>
+<span class="font-label text-xs tracking-tight">Contactos</span>
+</a>
+<!-- 6. Notas -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">note</span>
+<span class="font-label text-xs tracking-tight">Notas</span>
+</a>
+<!-- 7. Tiempo -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">timer</span>
+<span class="font-label text-xs tracking-tight">Tiempo</span>
+</a>
+<!-- 8. Finanzas -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">account_balance</span>
+<span class="font-label text-xs tracking-tight">Finanzas</span>
+</a>
+<!-- 9. Calendario -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label text-xs tracking-tight">Calendario</span>
+</a>
+<!-- 10. Actividad (ACTIVA) -->
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded bg-surface-container-high text-on-surface font-medium text-xs border border-primary/20 shadow-sm relative group active:scale-[0.98]" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary fill">history</span>
+<span class="font-label text-xs tracking-tight text-on-surface font-medium">Actividad</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+</a>
+</nav>
+</div>
+<!-- Bottom Group: Configuración & Status Bar -->
+<div class="pt-3 border-t border-outline/50 space-y-2">
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label text-xs tracking-tight">Configuración</span>
+</a>
+<!-- Local status pill -->
+<div class="px-2.5 py-1.5 bg-surface/40 border border-outline/40 rounded flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+<span class="text-[11px] font-mono text-on-surface-variant leading-tight">Datos en este equipo</span>
+</div>
+<span class="material-symbols-outlined text-[13px] text-on-surface-variant/60">lock</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Canvas -->
+<div class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden bg-surface">
+<!-- Top Bar Navigation (TopNavBar Shared Anchor) -->
+<header class="w-full h-10 border-b border-outline-variant/30 flex items-center justify-between px-4 bg-surface select-none flex-shrink-0 z-10">
+<!-- Breadcrumbs -->
+<nav class="flex items-center gap-1.5 text-xs font-label">
+<span class="text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer">Bitnode</span>
+<span class="text-on-surface-variant/40">/</span>
+<span class="text-on-surface font-medium">Actividad</span>
+</nav>
+<!-- Right cluster actions: Live filter info and subtle action controls -->
+<div class="flex items-center gap-2">
+<span class="text-[11px] font-mono text-on-surface-variant flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container border border-outline/40">
+<span class="material-symbols-outlined text-[13px] text-primary">sync</span>
+          Sync local OK
+        </span>
+<div class="h-3.5 w-px bg-outline-variant/50"></div>
+<button class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Filtros" type="button">
+<span class="material-symbols-outlined">tune</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Opciones" type="button">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Main Content Area: High density utility feed -->
+<main class="flex-1 overflow-y-auto px-6 py-5 flex flex-col">
+<div class="max-w-5xl w-full mx-auto flex-1 flex flex-col">
+<!-- Header Section: Title & Compact Filter Bar -->
+<div class="mb-5 space-y-3">
+<div class="flex items-baseline justify-between">
+<div>
+<h1 class="font-headline font-bold text-lg text-on-surface tracking-tight">Actividad</h1>
+<p class="text-xs text-on-surface-variant font-label mt-0.5">Registro auditado de modificaciones y persistencia en almacén local</p>
+</div>
+<div class="text-[11px] font-mono text-on-surface-variant/80">
+              Periodo: <span class="text-on-surface">23 — 24 Oct</span>
+</div>
+</div>
+<!-- Compact Filter Chips Bar -->
+<div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs select-none">
+<!-- Active Filter: Todos -->
+<button class="px-2.5 py-1 rounded bg-primary/15 text-primary border border-primary/30 font-medium text-xs flex items-center gap-1.5 transition-colors">
+<span>Todos</span>
+<span class="text-[10px] bg-primary/20 px-1 rounded-sm font-mono leading-tight">8</span>
+</button>
+<!-- Entity Filters -->
+<button class="px-2.5 py-1 rounded bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high border border-outline transition-colors text-xs flex items-center gap-1">
+<span>Notas</span>
+</button>
+<button class="px-2.5 py-1 rounded bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high border border-outline transition-colors text-xs flex items-center gap-1">
+<span>Etiquetas</span>
+</button>
+<button class="px-2.5 py-1 rounded bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high border border-outline transition-colors text-xs flex items-center gap-1">
+<span>Inbox</span>
+</button>
+<button class="px-2.5 py-1 rounded bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high border border-outline transition-colors text-xs flex items-center gap-1">
+<span>Tiempo</span>
+</button>
+<button class="px-2.5 py-1 rounded bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high border border-outline transition-colors text-xs flex items-center gap-1">
+<span>Finanzas</span>
+</button>
+<button class="px-2.5 py-1 rounded bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high border border-outline transition-colors text-xs flex items-center gap-1">
+<span>Eventos</span>
+</button>
+<!-- Inactive Filters with empty state hint -->
+<div class="h-3 w-px bg-outline-variant/50 mx-1"></div>
+<button class="px-2 py-0.5 rounded text-on-surface-variant/40 hover:text-on-surface-variant text-[11px] border border-transparent hover:border-outline transition-colors" title="0 registros en el período">
+              Tareas (0)
+            </button>
+<button class="px-2 py-0.5 rounded text-on-surface-variant/40 hover:text-on-surface-variant text-[11px] border border-transparent hover:border-outline transition-colors" title="0 registros en el período">
+              Clientes (0)
+            </button>
+<button class="px-2 py-0.5 rounded text-on-surface-variant/40 hover:text-on-surface-variant text-[11px] border border-transparent hover:border-outline transition-colors" title="0 registros en el período">
+              Proyectos (0)
+            </button>
+<button class="px-2 py-0.5 rounded text-on-surface-variant/40 hover:text-on-surface-variant text-[11px] border border-transparent hover:border-outline transition-colors" title="0 registros en el período">
+              Contactos (0)
+            </button>
+</div>
+</div>
+<!-- Audit Feed Content -->
+<div class="flex-1 space-y-6">
+<!-- GRUPO 1: Hoy — 24 de octubre de 2024 (Entries 1 to 5) -->
+<section aria-labelledby="heading-today" class="space-y-1.5">
+<!-- Day Group Header -->
+<div class="flex items-center gap-2 pb-1 border-b border-outline/40">
+<span class="w-1.5 h-1.5 rounded-full bg-primary/70"></span>
+<h2 class="font-headline font-semibold text-xs text-on-surface tracking-tight" id="heading-today">Hoy — 24 de octubre de 2024</h2>
+<span class="text-[11px] font-mono text-on-surface-variant/70">· 5 eventos</span>
+</div>
+<!-- List Container -->
+<div class="divide-y divide-outline/30 border border-outline/40 rounded bg-surface-container/40">
+<!-- Entry 1: Notas -->
+<div class="flex items-center justify-between px-3 py-2 text-xs transition-colors hover:bg-surface-container-high/60 group">
+<div class="flex items-center gap-3 min-w-0 flex-1 mr-3">
+<span class="font-mono text-[11px] text-on-surface-variant tabular-nums w-10 flex-shrink-0">16:42</span>
+<span class="px-1.5 py-0.5 text-[10px] font-medium tracking-tight rounded bg-primary/10 text-primary border border-primary/20 flex-shrink-0">Nota</span>
+<div class="truncate flex items-center gap-1.5 text-xs min-w-0">
+<span class="text-on-surface font-medium hover:underline cursor-pointer truncate">Arquitectura de endpoints y cache en Redis</span>
+<span class="text-on-surface-variant/60">—</span>
+<span class="text-on-surface-variant truncate">versión guardada localmente</span>
+</div>
+</div>
+<div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+<button class="text-[11px] font-label text-on-surface-variant hover:text-on-surface px-1.5 py-0.5 rounded hover:bg-surface-container" type="button">Ver nota</button>
+<button class="text-on-surface-variant hover:text-on-surface p-0.5 rounded hover:bg-surface-container" title="Copiar ID" type="button">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+</button>
+</div>
+</div>
+<!-- Entry 2: Etiquetas (Active Visible Hover State Simulation) -->
+<div class="flex items-center justify-between px-3 py-2 text-xs bg-surface-container-high border-y border-outline-variant/40 transition-colors group">
+<div class="flex items-center gap-3 min-w-0 flex-1 mr-3">
+<span class="font-mono text-[11px] text-on-surface tabular-nums w-10 flex-shrink-0 font-medium">15:18</span>
+<span class="px-1.5 py-0.5 text-[10px] font-medium tracking-tight rounded bg-secondary/15 text-secondary border border-secondary/30 flex-shrink-0">Etiqueta</span>
+<div class="truncate flex items-center gap-1.5 text-xs min-w-0">
+<span class="text-on-surface font-medium hover:underline cursor-pointer truncate">Arquitectura de redondeo y caché</span>
+<span class="text-on-surface-variant/60">—</span>
+<span class="text-on-surface-variant flex items-center gap-1.5 font-mono text-[11px]">
+<span class="text-tertiary">sin etiqueta</span>
+<span class="text-on-surface-variant/70">→</span>
+<span class="text-primary font-medium bg-primary/10 px-1 py-0.2 rounded border border-primary/20">#backend</span>
+</span>
+</div>
+</div>
+<div class="flex items-center gap-1 flex-shrink-0">
+<button class="text-[11px] font-label text-on-surface bg-surface-container-highest px-2 py-0.5 rounded hover:bg-surface border border-outline/50 transition-colors flex items-center gap-1" type="button">
+<span>Ver entidad</span>
+<span class="material-symbols-outlined text-[12px]">arrow_forward</span>
+</button>
+<button class="text-on-surface-variant hover:text-on-surface p-0.5 rounded hover:bg-surface-container" title="Más opciones" type="button">
+<span class="material-symbols-outlined text-[14px]">more_horiz</span>
+</button>
+</div>
+</div>
+<!-- Entry 3: Inbox -->
+<div class="flex items-center justify-between px-3 py-2 text-xs transition-colors hover:bg-surface-container-high/60 group">
+<div class="flex items-center gap-3 min-w-0 flex-1 mr-3">
+<span class="font-mono text-[11px] text-on-surface-variant tabular-nums w-10 flex-shrink-0">14:05</span>
+<span class="px-1.5 py-0.5 text-[10px] font-medium tracking-tight rounded bg-surface-container-highest text-on-surface border border-outline flex-shrink-0">Inbox</span>
+<div class="truncate flex items-center gap-1.5 text-xs min-w-0">
+<span class="text-on-surface font-medium hover:underline cursor-pointer truncate">Revisar logs de latencia</span>
+<span class="text-on-surface-variant/60">—</span>
+<span class="text-on-surface-variant flex items-center gap-1.5 font-mono text-[11px]">
+<span class="text-tertiary">captura</span>
+<span class="text-on-surface-variant/70">→</span>
+<span class="text-on-surface">tarea</span>
+</span>
+</div>
+</div>
+<div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+<button class="text-[11px] font-label text-on-surface-variant hover:text-on-surface px-1.5 py-0.5 rounded hover:bg-surface-container" type="button">Abrir tarea</button>
+<button class="text-on-surface-variant hover:text-on-surface p-0.5 rounded hover:bg-surface-container" title="Copiar detalle" type="button">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+</button>
+</div>
+</div>
+<!-- Entry 4: Tiempo -->
+<div class="flex items-center justify-between px-3 py-2 text-xs transition-colors hover:bg-surface-container-high/60 group">
+<div class="flex items-center gap-3 min-w-0 flex-1 mr-3">
+<span class="font-mono text-[11px] text-on-surface-variant tabular-nums w-10 flex-shrink-0">11:20</span>
+<span class="px-1.5 py-0.5 text-[10px] font-medium tracking-tight rounded bg-primary/10 text-primary border border-primary/20 flex-shrink-0">Tiempo</span>
+<div class="truncate flex items-center gap-1.5 text-xs min-w-0">
+<span class="text-on-surface font-medium hover:underline cursor-pointer truncate">Refactorización pipeline métricas</span>
+<span class="text-on-surface-variant/60">—</span>
+<span class="text-on-surface-variant flex items-center gap-1.5 font-mono text-[11px]">
+<span class="text-tertiary">45m</span>
+<span class="text-on-surface-variant/70">→</span>
+<span class="text-on-surface font-medium">60m</span>
+<span class="text-[10px] text-on-surface-variant/60">(entrada manual)</span>
+</span>
+</div>
+</div>
+<div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+<button class="text-[11px] font-label text-on-surface-variant hover:text-on-surface px-1.5 py-0.5 rounded hover:bg-surface-container" type="button">Ver entrada</button>
+<button class="text-on-surface-variant hover:text-on-surface p-0.5 rounded hover:bg-surface-container" title="Copiar" type="button">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+</button>
+</div>
+</div>
+<!-- Entry 5: Finanzas -->
+<div class="flex items-center justify-between px-3 py-2 text-xs transition-colors hover:bg-surface-container-high/60 group">
+<div class="flex items-center gap-3 min-w-0 flex-1 mr-3">
+<span class="font-mono text-[11px] text-on-surface-variant tabular-nums w-10 flex-shrink-0">09:12</span>
+<span class="px-1.5 py-0.5 text-[10px] font-medium tracking-tight rounded bg-surface-container-highest text-secondary border border-outline flex-shrink-0">Finanzas</span>
+<div class="truncate flex items-center gap-1.5 text-xs min-w-0">
+<span class="text-on-surface font-medium hover:underline cursor-pointer truncate">Tasa de cambio COP/USD</span>
+<span class="text-on-surface-variant/60">—</span>
+<span class="text-on-surface-variant flex items-center gap-1.5 font-mono text-[11px]">
+<span class="text-tertiary">4.210</span>
+<span class="text-on-surface-variant/70">→</span>
+<span class="text-primary font-medium">4.230 COP/USD</span>
+</span>
+</div>
+</div>
+<div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+<button class="text-[11px] font-label text-on-surface-variant hover:text-on-surface px-1.5 py-0.5 rounded hover:bg-surface-container" type="button">Ir a finanzas</button>
+<button class="text-on-surface-variant hover:text-on-surface p-0.5 rounded hover:bg-surface-container" title="Copiar valor" type="button">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- GRUPO 2: Ayer — 23 de octubre de 2024 (Entries 6 to 8) -->
+<section aria-labelledby="heading-yesterday" class="space-y-1.5">
+<!-- Day Group Header -->
+<div class="flex items-center gap-2 pb-1 border-b border-outline/40">
+<span class="w-1.5 h-1.5 rounded-full bg-on-surface-variant/50"></span>
+<h2 class="font-headline font-semibold text-xs text-on-surface-variant tracking-tight" id="heading-yesterday">Ayer — 23 de octubre de 2024</h2>
+<span class="text-[11px] font-mono text-on-surface-variant/70">· 3 eventos</span>
+</div>
+<!-- List Container -->
+<div class="divide-y divide-outline/30 border border-outline/40 rounded bg-surface-container/40">
+<!-- Entry 6: Eventos -->
+<div class="flex items-center justify-between px-3 py-2 text-xs transition-colors hover:bg-surface-container-high/60 group">
+<div class="flex items-center gap-3 min-w-0 flex-1 mr-3">
+<span class="font-mono text-[11px] text-on-surface-variant tabular-nums w-10 flex-shrink-0">18:40</span>
+<span class="px-1.5 py-0.5 text-[10px] font-medium tracking-tight rounded bg-surface-container-highest text-on-surface border border-outline flex-shrink-0">Evento</span>
+<div class="truncate flex items-center gap-1.5 text-xs min-w-0">
+<span class="text-on-surface font-medium hover:underline cursor-pointer truncate">Sprint hardening &amp; pruebas de carga</span>
+<span class="text-on-surface-variant/60">—</span>
+<span class="text-on-surface-variant flex items-center gap-1.5 font-mono text-[11px]">
+<span class="text-tertiary">26 oct</span>
+<span class="text-on-surface-variant/70">→</span>
+<span class="text-on-surface font-medium">25 oct</span>
+<span class="text-[10px] text-on-surface-variant/60">(recorte de duración)</span>
+</span>
+</div>
+</div>
+<div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+<button class="text-[11px] font-label text-on-surface-variant hover:text-on-surface px-1.5 py-0.5 rounded hover:bg-surface-container" type="button">Ver evento</button>
+<button class="text-on-surface-variant hover:text-on-surface p-0.5 rounded hover:bg-surface-container" title="Copiar" type="button">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+</button>
+</div>
+</div>
+<!-- Entry 7: Notas / Etiquetas -->
+<div class="flex items-center justify-between px-3 py-2 text-xs transition-colors hover:bg-surface-container-high/60 group">
+<div class="flex items-center gap-3 min-w-0 flex-1 mr-3">
+<span class="font-mono text-[11px] text-on-surface-variant tabular-nums w-10 flex-shrink-0">15:22</span>
+<span class="px-1.5 py-0.5 text-[10px] font-medium tracking-tight rounded bg-secondary/15 text-secondary border border-secondary/30 flex-shrink-0">Etiqueta</span>
+<div class="truncate flex items-center gap-1.5 text-xs min-w-0">
+<span class="text-on-surface font-medium hover:underline cursor-pointer truncate">Checklist despliegue Helm chart EKS</span>
+<span class="text-on-surface-variant/60">—</span>
+<span class="text-on-surface-variant flex items-center gap-1.5 font-mono text-[11px]">
+<span class="text-tertiary">#infra</span>
+<span class="text-on-surface-variant/70">→</span>
+<span class="text-primary font-medium bg-primary/10 px-1 py-0.2 rounded border border-primary/20">#devops</span>
+<span class="text-[10px] text-on-surface-variant/60">(etiqueta reasignada)</span>
+</span>
+</div>
+</div>
+<div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+<button class="text-[11px] font-label text-on-surface-variant hover:text-on-surface px-1.5 py-0.5 rounded hover:bg-surface-container" type="button">Ver nota</button>
+<button class="text-on-surface-variant hover:text-on-surface p-0.5 rounded hover:bg-surface-container" title="Copiar" type="button">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+</button>
+</div>
+</div>
+<!-- Entry 8: Tiempo -->
+<div class="flex items-center justify-between px-3 py-2 text-xs transition-colors hover:bg-surface-container-high/60 group">
+<div class="flex items-center gap-3 min-w-0 flex-1 mr-3">
+<span class="font-mono text-[11px] text-on-surface-variant tabular-nums w-10 flex-shrink-0">10:04</span>
+<span class="px-1.5 py-0.5 text-[10px] font-medium tracking-tight rounded bg-primary/10 text-primary border border-primary/20 flex-shrink-0">Tiempo</span>
+<div class="truncate flex items-center gap-1.5 text-xs min-w-0">
+<span class="text-on-surface font-medium hover:underline cursor-pointer truncate">Auditoría de seguridad tokens JWT</span>
+<span class="text-on-surface-variant/60">—</span>
+<span class="text-on-surface-variant flex items-center gap-1.5 font-mono text-[11px]">
+<span class="text-tertiary">02:45:00</span>
+<span class="text-on-surface-variant/70">→</span>
+<span class="text-on-surface font-medium">02:47:19</span>
+<span class="text-[10px] text-on-surface-variant/60">(temporizador detenido y redondeado)</span>
+</span>
+</div>
+</div>
+<div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+<button class="text-[11px] font-label text-on-surface-variant hover:text-on-surface px-1.5 py-0.5 rounded hover:bg-surface-container" type="button">Ver entrada</button>
+<button class="text-on-surface-variant hover:text-on-surface p-0.5 rounded hover:bg-surface-container" title="Copiar" type="button">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- Bottom Persistent Status Footer Bar -->
+<footer class="w-full h-8 border-t border-outline-variant/30 px-4 bg-surface-container/60 flex items-center justify-between text-[11px] font-mono select-none flex-shrink-0">
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>Datos en este equipo</span>
+</div>
+<span class="text-outline-variant">|</span>
+<span class="text-on-surface-variant/70">Modo estricto local</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-on-surface-variant">
+<strong class="font-medium text-on-surface">8</strong> eventos registrados en los últimos 2 días
+        </span>
+<span class="text-outline-variant">|</span>
+<span class="text-on-surface-variant/60">Bitnode Actividad</span>
+</div>
+</footer>
+</div>
+</body></html>

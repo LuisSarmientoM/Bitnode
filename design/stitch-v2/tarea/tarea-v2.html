@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bitnode - Auditoría de vulnerabilidades</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Public+Sans:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            surface: {
+              DEFAULT: "#0c0e12",
+              container: "#11141a",
+              "container-high": "#161b22",
+              "container-highest": "#1c222b",
+            },
+            primary: {
+              DEFAULT: "#07B478",
+              container: "#07B47820",
+              hover: "#069c67"
+            },
+            "on-surface": "#e6edf3",
+            "on-surface-variant": "#8b949e",
+            "outline-variant": "#30363d"
+          },
+          borderRadius: {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          fontFamily: {
+            headline: ["Space Grotesk", "sans-serif"],
+            display: ["Space Grotesk", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Public Sans", "sans-serif"]
+          }
+        },
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 18px;
+      line-height: 1;
+    }
+    .material-symbols-outlined.fill {
+      font-variation-settings: 'FILL' 1;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-body text-xs antialiased h-screen overflow-hidden flex flex-col select-none">
+<!-- Main Application Wrapper -->
+<div class="flex-1 flex overflow-hidden">
+<!-- SIDEBAR (w-56) -->
+<aside class="w-56 bg-surface-container border-r border-outline-variant/30 flex flex-col justify-between shrink-0 z-20">
+<!-- Top Sidebar Block -->
+<div class="p-3 flex flex-col gap-3">
+<!-- Mac Traffic Lights & Logo -->
+<div class="flex items-center justify-between pt-0.5 pb-1">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-[#ff5f56]/80 inline-block"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]/80 inline-block"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-[#27c93f]/80 inline-block"></span>
+</div>
+<div class="flex items-center gap-1.5 pr-1">
+<span class="font-headline font-bold text-sm tracking-wide text-on-surface">Bitnode</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+</div>
+</div>
+<!-- Compact Search -->
+<div class="relative">
+<span class="material-symbols-outlined absolute left-2 top-2 text-on-surface-variant text-[15px]">search</span>
+<input class="w-full bg-surface border border-outline-variant/40 rounded-lg pl-7 pr-2 py-1.5 text-xs text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:border-primary/50 focus:ring-0 transition-colors" placeholder="Buscar tareas, notas..." type="text"/>
+</div>
+<!-- Navigation Tabs (10 Sections) -->
+<nav class="flex flex-col gap-0.5 mt-1">
+<!-- 1. Hoy -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined">today</span>
+<span class="font-label text-xs">Hoy</span>
+</a>
+<!-- 2. Inbox -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined">inbox</span>
+<span class="font-label text-xs">Inbox</span>
+</a>
+<!-- 3. Clientes -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label text-xs">Clientes</span>
+</a>
+<!-- 4. Proyectos (Activo) -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg bg-surface-container-high text-on-surface font-medium border-l-2 border-primary" href="#">
+<span class="material-symbols-outlined text-primary">folder_open</span>
+<span class="font-label text-xs">Proyectos</span>
+</a>
+<!-- 5. Contactos -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined">contacts</span>
+<span class="font-label text-xs">Contactos</span>
+</a>
+<!-- 6. Notas -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined">note</span>
+<span class="font-label text-xs">Notas</span>
+</a>
+<!-- 7. Tiempo -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined">timer</span>
+<span class="font-label text-xs">Tiempo</span>
+</a>
+<!-- 8. Finanzas -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined">account_balance</span>
+<span class="font-label text-xs">Finanzas</span>
+</a>
+<!-- 9. Calendario -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label text-xs">Calendario</span>
+</a>
+<!-- 10. Actividad -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label text-xs">Actividad</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Sidebar Footer (Exclusively 'Configuración') -->
+<div class="p-3 border-t border-outline-variant/20">
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]">settings</span>
+<span class="font-label text-xs">Configuración</span>
+</a>
+</div>
+</aside>
+<!-- CONTENT WRAPPER -->
+<div class="flex-1 flex flex-col min-w-0 bg-surface">
+<!-- TOP NAV BAR (Single line header) -->
+<header class="h-10 border-b border-outline-variant/30 flex items-center justify-between px-4 shrink-0 bg-surface">
+<div class="flex items-center gap-2 text-xs text-on-surface-variant">
+<span class="hover:text-on-surface cursor-pointer">Proyectos</span>
+<span class="text-outline-variant">/</span>
+<span class="hover:text-on-surface cursor-pointer">Ciberseguridad 2024</span>
+<span class="text-outline-variant">/</span>
+<span class="text-on-surface font-medium truncate max-w-xs">Auditoría de vulnerabilidades</span>
+</div>
+<!-- Filter Segment -->
+<div class="flex items-center bg-surface-container rounded-lg p-0.5 border border-outline-variant/30">
+<button class="px-2.5 py-0.5 rounded text-xs font-medium text-primary bg-primary-container">Todos</button>
+<button class="px-2.5 py-0.5 rounded text-xs text-on-surface-variant hover:text-on-surface transition-colors">Trabajo</button>
+<button class="px-2.5 py-0.5 rounded text-xs text-on-surface-variant hover:text-on-surface transition-colors">Personal</button>
+</div>
+</header>
+<!-- TASK DETAIL CANVAS (Scrollable Body) -->
+<main class="flex-1 overflow-y-auto px-8 py-6 max-w-4xl w-full mx-auto flex flex-col gap-5">
+<!-- Breadcrumb / Client Hierarchy -->
+<div class="flex items-center gap-2 text-xs text-on-surface-variant font-medium">
+<span class="material-symbols-outlined text-[15px] text-primary">verified_user</span>
+<span>Ciberseguridad 2024</span>
+<span>·</span>
+<span>Banco de Bogotá</span>
+</div>
+<!-- Primary Task Headline & Timer Module -->
+<div class="flex items-start justify-between gap-4">
+<h1 class="text-xl font-headline font-bold text-on-surface leading-snug">
+            Auditoría de vulnerabilidades y hardening de servidores Ubuntu en Core Bancario
+          </h1>
+<!-- Compact Timer -->
+<div class="shrink-0 flex items-center gap-2 bg-surface-container border border-outline-variant/40 px-2.5 py-1.5 rounded-lg shadow-sm">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="font-mono text-xs font-semibold text-on-surface tracking-wider">01:42:15</span>
+<button class="text-xs font-medium text-primary hover:text-primary-hover px-1.5 py-0.5 rounded transition-colors ml-1">
+              Pausar
+            </button>
+</div>
+</div>
+<!-- Metadata Bar (Status, Priority, Scheduling, Due Date) -->
+<div class="flex flex-wrap items-center gap-3 py-2 border-y border-outline-variant/20 text-xs">
+<!-- Estado -->
+<div class="flex items-center gap-1.5">
+<span class="text-on-surface-variant">Estado:</span>
+<div class="relative inline-flex items-center">
+<select class="appearance-none bg-surface-container border border-outline-variant/40 rounded px-2 py-0.5 pr-6 text-xs text-primary font-medium focus:outline-none cursor-pointer">
+<option selected="">En curso</option>
+<option>Nueva</option>
+<option>Bloqueada</option>
+<option>En revisión</option>
+<option>Completada</option>
+<option>Cancelada</option>
+</select>
+<span class="material-symbols-outlined absolute right-1 pointer-events-none text-on-surface-variant text-[14px]">expand_more</span>
+</div>
+</div>
+<span class="text-outline-variant/60">|</span>
+<!-- Prioridad -->
+<div class="flex items-center gap-1.5">
+<span class="text-on-surface-variant">Prioridad:</span>
+<div class="relative inline-flex items-center">
+<span class="bg-red-500/15 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-xs font-medium flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                Alta
+              </span>
+</div>
+</div>
+<span class="text-outline-variant/60">|</span>
+<!-- Planificación -->
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span>Planificación:</span>
+<span class="text-on-surface font-medium">24 oct, 19:00</span>
+</div>
+<span class="text-outline-variant/60">|</span>
+<!-- Límite -->
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span>Límite:</span>
+<span class="text-on-surface font-medium">24 oct, 17:00</span>
+</div>
+</div>
+<!-- Action Row -->
+<div class="flex items-center gap-2">
+<button class="px-2.5 py-1 rounded bg-surface-container hover:bg-surface-container-high border border-outline-variant/40 text-on-surface text-xs font-medium flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[15px]">edit</span>
+            Editar
+          </button>
+<button class="px-2.5 py-1 rounded bg-primary text-surface font-semibold text-xs flex items-center gap-1.5 shadow-sm shadow-primary/20 hover:bg-primary-hover transition-colors">
+<span class="material-symbols-outlined text-[15px]">drive_file_move</span>
+            Trasladar a proyecto
+          </button>
+<button class="px-2.5 py-1 rounded bg-surface-container hover:bg-red-500/10 border border-outline-variant/40 text-red-400/90 text-xs font-medium flex items-center gap-1.5 transition-colors ml-auto">
+<span class="material-symbols-outlined text-[15px]">delete</span>
+            Eliminar
+          </button>
+</div>
+<!-- Warning Non-Blocking Banner -->
+<div class="bg-amber-500/10 border border-amber-500/30 rounded-lg p-2.5 flex items-center gap-2.5 text-xs text-amber-300/90">
+<span class="material-symbols-outlined text-[17px] text-amber-400 shrink-0">warning</span>
+<p>Aviso: la planificación (19:00) es posterior a la fecha límite (17:00). No bloquea la edición.</p>
+</div>
+<!-- Markdown Description (2 lines visible) -->
+<div class="bg-surface-container/60 border border-outline-variant/20 rounded-lg p-3 flex flex-col gap-1.5">
+<p class="text-xs text-on-surface-variant leading-relaxed line-clamp-2">
+            Sección auditoría inicial completada. Pendiente validación de reglas de iptables y bastionado de SSH en servidores de réplica con autenticación por clave pública e inhabilitación de root directo.
+          </p>
+<div>
+<button class="text-primary hover:underline text-xs font-medium inline-flex items-center gap-0.5">
+              Mostrar más
+              <span class="material-symbols-outlined text-[14px]">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Subtasks Section -->
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between text-xs font-medium text-on-surface-variant">
+<span>Subtareas (3)</span>
+<span class="text-primary cursor-pointer hover:underline">+ Añadir</span>
+</div>
+<div class="border border-outline-variant/30 rounded-lg divide-y divide-outline-variant/20 bg-surface-container/40">
+<!-- Row 1 -->
+<div class="flex items-center justify-between px-3 py-2 text-xs hover:bg-surface-container-high/40 transition-colors">
+<div class="flex items-center gap-2.5">
+<input class="rounded border-outline-variant/60 bg-surface text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
+<span class="text-on-surface">Revisión de puertos abiertos en segmento dmz</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-[11px] px-1.5 py-0.5 rounded bg-surface border border-outline-variant/30 text-on-surface-variant">Pendiente</span>
+<span class="text-on-surface-variant font-mono text-[11px]">35m</span>
+</div>
+</div>
+<!-- Row 2 -->
+<div class="flex items-center justify-between px-3 py-2 text-xs hover:bg-surface-container-high/40 transition-colors">
+<div class="flex items-center gap-2.5">
+<input class="rounded border-outline-variant/60 bg-surface text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
+<span class="text-on-surface">Ajuste de permisos en /etc/ssh/sshd_config</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-[11px] px-1.5 py-0.5 rounded bg-primary-container text-primary border border-primary/20">En curso</span>
+<span class="text-on-surface-variant font-mono text-[11px]">40m</span>
+</div>
+</div>
+<!-- Row 3 -->
+<div class="flex items-center justify-between px-3 py-2 text-xs hover:bg-surface-container-high/40 transition-colors">
+<div class="flex items-center gap-2.5">
+<input class="rounded border-outline-variant/60 bg-surface text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
+<span class="text-on-surface">Ejecución de script Lynis y consolidación de reporte</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-[11px] px-1.5 py-0.5 rounded bg-surface border border-outline-variant/30 text-on-surface-variant">Pendiente</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Collapsible Accordions (Closed by default) -->
+<div class="flex flex-col gap-2">
+<!-- Accordion 1 -->
+<div class="border border-outline-variant/25 rounded-lg px-3 py-2 bg-surface-container/20 flex items-center justify-between cursor-pointer hover:bg-surface-container/50 transition-colors">
+<span class="text-xs text-on-surface-variant font-medium">Tiempo registrado (2 sesiones · 01:42:15 acumulado)</span>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">chevron_right</span>
+</div>
+<!-- Accordion 2 -->
+<div class="border border-outline-variant/25 rounded-lg px-3 py-2 bg-surface-container/20 flex items-center justify-between cursor-pointer hover:bg-surface-container/50 transition-colors">
+<span class="text-xs text-on-surface-variant font-medium">Detalles (2 etiquetas · Origen: Captura Inbox)</span>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">chevron_right</span>
+</div>
+</div>
+</main>
+<!-- WINDOW STATUS FOOTER BAR -->
+<footer class="h-6 border-t border-outline-variant/30 bg-surface-container px-3 flex items-center shrink-0">
+<div class="flex items-center gap-1.5 text-[11px] text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[14px]">check</span>
+<span>Datos en este equipo</span>
+</div>
+</footer>
+</div>
+</div>
+<!-- OVERLAY MODAL: TRASLADAR TAREA A OTRO PROYECTO -->
+<div class="fixed inset-0 z-50 bg-[#0c0e12]/80 backdrop-blur-sm flex items-center justify-center p-4">
+<div class="w-full max-w-[580px] bg-surface-container border border-outline-variant/40 rounded-xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+<!-- Modal Header -->
+<div class="px-5 py-3.5 border-b border-outline-variant/30 flex items-center justify-between bg-surface-container-high/50">
+<div class="flex items-center gap-2 text-on-surface">
+<span class="material-symbols-outlined text-primary text-[20px]">fork_right</span>
+<h2 class="font-headline font-semibold text-sm">Trasladar tarea a otro proyecto</h2>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors p-1 rounded">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<!-- Modal Body -->
+<div class="p-5 flex flex-col gap-4">
+<!-- Info Box: Selected Task -->
+<div class="flex flex-col gap-1.5">
+<label class="text-[11px] font-medium text-on-surface-variant uppercase tracking-wider">Tarea seleccionada</label>
+<div class="bg-surface border border-outline-variant/40 rounded-lg p-2.5 text-xs text-on-surface font-medium">
+            Auditoría de vulnerabilidades y hardening de servidores Ubuntu en Core Bancario
+          </div>
+</div>
+<!-- Target Branch / Project Dropdown -->
+<div class="flex flex-col gap-1.5">
+<label class="text-[11px] font-medium text-on-surface-variant uppercase tracking-wider">Rama o proyecto de destino</label>
+<div class="relative">
+<select class="w-full appearance-none bg-surface border border-outline-variant/50 rounded-lg px-3 py-2 pr-8 text-xs text-on-surface focus:outline-none focus:border-primary/60 cursor-pointer">
+<option selected="">Pasarela Pagos · Rappi Pay / Infraestructura AWS</option>
+<option>Core Bancario · Banco de Bogotá / Microservicios</option>
+<option>Compliance PCI-DSS · Auditoría Externa</option>
+</select>
+<span class="material-symbols-outlined absolute right-2.5 top-2.5 pointer-events-none text-on-surface-variant text-[16px]">expand_more</span>
+</div>
+</div>
+<!-- Validation Notice -->
+<div class="bg-surface/60 border border-outline-variant/30 rounded-lg p-2.5 text-xs text-on-surface-variant/90 flex items-start gap-2">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant shrink-0 mt-0.5">info</span>
+<span>Nota: proyectos archivados o completados no admiten nuevas transferencias y deben reactivarse previamente.</span>
+</div>
+<!-- Automatic Transfer Actions List -->
+<div class="flex flex-col gap-2">
+<label class="text-[11px] font-medium text-on-surface-variant uppercase tracking-wider">Acciones automáticas de transferencia</label>
+<div class="bg-surface border border-outline-variant/30 rounded-lg p-3 flex flex-col gap-2.5">
+<div class="flex items-start gap-2 text-xs text-on-surface">
+<span class="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5">check_circle</span>
+<span>Separar del padre (si la tarea es tratada como sub-nodo en el árbol actual)</span>
+</div>
+<div class="flex items-start gap-2 text-xs text-on-surface">
+<span class="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5">check_circle</span>
+<span>Trasladar descendientes (las 3 subtareas se moverán intactas con la tarea)</span>
+</div>
+<div class="flex items-start gap-2 text-xs text-on-surface">
+<span class="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5">check_circle</span>
+<span>Detener y guardar temporizadores activos automáticamente antes de migrar</span>
+</div>
+<div class="flex items-start gap-2 text-xs text-on-surface">
+<span class="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5">check_circle</span>
+<span>Todo el tiempo anterior (01:42:15) se atribuye al nuevo proyecto sin reiniciar contadores</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Modal Footer Actions -->
+<div class="px-5 py-3 border-t border-outline-variant/30 bg-surface-container-high/40 flex items-center justify-end gap-2.5">
+<button class="px-3.5 py-1.5 rounded-lg border border-outline-variant/50 text-xs font-medium text-on-surface hover:bg-surface-container-highest transition-colors">
+          Cancelar
+        </button>
+<button class="px-4 py-1.5 rounded-lg bg-primary hover:bg-primary-hover text-surface font-semibold text-xs flex items-center gap-1.5 shadow-md shadow-primary/20 transition-colors">
+<span class="material-symbols-outlined text-[16px]">sync_alt</span>
+          Confirmar traslado
+        </button>
+</div>
+</div>
+</div>
+</body></html>

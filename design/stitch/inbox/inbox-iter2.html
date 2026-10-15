@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bitnode - Inbox</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary-fixed-dim": "#9fd2b3",
+            "surface-container-lowest": "#09100c",
+            "surface-container-highest": "#2f3732",
+            "primary": "#51de9e",
+            "outline-variant": "#3d4a41",
+            "on-tertiary-container": "#631e07",
+            "on-secondary-fixed-variant": "#1f4f38",
+            "on-error-container": "#ffdad6",
+            "on-primary": "#003823",
+            "primary-fixed-dim": "#51de9e",
+            "surface-bright": "#333b36",
+            "error": "#ffb4ab",
+            "inverse-on-surface": "#2b322d",
+            "secondary-container": "#22523a",
+            "tertiary-container": "#e78364",
+            "surface": "#0e1511",
+            "on-primary-container": "#003e26",
+            "on-surface": "#dde5dd",
+            "on-primary-fixed-variant": "#005234",
+            "surface-container-high": "#242c27",
+            "inverse-surface": "#dde5dd",
+            "surface-container": "#1a211d",
+            "on-background": "#dde5dd",
+            "surface-variant": "#2f3732",
+            "on-error": "#690005",
+            "tertiary": "#ffb59f",
+            "tertiary-fixed": "#ffdbd0",
+            "outline": "#86948a",
+            "on-tertiary-fixed": "#3a0a00",
+            "on-primary-fixed": "#002112",
+            "error-container": "#93000a",
+            "tertiary-fixed-dim": "#ffb59f",
+            "on-tertiary": "#5c1903",
+            "on-secondary-fixed": "#002112",
+            "primary-fixed": "#71fcb9",
+            "background": "#0e1511",
+            "secondary-fixed": "#baeece",
+            "on-secondary-container": "#91c4a5",
+            "surface-dim": "#0e1511",
+            "surface-container-low": "#161d19",
+            "inverse-primary": "#006c46",
+            "surface-tint": "#51de9e",
+            "primary-container": "#07b478",
+            "on-secondary": "#023823",
+            "secondary": "#9fd2b3",
+            "on-tertiary-fixed-variant": "#7a2f17",
+            "on-surface-variant": "#bbcabf"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-md": "0.5rem",
+            "margin": "0.75rem",
+            "space-sm": "0.375rem",
+            "space-xs": "0.25rem",
+            "space-lg": "0.75rem",
+            "margin-desktop": "1rem",
+            "gutter-desktop": "1rem",
+            "gutter": "0.75rem",
+            "space-xl": "1rem"
+          },
+          "fontFamily": {
+            "headline-sm": ["Inter"],
+            "body-lg": ["Inter"],
+            "body-md": ["Inter"],
+            "headline-xl": ["Inter"],
+            "label-sm": ["Inter"],
+            "label-md": ["Inter"],
+            "headline-md": ["Inter"],
+            "headline-lg": ["Inter"],
+            "code-sm": ["JetBrains Mono"],
+            "body-sm": ["Inter"]
+          },
+          "fontSize": {
+            "headline-sm": ["0.875rem", { "lineHeight": "1.125rem", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "body-lg": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+            "body-md": ["0.8125rem", { "lineHeight": "1.125rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-xl": ["1.25rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "label-sm": ["0.6875rem", { "lineHeight": "0.75rem", "letterSpacing": "0.02em", "fontWeight": "500" }],
+            "label-md": ["0.75rem", { "lineHeight": "0.875rem", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "headline-md": ["1rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-lg": ["1.125rem", { "lineHeight": "1.375rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "code-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-size: 16px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #0e1511;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #242c27;
+      border-radius: 3px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #3d4a41;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface antialiased select-none font-body-md text-body-md min-h-screen flex overflow-hidden">
+<!-- SIDEBAR (Navegación Primaria fija macOS / Local Storage) -->
+<aside class="fixed top-0 left-0 h-screen w-60 bg-surface-container-low border-r border-outline-variant flex flex-col justify-between py-3 px-2 z-40">
+<div class="flex flex-col gap-2">
+<!-- App Header -->
+<div class="px-2 pt-1 pb-2 flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-headline-sm font-headline-sm font-semibold text-on-surface tracking-tight">Bitnode</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant font-normal">Bitnode</span>
+</div>
+<div class="w-2 h-2 rounded-full bg-primary-container" title="Almacenamiento local listo"></div>
+</div>
+<!-- Buscador Global ⌘K -->
+<div class="px-1 mb-1">
+<div class="flex items-center justify-between w-full h-7 px-2 bg-surface border border-outline-variant rounded text-on-surface-variant cursor-pointer hover:border-outline transition-colors">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-outline">search</span>
+<span class="text-body-sm font-body-sm">Buscar...</span>
+</div>
+<kbd class="px-1 py-0.2 bg-surface-container-high border border-outline-variant rounded text-[10px] text-on-surface-variant font-code-sm">⌘K</kbd>
+</div>
+</div>
+<!-- Navigation Tabs -->
+<nav class="flex flex-col gap-0.5">
+<!-- Hoy -->
+<a class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="today">today</span>
+<span class="text-label-md font-label-md flex-1">Hoy</span>
+</a>
+<!-- Inbox (ACTIVO SEGÚN REGLA CON ESTILOS JSON Y BADGE VERDE) -->
+<a class="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-surface-container-highest text-primary font-medium border-l-2 border-primary" href="#">
+<span class="material-symbols-outlined" data-icon="inbox">inbox</span>
+<span class="text-label-md font-label-md flex-1">Inbox</span>
+<span class="px-1.5 py-0.2 bg-primary-container text-surface-container-lowest text-[10px] font-semibold rounded">4</span>
+</a>
+<!-- Clientes -->
+<a class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="folder_shared">folder_shared</span>
+<span class="text-label-md font-label-md flex-1">Clientes</span>
+</a>
+<!-- Proyectos -->
+<a class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="assignment">assignment</span>
+<span class="text-label-md font-label-md flex-1">Proyectos</span>
+</a>
+<!-- Contactos -->
+<a class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="contacts">contacts</span>
+<span class="text-label-md font-label-md flex-1">Contactos</span>
+</a>
+<!-- Notas -->
+<a class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="text-label-md font-label-md flex-1">Notas</span>
+</a>
+<!-- Tiempo -->
+<a class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="timer">timer</span>
+<span class="text-label-md font-label-md flex-1">Tiempo</span>
+</a>
+<!-- Finanzas -->
+<a class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="text-label-md font-label-md flex-1">Finanzas</span>
+</a>
+<!-- Calendario -->
+<a class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+<span class="text-label-md font-label-md flex-1">Calendario</span>
+</a>
+<!-- Actividad -->
+<a class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="text-label-md font-label-md flex-1">Actividad</span>
+</a>
+</nav>
+</div>
+<!-- Sidebar Footer -->
+<div class="flex flex-col gap-2 pt-2 border-t border-outline-variant">
+<a class="flex items-center justify-between px-2 py-1.5 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150" href="#">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="text-label-md font-label-md">Configuración</span>
+</div>
+<kbd class="px-1 py-0.2 bg-surface-container-high border border-outline-variant rounded text-[10px] text-on-surface-variant font-code-sm">⌘,</kbd>
+</a>
+<!-- Estado de almacenamiento sin rutas técnicas -->
+<div class="px-2 py-1 bg-surface rounded flex items-center justify-between border border-outline-variant">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+<span class="text-[11px] font-label-sm text-on-surface-variant">Datos en este equipo</span>
+</div>
+<span class="material-symbols-outlined text-[13px] text-outline">lock</span>
+</div>
+</div>
+</aside>
+<!-- CONTENIDO PRINCIPAL (Desktop 1440px Canvas) -->
+<div class="ml-60 w-[calc(100%-15rem)] min-h-screen flex flex-col bg-surface">
+<!-- Top App Bar (Sincronizado con Shared Components JSON) -->
+<header class="h-10 px-4 w-full bg-surface border-b border-outline-variant sticky top-0 z-30 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="text-headline-sm font-headline-sm font-semibold text-on-surface">Bitnode Workspace</span>
+<span class="text-outline-variant font-light">|</span>
+<div class="flex items-center gap-1">
+<button class="text-primary font-medium bg-surface-container-high rounded px-2 py-0.5 text-label-sm font-label-sm">Todos</button>
+<button class="text-on-surface-variant hover:text-on-surface px-2 py-0.5 text-label-sm font-label-sm transition-colors">Trabajo</button>
+<button class="text-on-surface-variant hover:text-on-surface px-2 py-0.5 text-label-sm font-label-sm transition-colors">Personal</button>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-1 px-2 py-1 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors text-label-sm font-label-sm">
+<span class="material-symbols-outlined text-outline">filter_list</span>
+<span>Filtros</span>
+</button>
+<button class="flex items-center gap-1 px-2 py-1 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors text-label-sm font-label-sm">
+<span class="material-symbols-outlined text-outline">pause_circle</span>
+</button>
+<button class="flex items-center gap-1 px-2 py-1 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors text-label-sm font-label-sm" title="Guardado local consistente">
+<span class="material-symbols-outlined text-primary">sync_saved_locally</span>
+</button>
+<button class="flex items-center gap-1.5 h-7 px-2.5 rounded bg-primary-container text-on-primary-container font-headline-sm text-label-sm hover:opacity-95 transition-opacity">
+<span class="material-symbols-outlined text-[14px]">add</span>
+<span>Nuevo Registro</span>
+</button>
+</div>
+</header>
+<!-- Sub-encabezado de Contexto Inbox -->
+<div class="px-6 py-3 border-b border-outline-variant flex items-center justify-between bg-surface-container-low">
+<div>
+<div class="flex items-center gap-2">
+<h1 class="text-headline-lg font-headline-lg text-on-surface">Inbox</h1>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-label-sm bg-surface-container-highest text-on-surface-variant border border-outline-variant">
+            Bandeja global de captura rápida · 4 pendientes
+          </span>
+</div>
+<p class="text-body-sm font-body-sm text-outline mt-0.5">Captura inmediata de registros volátiles antes de catalogar o delegar</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1.5 text-body-sm font-body-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-outline">calendar_month</span>
+<span>Jueves, 24 de octubre</span>
+<span class="text-outline">·</span>
+<span class="font-code-sm text-outline">Semana 43</span>
+</div>
+<div class="flex items-center gap-1 bg-surface-container px-2 py-1 rounded border border-outline-variant text-[11px] font-label-sm text-on-surface-variant">
+<span>Captura rápida</span>
+<kbd class="px-1 bg-surface border border-outline-variant rounded font-code-sm text-primary">⌘N</kbd>
+</div>
+</div>
+</div>
+<!-- Layout Dividido: Lista Central de Capturas (Izq/Centro) + Panel Lateral Dinámico (Derecha) -->
+<div class="flex-1 flex overflow-hidden">
+<!-- Panel de Captura Rápida y Lista (Columna Central) -->
+<main class="flex-1 overflow-y-auto px-6 py-4 custom-scroll flex flex-col gap-4 max-w-4xl border-r border-outline-variant">
+<!-- BARRA / FORMULARIO DE CAPTURA RÁPIDA SUPERIOR (⌘N) -->
+<section class="bg-surface-container-low border border-outline-variant rounded-lg p-3">
+<div class="flex items-center justify-between pb-2 mb-2 border-b border-outline-variant/60">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[17px]">edit_note</span>
+<span class="text-label-md font-label-md text-on-surface font-semibold">Captura instantánea de notas o comandos</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="text-[11px] font-label-sm text-outline">Origen:</span>
+<select class="bg-surface border border-outline-variant rounded px-2 py-0.5 text-label-sm font-label-sm text-on-surface focus:border-primary focus:ring-0">
+<option selected="">Entrada manual</option>
+<option>Atajo global</option>
+<option>Portapapeles</option>
+</select>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<input class="w-full h-8 px-2.5 bg-surface border border-outline-variant rounded text-on-surface placeholder-outline text-body-md font-body-md focus:border-primary focus:ring-0 focus:outline-none" placeholder="Ej: Revisar logs del balanceador F5 en Bogotá DC..." type="text"/>
+<textarea class="w-full px-2.5 py-1.5 bg-surface border border-outline-variant rounded text-on-surface placeholder-outline text-body-sm font-body-sm focus:border-primary focus:ring-0 focus:outline-none resize-none font-code-sm" placeholder="Cuerpo de texto multilínea opcional para contexto técnico, comando o notas de diagnóstico..." rows="2"></textarea>
+<div class="flex items-center justify-between pt-1">
+<span class="text-[11px] font-label-sm text-outline flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+                Se indexará inmediatamente en SQLite local
+              </span>
+<div class="flex items-center gap-2">
+<button class="h-7 px-3 rounded bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-container text-label-md font-label-md transition-colors" type="button">
+                  Limpiar
+                </button>
+<button class="h-7 px-3.5 rounded bg-primary-container text-on-primary-container font-headline-sm text-label-md hover:brightness-105 transition-all flex items-center gap-1.5" type="button">
+<span class="material-symbols-outlined text-[15px]">archive</span>
+<span>Guardar en Inbox</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- LISTADO DE CAPTURAS TÉCNICAS EN BOGOTÁ -->
+<section class="flex flex-col gap-3">
+<div class="flex items-center justify-between text-label-sm font-label-sm text-outline px-1"><span>4 capturas pendientes · Ordenadas por fecha de captura</span></div>
+<!-- CAPTURA 1: Renovación de certificados SSL wildcard EKS Unicentro -->
+<article class="bg-surface-container-low border border-outline-variant rounded-lg p-3 hover:border-outline transition-colors group">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-start gap-2.5">
+<span class="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0" title="Pendiente"></span>
+<div>
+<h3 class="text-headline-sm font-headline-sm text-on-surface">Renovación de certificados SSL wildcard en clúster EKS Unicentro</h3>
+<div class="flex items-center gap-2 mt-0.5 text-label-sm font-label-sm text-outline">
+<span>Hoy, 10:14</span>
+<span>·</span>
+<span class="inline-flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">bolt</span>
+                      Origen: Atajo global
+                    </span>
+<span>·</span>
+<span class="text-secondary font-code-sm">clúster-bogota-eks-prod</span>
+</div>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded text-[10px] font-label-sm bg-surface-container border border-outline-variant text-on-surface-variant">Alta prioridad</span>
+</div>
+<div class="mt-2.5 pl-4.5 border-l border-outline-variant ml-1 text-body-sm font-body-sm text-on-surface-variant bg-surface/50 p-2 rounded">
+              Verificar certificados Let's Encrypt expirando el 28 de octubre. Validar renovación mediante <code class="text-code-sm font-code-sm text-primary bg-surface px-1 py-0.5 rounded">cert-manager</code> en el namespace de producción.
+            </div>
+<!-- Acciones requeridas con etiquetas explícitas y tooltip informativo -->
+<div class="mt-3 pt-2.5 border-t border-outline-variant/60 flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<div class="relative group/btn">
+<button class="h-7 px-2.5 rounded bg-surface border border-outline-variant hover:border-primary text-on-surface hover:text-primary text-label-sm font-label-sm flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[14px]">task_alt</span>
+<span>Crear tarea</span>
+</button>
+<!-- Tooltip de regla 'Exige vincular proyecto' -->
+<div class="absolute bottom-full left-0 mb-1 hidden group-hover/btn:flex items-center gap-1 px-2 py-1 bg-surface-container-highest border border-outline rounded text-[11px] font-label-sm text-on-surface whitespace-nowrap shadow-lg z-20">
+<span class="material-symbols-outlined text-[12px] text-primary">info</span>
+<span>Exige vincular proyecto</span>
+</div>
+</div>
+<button class="h-7 px-2.5 rounded bg-surface border border-outline-variant hover:border-outline text-on-surface text-label-sm font-label-sm flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[14px]">note_add</span>
+<span>Crear nota</span>
+</button>
+<button class="h-7 px-2.5 rounded bg-surface border border-outline-variant hover:border-outline text-on-surface text-label-sm font-label-sm flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[14px]">merge</span>
+<span>Añadir a existente</span>
+</button>
+</div>
+<button class="h-7 px-2.5 rounded bg-transparent border border-outline-variant hover:bg-surface text-tertiary text-label-sm font-label-sm flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px]">delete</span>
+<span>Descartar</span>
+</button>
+</div>
+</article>
+<!-- CAPTURA 2: Depuración VPN Calle 72 con ERROR NO BLOQUEANTE y REINTENTO -->
+<article class="bg-surface-container-low border border-outline-variant rounded-lg p-3 hover:border-outline transition-colors">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-start gap-2.5">
+<span class="w-2 h-2 rounded-full bg-tertiary mt-1.5 shrink-0" title="Atención requerida"></span>
+<div>
+<h3 class="text-headline-sm font-headline-sm text-on-surface">Depuración latencia túnel VPN sede Calle 72 a data center Suba</h3>
+<div class="flex items-center gap-2 mt-0.5 text-label-sm font-label-sm text-outline">
+<span>Hoy, 09:45</span>
+<span>·</span>
+<span class="inline-flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">keyboard</span>
+                      Origen: Entrada manual
+                    </span>
+</div>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded text-[10px] font-label-sm bg-tertiary/10 border border-tertiary/30 text-tertiary font-code-sm">RED / VPN</span>
+</div>
+<div class="mt-2.5 pl-4.5 border-l border-outline-variant ml-1 text-body-sm font-body-sm text-on-surface-variant bg-surface/50 p-2 rounded font-code-sm">
+              Pérdida intermitente de paquetes ICMP (4.2%) entre las 08:30 y 09:15. Revisar MTU y fragmentación en router MikroTik perimetral.
+            </div>
+<!-- Banner Alerta No Bloqueante (Tertiary Soft Alert) -->
+<div class="mt-2.5 px-2.5 py-2 rounded bg-tertiary/10 border border-tertiary/40 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary text-[17px]">warning</span>
+<span class="text-body-sm font-body-sm text-tertiary">
+                  Error al persistir cambios locales. La captura se conserva intacta en Inbox.
+                </span>
+</div>
+<button class="h-6 px-2.5 rounded bg-tertiary text-surface-container-lowest font-headline-sm text-label-sm hover:brightness-110 transition-all flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">refresh</span>
+<span>Reintentar guardado</span>
+</button>
+</div>
+<!-- Barra de Acciones -->
+<div class="mt-3 pt-2.5 border-t border-outline-variant/60 flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<button class="h-7 px-2.5 rounded bg-surface border border-outline-variant hover:border-outline text-on-surface text-label-sm font-label-sm flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]">task_alt</span>
+<span>Crear tarea</span>
+</button>
+<button class="h-7 px-2.5 rounded bg-surface border border-outline-variant hover:border-outline text-on-surface text-label-sm font-label-sm flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]">note_add</span>
+<span>Crear nota</span>
+</button>
+<button class="h-7 px-2.5 rounded bg-surface border border-outline-variant hover:border-outline text-on-surface text-label-sm font-label-sm flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]">merge</span>
+<span>Añadir a existente</span>
+</button>
+</div>
+<button class="h-7 px-2.5 rounded bg-transparent border border-outline-variant hover:bg-surface text-tertiary text-label-sm font-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">delete</span>
+<span>Descartar</span>
+</button>
+</div>
+</article>
+<!-- CAPTURA 3: Snippet iptables con POPOVER/CONFIRMACIÓN DE DESCARTE IRRECUPERABLE -->
+<article class="bg-surface-container-low border border-outline-variant rounded-lg p-3 hover:border-outline transition-colors relative">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-start gap-2.5">
+<span class="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0"></span>
+<div>
+<h3 class="text-headline-sm font-headline-sm text-on-surface">Snippet iptables para bloqueo temporal de IP sospechosa 190.145.22.4</h3>
+<div class="flex items-center gap-2 mt-0.5 text-label-sm font-label-sm text-outline">
+<span>Ayer, 18:20</span>
+<span>·</span>
+<span class="inline-flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">content_paste</span>
+                      Origen: Portapapeles
+                    </span>
+</div>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded text-[10px] font-label-sm bg-surface-container border border-outline-variant text-outline font-code-sm">Seguridad</span>
+</div>
+<div class="mt-2.5 pl-3 border-l border-primary/50 ml-1 bg-surface p-2 rounded font-code-sm text-code-sm text-secondary">
+              iptables -A INPUT -s 190.145.22.4/32 -j DROP
+            </div>
+<!-- Acciones y POPOVER DE CONFIRMACIÓN IRRECUPERABLE ACTIVO -->
+<div class="mt-3 pt-2.5 border-t border-outline-variant/60 flex items-center justify-between">
+<div class="flex items-center gap-1.5 opacity-40 pointer-events-none">
+<button class="h-7 px-2.5 rounded bg-surface border border-outline-variant text-on-surface text-label-sm font-label-sm flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]">task_alt</span>
+<span>Crear tarea</span>
+</button>
+<button class="h-7 px-2.5 rounded bg-surface border border-outline-variant text-on-surface text-label-sm font-label-sm flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]">note_add</span>
+<span>Crear nota</span>
+</button>
+</div>
+<!-- Ventana / Popover contextual de confirmación destructiva -->
+<div class="bg-surface-container-high border border-tertiary/40 rounded p-2.5 shadow-xl flex items-center gap-3">
+<div class="flex items-center gap-1.5 text-body-sm font-body-sm text-tertiary">
+<span class="material-symbols-outlined text-[16px]">error</span>
+<span>¿Descartar captura? Se eliminará de forma irrecuperable de este equipo.</span>
+</div>
+<div class="flex items-center gap-1.5">
+<button class="h-6 px-2 rounded bg-surface border border-outline-variant text-on-surface text-label-sm font-label-sm hover:bg-surface-container transition-colors">
+                    Cancelar
+                  </button>
+<button class="h-6 px-2.5 rounded bg-error-container text-error text-label-sm font-label-sm font-semibold hover:bg-opacity-80 transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">delete_forever</span>
+<span>Eliminar definitivamente</span>
+</button>
+</div>
+</div>
+</div>
+</article>
+<!-- CAPTURA 4: Migración banco corresponsal PSE (Fila seleccionada en proceso de combinación) -->
+<article class="bg-surface-container border border-primary/40 rounded-lg p-3 ring-1 ring-primary/30">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-start gap-2.5">
+<span class="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0 animate-pulse"></span>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="text-headline-sm font-headline-sm text-primary">Notas reunión migración banco corresponsal PSE</h3>
+<span class="px-1.5 py-0.2 bg-primary/20 text-primary text-[10px] font-label-sm rounded font-medium">En proceso de fusión</span>
+</div>
+<div class="flex items-center gap-2 mt-0.5 text-label-sm font-label-sm text-outline">
+<span>Hoy, 08:05</span>
+<span>·</span>
+<span class="inline-flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">keyboard</span>
+                      Origen: Entrada manual
+                    </span>
+</div>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded text-[10px] font-label-sm bg-surface-container-highest border border-outline-variant text-on-surface font-code-sm">Fintech</span>
+</div>
+<div class="mt-2.5 pl-4.5 border-l border-primary ml-1 text-body-sm font-body-sm text-on-surface bg-surface p-2 rounded">
+              Reunión con Ing. Mauricio Ospina: acordado migrar el webhook el próximo domingo a las 02:00 a.m. Requiere IP whitelist previa.
+            </div>
+<div class="mt-3 pt-2.5 border-t border-outline-variant/60 flex items-center justify-between">
+<span class="text-[11px] font-label-sm text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">open_in_new</span>
+                Detalle abierto en el panel lateral de comparación y combinación
+              </span>
+<button class="h-7 px-3 rounded bg-primary-container text-on-primary-container text-label-sm font-label-sm font-semibold flex items-center gap-1.5 shadow-sm">
+<span class="material-symbols-outlined text-[14px]">merge</span>
+<span>Editando combinación</span>
+</button>
+</div>
+</article>
+</section>
+</main>
+<!-- PANEL LATERAL SPLIT-VIEW (Añadir a existente: Tarea o Nota) -->
+<aside class="w-[520px] bg-surface-container-low flex flex-col border-l border-outline-variant h-full overflow-hidden">
+<!-- Cabecera del Drawer -->
+<div class="p-3 border-b border-outline-variant flex items-center justify-between bg-surface-container">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">call_merge</span>
+<div>
+<h2 class="text-headline-sm font-headline-sm text-on-surface">Añadir a existente (Tarea o Nota)</h2>
+<p class="text-[11px] font-label-sm text-outline">Combina la captura sin sobreescrituras destructivas</p>
+</div>
+</div>
+<button class="w-6 h-6 rounded flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Cerrar panel">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+<!-- Cuerpo del Drawer con Scroll -->
+<div class="flex-1 overflow-y-auto p-4 custom-scroll flex flex-col gap-3.5">
+<!-- Selector / Búsqueda de Destino -->
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface-variant mb-1 font-semibold">Destino de la combinación</label>
+<div class="relative">
+<input class="w-full h-8 pl-8 pr-3 bg-surface border border-primary/80 rounded text-on-surface text-body-sm font-body-sm focus:border-primary focus:ring-0" type="text" value="Pasarela Transaccional - Integración Botón PSE"/>
+<span class="material-symbols-outlined text-primary text-[15px] absolute left-2.5 top-2">task</span>
+</div>
+<!-- Metadata del destino seleccionado -->
+<div class="mt-1.5 p-2 bg-surface rounded border border-outline-variant flex items-center justify-between text-[11px] font-label-sm">
+<div class="flex items-center gap-2">
+<span class="text-outline">Proyecto:</span>
+<span class="text-on-surface font-medium">Pasarela Transaccional</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-outline">Cliente:</span>
+<span class="text-secondary font-medium">Fintech Capital del Valle</span>
+</div>
+</div>
+</div>
+<!-- COMPARACIÓN LADO A LADO (Side-by-Side Split View) -->
+<div>
+<div class="flex items-center justify-between mb-1.5">
+<span class="text-label-sm font-label-sm text-outline">COMPARACIÓN DE DATOS</span>
+<span class="text-[10px] font-code-sm text-primary">Inspección de fragmentos</span>
+</div>
+<div class="grid grid-cols-2 gap-2 text-body-sm font-body-sm">
+<!-- Columna Izquierda: Contenido actual -->
+<div class="flex flex-col bg-surface border border-outline-variant rounded p-2.5">
+<div class="flex items-center justify-between pb-1.5 mb-1.5 border-b border-outline-variant text-[11px] font-label-sm text-outline">
+<span class="font-medium text-on-surface-variant">Notas actuales de la tarea</span>
+<span class="font-code-sm text-[10px]">Destino</span>
+</div>
+<div class="text-[12px] text-on-surface-variant leading-relaxed custom-scroll h-32 overflow-y-auto pr-1">
+                  Verificación de endpoints REST v2 y firma HMAC-SHA256 lista en ambiente sandbox. Pendiente confirmación de fecha para paso a producción y apertura de puertos con el banco corresponsal.
+                </div>
+</div>
+<!-- Columna Derecha: Contenido a incorporar -->
+<div class="flex flex-col bg-surface border border-primary/40 rounded p-2.5">
+<div class="flex items-center justify-between pb-1.5 mb-1.5 border-b border-outline-variant text-[11px] font-label-sm text-primary">
+<span class="font-medium">Contenido de la captura</span>
+<span class="font-code-sm text-[10px]">Inbox</span>
+</div>
+<div class="text-[12px] text-on-surface leading-relaxed custom-scroll h-32 overflow-y-auto pr-1">
+                  Reunión con Ing. Mauricio Ospina: acordado migrar el webhook el próximo domingo a las 02:00 a.m. Requiere IP whitelist previa en los firewalls perimetrales.
+                </div>
+</div>
+</div>
+</div>
+<!-- ÁREA INFERIOR DE COMBINACIÓN EDITABLE (Merge Sandbox) -->
+<div class="flex-1 flex flex-col">
+<div class="flex items-center justify-between mb-1">
+<label class="text-label-sm font-label-sm text-on-surface font-semibold flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-primary">edit</span>
+<span>Texto unificado editable (Resultado de la combinación)</span>
+</label>
+<span class="text-[10px] font-label-sm text-outline">Sin sobreescritura automática</span>
+</div>
+<textarea class="w-full flex-1 p-2.5 bg-surface border border-outline-variant focus:border-primary rounded text-body-sm font-body-sm text-on-surface resize-none focus:ring-0 leading-relaxed font-code-sm custom-scroll text-[12px]" rows="6">Notas actuales de la tarea:
+Verificación de endpoints REST v2 y firma HMAC-SHA256 lista en ambiente sandbox. Pendiente confirmación de fecha para paso a producción y apertura de puertos con el banco corresponsal.
+
+---
+Actualización añadida desde Inbox (24 Oct, 08:05):
+Reunión con Ing. Mauricio Ospina: acordado migrar el webhook el próximo domingo a las 02:00 a.m. Requiere IP whitelist previa en los firewalls perimetrales.</textarea>
+<p class="text-[11px] font-body-sm text-outline mt-1.5 flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px] text-primary">verified</span>
+              Al guardar, la captura se archivará automáticamente de Inbox y se actualizará la tarea seleccionada.
+            </p>
+</div>
+</div>
+<!-- Footer del Drawer de Combinación -->
+<div class="p-3 border-t border-outline-variant bg-surface flex items-center justify-between">
+<button class="h-7 px-3 rounded bg-surface border border-outline-variant hover:bg-surface-container text-on-surface text-label-md font-label-md transition-colors" type="button">
+            Cancelar
+          </button>
+<div class="flex items-center gap-2">
+<button class="h-7 px-3.5 rounded bg-primary-container text-on-primary-container font-headline-sm text-label-md hover:brightness-105 transition-all flex items-center gap-1.5 shadow-sm" type="button">
+<span class="material-symbols-outlined text-[15px]">done_all</span>
+<span>Guardar contenido combinado</span>
+</button>
+</div>
+</div>
+</aside>
+</div>
+<!-- Barra de Estado Inferior de la Ventana (macOS Desktop Status Bar) -->
+<footer class="h-6 px-3 bg-surface-container-low border-t border-outline-variant flex items-center justify-between text-[11px] font-code-sm text-outline select-none">
+<div class="flex items-center gap-3">
+<span class="flex items-center gap-1 text-on-surface-variant"><span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+          Datos en este equipo</span>
+<span>·</span>
+<span>4 elementos en Inbox</span>
+<span>·</span>
+<span class="text-tertiary">1 reintento pendiente</span>
+</div>
+<div class="flex items-center gap-4">
+<span>Bogotá (UTC-5)</span>
+<span>Bitnode macOS Native Frame</span>
+</div>
+</footer>
+</div>
+</body></html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bitnode - Desbloqueo Local</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Public+Sans:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            surface: "#0e1111",
+            "surface-container": "#141818",
+            "surface-container-high": "#1a1f1f",
+            "surface-container-highest": "#242a2a",
+            "on-surface": "#e6eded",
+            "on-surface-variant": "#869595",
+            outline: "#2b3434",
+            "outline-variant": "#1c2222",
+            primary: "#07B478",
+            "primary-hover": "#059a66",
+            "on-primary": "#042116",
+            "primary-container": "#083324",
+            tertiary: "#FF9676",
+            "tertiary-container": "#331610",
+            error: "#FF9676"
+          },
+          borderRadius: {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          fontFamily: {
+            headline: ["Space Grotesk", "sans-serif"],
+            display: ["Space Grotesk", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Public Sans", "sans-serif"]
+          }
+        },
+      },
+    }
+  </script>
+</head>
+<body class="bg-surface text-on-surface font-body min-h-screen flex flex-col justify-between items-center p-4 selection:bg-primary/20 selection:text-primary">
+<!-- Header spacer to balance vertical centering -->
+<header aria-hidden="true" class="w-full max-w-sm flex items-center justify-between py-4 select-none opacity-0 pointer-events-none">
+<span>Bitnode</span>
+</header>
+<!-- Auth Container -->
+<main class="w-full max-w-[380px] my-auto">
+<div class="bg-surface-container border border-outline-variant/60 rounded-xl p-6 sm:p-7 shadow-none">
+<!-- Brand & Header -->
+<div class="flex flex-col items-center text-center mb-6">
+<div class="flex items-center gap-2 mb-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-primary inline-block"></span>
+<span class="font-headline font-bold text-lg tracking-tight text-on-surface">Bitnode</span>
+</div>
+<p class="font-label text-xs text-on-surface-variant tracking-normal">Almacén local seguro</p>
+</div>
+<!-- Unlock Form -->
+<form class="space-y-4" id="unlock-form" onsubmit="handleUnlock(event)">
+<div>
+<label class="block font-label text-xs text-on-surface mb-1.5 font-medium" for="master-password">
+            Contraseña de acceso local
+          </label>
+<div class="relative flex items-center">
+<input autocomplete="current-password" autofocus="" class="w-full bg-surface-container-high border border-outline-variant rounded-lg text-xs font-body text-on-surface placeholder:text-on-surface-variant/50 px-3 py-2.5 pr-9 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" id="master-password" name="password" placeholder="Introduce la contraseña" type="password"/>
+<button aria-label="Mostrar contraseña" class="absolute right-2.5 text-on-surface-variant hover:text-on-surface flex items-center justify-center p-0.5 transition-colors focus:outline-none" id="toggle-visibility" onclick="togglePasswordVisibility()" type="button">
+<span class="material-symbols-outlined text-[18px]" id="eye-icon">visibility</span>
+</button>
+</div>
+<!-- Error Alert Message -->
+<div class="flex items-center gap-1.5 mt-2 text-error font-label text-xs" id="error-message">
+<span class="material-symbols-outlined text-[15px] flex-shrink-0">error</span>
+<span>Contraseña incorrecta</span>
+</div>
+</div>
+<!-- Submit Button -->
+<button class="w-full bg-primary hover:bg-primary-hover text-on-primary font-headline font-semibold text-xs py-2.5 px-4 rounded-lg flex items-center justify-center gap-1.5 transition-colors duration-150 active:scale-[0.99] select-none" type="submit">
+<span class="material-symbols-outlined text-[16px]">lock_open</span>
+<span>Desbloquear</span>
+</button>
+</form>
+<!-- Recovery Section -->
+<div class="mt-6 pt-5 border-t border-outline-variant/40 text-center">
+<button class="font-label text-xs text-on-surface-variant hover:text-on-surface transition-colors inline-flex items-center gap-1 focus:outline-none" id="recovery-toggle" onclick="toggleRecoveryDetails()" type="button">
+<span>¿Olvidaste tu contraseña?</span>
+<span class="material-symbols-outlined text-[14px] transition-transform duration-150" id="recovery-chevron">expand_more</span>
+</button>
+<!-- Technical Recovery Details Box -->
+<div class="hidden mt-3 text-left bg-surface-container-high border border-outline-variant/40 rounded-lg p-3" id="recovery-panel">
+<p class="font-body text-xs text-on-surface-variant leading-relaxed">
+            Ejecuta <code class="font-mono text-[11px] text-primary bg-surface px-1.5 py-0.5 rounded border border-outline-variant/60">bitnode reset-auth</code> desde tu terminal local para regenerar las credenciales mediante tu clave de respaldo. No existe recuperación remota por correo.
+          </p>
+</div>
+</div>
+</div>
+</main>
+<!-- Local Context Footer Indicator -->
+<footer class="w-full max-w-sm flex items-center justify-center py-4 select-none">
+<div class="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-surface-container-high/40 border border-outline-variant/30 text-on-surface-variant font-label text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-primary/70"></span>
+<span>Datos en este equipo · Modo local</span>
+</div>
+</footer>
+<script>
+    function togglePasswordVisibility() {
+      const passwordInput = document.getElementById('master-password');
+      const eyeIcon = document.getElementById('eye-icon');
+      const toggleBtn = document.getElementById('toggle-visibility');
+
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        eyeIcon.textContent = 'visibility_off';
+        toggleBtn.setAttribute('aria-label', 'Ocultar contraseña');
+      } else {
+        passwordInput.type = 'password';
+        eyeIcon.textContent = 'visibility';
+        toggleBtn.setAttribute('aria-label', 'Mostrar contraseña');
+      }
+    }
+
+    function toggleRecoveryDetails() {
+      const panel = document.getElementById('recovery-panel');
+      const chevron = document.getElementById('recovery-chevron');
+      const isHidden = panel.classList.contains('hidden');
+
+      if (isHidden) {
+        panel.classList.remove('hidden');
+        chevron.style.transform = 'rotate(180deg)';
+      } else {
+        panel.classList.add('hidden');
+        chevron.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    function handleUnlock(event) {
+      event.preventDefault();
+      const errorMsg = document.getElementById('error-message');
+      const input = document.getElementById('master-password');
+      
+      // Visual feedback demonstration
+      errorMsg.classList.remove('hidden');
+      errorMsg.classList.add('flex');
+      input.classList.add('border-error');
+      input.focus();
+    }
+  </script>
+</body></html>

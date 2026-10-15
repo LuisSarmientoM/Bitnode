@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bitnode - Calendario</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Public+Sans:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            surface: {
+              DEFAULT: "#0F1416",
+              container: "#151C1E",
+              "container-high": "#1C2427",
+              "container-highest": "#242E32",
+            },
+            primary: {
+              DEFAULT: "#07B478",
+              container: "#07B478",
+            },
+            secondary: "#518166",
+            tertiary: "#FF9676",
+            outline: {
+              DEFAULT: "#2B373B",
+              variant: "#1F282B",
+            },
+            "on-surface": "#E1E3E1",
+            "on-surface-variant": "#717973",
+          },
+          borderRadius: {
+            DEFAULT: "0.125rem",
+            lg: "0.25rem",
+            xl: "0.5rem",
+            full: "0.75rem"
+          },
+          fontFamily: {
+            headline: ["Space Grotesk", "sans-serif"],
+            display: ["Space Grotesk", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Public Sans", "sans-serif"],
+          }
+        },
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-size: 15px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    /* Custom scrollbar for desktop app density */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0F1416;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #242E32;
+      border-radius: 2px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #518166;
+    }
+  </style>
+</head>
+<body class="bg-[#0F1416] text-[#E1E3E1] font-body text-xs h-screen w-screen overflow-hidden flex flex-col select-none antialiased">
+<div class="flex-1 flex overflow-hidden">
+<!-- SIDEBAR DOCKED (Shared Component Source of Truth) -->
+<aside class="w-56 bg-surface-container border-r border-outline-variant/30 flex flex-col justify-between p-3 select-none flex-shrink-0 z-20">
+<!-- Top controls & Brand -->
+<div class="space-y-3">
+<!-- Mac Mini traffic lights -->
+<div class="flex items-center gap-1.5 px-1 pt-0.5">
+<div class="w-2.5 h-2.5 rounded-full bg-[#FF5F56]/80 border border-[#E0443E]/40"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-[#FFBD2E]/80 border border-[#DEA123]/40"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-[#27C93F]/80 border border-[#1AAB29]/40"></div>
+</div>
+<!-- Brand Title -->
+<div class="flex items-center justify-between px-1">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary ring-2 ring-primary/20"></span>
+<span class="font-headline font-bold text-sm tracking-wide text-on-surface">Bitnode</span>
+</div>
+<span class="text-[10px] font-mono text-on-surface-variant/70 border border-outline-variant px-1 rounded">local</span>
+</div>
+<!-- Quick filter / search bar -->
+<div class="relative">
+<input class="w-full bg-surface-container-high/60 border border-outline-variant/50 rounded-DEFAULT text-xs px-2 py-1 text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none cursor-default" placeholder="Buscar..." readonly="" type="text"/>
+<span class="absolute right-2 top-1.5 text-[10px] font-mono text-on-surface-variant/70 border border-outline-variant/70 px-1 rounded-DEFAULT">/</span>
+</div>
+<!-- 10 Navigation Items -->
+<nav class="space-y-0.5 pt-1">
+<!-- 1. Hoy -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-DEFAULT text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-on-surface-variant">today</span>
+<span class="font-label">Hoy</span>
+</a>
+<!-- 2. Inbox -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-DEFAULT text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-on-surface-variant">inbox</span>
+<span class="font-label">Inbox</span>
+</a>
+<!-- 3. Clientes -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-DEFAULT text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-on-surface-variant">group</span>
+<span class="font-label">Clientes</span>
+</a>
+<!-- 4. Proyectos -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-DEFAULT text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-on-surface-variant">folder_open</span>
+<span class="font-label">Proyectos</span>
+</a>
+<!-- 5. Contactos -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-DEFAULT text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-on-surface-variant">contacts</span>
+<span class="font-label">Contactos</span>
+</a>
+<!-- 6. Notas -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-DEFAULT text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-on-surface-variant">note</span>
+<span class="font-label">Notas</span>
+</a>
+<!-- 7. Tiempo -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-DEFAULT text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-on-surface-variant">timer</span>
+<span class="font-label">Tiempo</span>
+</a>
+<!-- 8. Finanzas -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-DEFAULT text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-on-surface-variant">account_balance</span>
+<span class="font-label">Finanzas</span>
+</a>
+<!-- 9. Calendario (ACTIVO) -->
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-DEFAULT bg-surface-container-high text-on-surface font-medium text-xs transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary">calendar_today</span>
+<span class="font-label text-primary font-medium">Calendario</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+</a>
+<!-- 10. Actividad -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-DEFAULT text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-on-surface-variant">history</span>
+<span class="font-label">Actividad</span>
+</a>
+</nav>
+</div>
+<!-- Pie del sidebar únicamente con "Configuración" -->
+<div class="border-t border-outline-variant/30 pt-2">
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-DEFAULT text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-on-surface-variant">settings</span>
+<span class="font-label">Configuración</span>
+</a>
+</div>
+</aside>
+<!-- CONTENT WRAPPER -->
+<main class="flex-1 flex flex-col min-w-0 bg-[#0F1416]">
+<!-- TopNavBar: Single line header -->
+<header class="h-10 bg-surface border-b border-outline-variant/30 flex items-center justify-between px-3 shrink-0">
+<!-- Breadcrumb & Controls -->
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1.5 font-headline font-semibold text-xs tracking-tight">
+<span class="text-on-surface-variant">Bitnode</span>
+<span class="text-on-surface-variant/40">/</span>
+<span class="text-on-surface">Calendario</span>
+</div>
+<div class="h-3.5 w-px bg-outline-variant/50"></div>
+<!-- Month navigation controls -->
+<div class="flex items-center gap-1">
+<button class="p-1 rounded-DEFAULT text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/60 transition-colors" title="Mes anterior">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<span class="font-headline font-semibold text-xs text-on-surface px-1.5 min-w-[96px] text-center">Octubre 2024</span>
+<button class="p-1 rounded-DEFAULT text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/60 transition-colors" title="Mes siguiente">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+<button class="ml-1 text-[11px] font-medium text-on-surface-variant hover:text-on-surface border border-outline-variant/60 rounded-DEFAULT px-2 py-0.5 hover:bg-surface-container-high/50 transition-colors">
+              Hoy
+            </button>
+</div>
+<div class="h-3.5 w-px bg-outline-variant/50"></div>
+<!-- View Selector Segmented -->
+<div class="flex items-center bg-surface-container rounded-DEFAULT p-0.5 border border-outline-variant/40">
+<button class="text-xs font-medium text-primary bg-surface-container-highest px-2 py-0.5 rounded-DEFAULT shadow-sm">
+              Mes
+            </button>
+<button class="text-xs text-on-surface-variant hover:text-on-surface px-2 py-0.5 transition-colors">
+              Semana
+            </button>
+<button class="text-xs text-on-surface-variant hover:text-on-surface px-2 py-0.5 transition-colors">
+              Agenda
+            </button>
+</div>
+</div>
+<!-- Trailing actions -->
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-1 text-[11px] text-on-surface-variant hover:text-on-surface border border-outline-variant/60 px-2 py-1 rounded-DEFAULT hover:bg-surface-container-high/50 transition-colors">
+<span class="material-symbols-outlined">filter_list</span>
+<span>Filtros</span>
+</button>
+<button class="flex items-center gap-1 text-[11px] font-medium bg-primary hover:bg-primary/90 text-surface font-label px-2.5 py-1 rounded-DEFAULT transition-colors shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add</span>
+<span>Nuevo evento</span>
+</button>
+</div>
+</header>
+<!-- Main Layout: 2 Columns (Grid + Day Detail Panel) -->
+<div class="flex-1 flex overflow-hidden">
+<!-- CALENDAR MONTH GRID (Left / Main Column) -->
+<section class="flex-1 flex flex-col min-w-0 bg-[#0F1416] border-r border-outline-variant/30">
+<!-- Days of Week Header -->
+<div class="grid grid-cols-7 border-b border-outline-variant/30 bg-surface-container/60 shrink-0">
+<div class="py-1.5 text-center font-mono text-[11px] font-medium text-on-surface-variant">Lun</div>
+<div class="py-1.5 text-center font-mono text-[11px] font-medium text-on-surface-variant">Mar</div>
+<div class="py-1.5 text-center font-mono text-[11px] font-medium text-on-surface-variant">Mié</div>
+<div class="py-1.5 text-center font-mono text-[11px] font-medium text-on-surface-variant">Jue</div>
+<div class="py-1.5 text-center font-mono text-[11px] font-medium text-on-surface-variant">Vie</div>
+<div class="py-1.5 text-center font-mono text-[11px] font-medium text-on-surface-variant/60">Sáb</div>
+<div class="py-1.5 text-center font-mono text-[11px] font-medium text-on-surface-variant/60">Dom</div>
+</div>
+<!-- Calendar Grid 5 Rows -->
+<div class="flex-1 grid grid-rows-5 grid-cols-7 min-h-0 bg-[#0F1416]">
+<!-- ROW 1 (Sep 30 - Oct 6) -->
+<!-- 30 Sep -->
+<div class="border-b border-r border-outline-variant/20 p-1.5 bg-surface/40 opacity-40 flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant">30</span>
+<div class="space-y-1"></div>
+</div>
+<!-- 1 Oct -->
+<div class="border-b border-r border-outline-variant/20 p-1.5 hover:bg-surface-container/40 transition-colors flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant font-medium">1</span>
+</div>
+<div class="space-y-1">
+<div class="flex items-center gap-1 text-[10px] text-on-surface truncate">
+<span class="w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
+<span class="truncate">09:30 Revisión sprint</span>
+</div>
+</div>
+</div>
+<!-- 2 Oct -->
+<div class="border-b border-r border-outline-variant/20 p-1.5 hover:bg-surface-container/40 transition-colors flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant">2</span>
+<div class="text-[10px] text-on-surface-variant/70">1 completada</div>
+</div>
+<!-- 3 Oct -->
+<div class="border-b border-r border-outline-variant/20 p-1.5 hover:bg-surface-container/40 transition-colors flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant">3</span>
+<div class="space-y-0.5">
+<div class="flex items-center gap-1 text-[10px] text-on-surface truncate">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary shrink-0"></span>
+<span class="truncate">18:00 Patch security</span>
+</div>
+</div>
+</div>
+<!-- 4 Oct -->
+<div class="border-b border-r border-outline-variant/20 p-1.5 hover:bg-surface-container/40 transition-colors flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant">4</span>
+<div class="text-[10px] text-on-surface-variant/70">2 completadas</div>
+</div>
+<!-- 5 Oct (Sat) -->
+<div class="border-b border-r border-outline-variant/20 p-1.5 bg-surface-container/20 flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant/60">5</span>
+<div></div>
+</div>
+<!-- 6 Oct (Sun) -->
+<div class="border-b border-outline-variant/20 p-1.5 bg-surface-container/20 flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant/60">6</span>
+<div></div>
+</div>
+<!-- ROW 2 (Oct 7 - Oct 13) -->
+<!-- 7 Oct -->
+<div class="border-b border-r border-outline-variant/20 p-1.5 hover:bg-surface-container/40 transition-colors flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant">7</span>
+<div class="space-y-0.5">
+<div class="flex items-center gap-1 text-[10px] text-on-surface truncate">
+<span class="w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
+<span class="truncate">10:00 Kickoff Q4</span>
+</div>
+</div>
+</div>
+<!-- 8 Oct -->
+<div class="border-b border-r border-outline-variant/20 p-1.5 hover:bg-surface-container/40 transition-colors flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant">8</span>
+<div class="text-[10px] text-on-surface-variant/70">4 completadas</div>
+</div>
+<!-- 9 Oct -->
+<div class="border-b border-r border-outline-variant/20 p-1.5 hover:bg-surface-container/40 transition-colors flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant">9</span>
+<div class="space-y-0.5">
+<div class="flex items-center gap-1 text-[10px] text-on-surface truncate">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary shrink-0"></span>
+<span class="truncate">16:00 Cierre métricas</span>
+</div>
+</div>
+</div>
+<!-- 10 Oct -->
+<div class="border-b border-r border-outline-variant/20 p-1.5 hover:bg-surface-container/40 transition-colors flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant">10</span>
+<div class="text-[10px] text-on-surface-variant/70">1 completada</div>
+</div>
+<!-- 11 Oct -->
+<div class="border-b border-r border-outline-variant/20 p-1.5 hover:bg-surface-container/40 transition-colors flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant">11</span>
+<div class="space-y-0.5">
+<div class="flex items-center gap-1 text-[10px] text-on-surface truncate">
+<span class="w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
+<span class="truncate">15:00 Demo interna</span>
+</div>
+</div>
+</div>
+<!-- 12 Oct (Sat) -->
+<div class="border-b border-r border-outline-variant/20 p-1.5 bg-surface-container/20 flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant/60">12</span>
+<div></div>
+</div>
+<!-- 13 Oct (Sun) -->
+<div class="border-b border-outline-variant/20 p-1.5 bg-surface-container/20 flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant/60">13</span>
+<div></div>
+</div>
+<!-- ROW 3 (Oct 14 - Oct 20) -->
+<!-- 14 Oct -->
+<div class="border-b border-r border-outline-variant/20 p-1.5 hover:bg-surface-container/40 transition-colors flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant">14</span>
+<div class="text-[10px] text-on-surface-variant/70">2 completadas</div>
+</div>
+<!-- 15 Oct -->
+<div class="border-b border-r border-outline-variant/20 p-1.5 hover:bg-surface-container/40 transition-colors flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant">15</span>
+<div class="space-y-0.5">
+<div class="flex items-center gap-1 text-[10px] text-on-surface truncate">
+<span class="w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
+<span class="truncate">11:00 Backlog grooming</span>
+</div>
+</div>
+</div>
+<!-- 16 Oct -->
+<div class="border-b border-r border-outline-variant/20 p-1.5 hover:bg-surface-container/40 transition-colors flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant">16</span>
+<div class="text-[10px] text-on-surface-variant/70">3 completadas</div>
+</div>
+<!-- 17 Oct -->
+<div class="border-b border-r border-outline-variant/20 p-1.5 hover:bg-surface-container/40 transition-colors flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant">17</span>
+<div class="space-y-0.5">
+<div class="flex items-center gap-1 text-[10px] text-on-surface truncate">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary shrink-0"></span>
+<span class="truncate">17:00 Renovación cert SSL</span>
+</div>
+</div>
+</div>
+<!-- 18 Oct -->
+<div class="border-b border-r border-outline-variant/20 p-1.5 hover:bg-surface-container/40 transition-colors flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant">18</span>
+<div class="text-[10px] text-on-surface-variant/70">1 completada</div>
+</div>
+<!-- 19 Oct (Sat) -->
+<div class="border-b border-r border-outline-variant/20 p-1.5 bg-surface-container/20 flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant/60">19</span>
+<div></div>
+</div>
+<!-- 20 Oct (Sun) -->
+<div class="border-b border-outline-variant/20 p-1.5 bg-surface-container/20 flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant/60">20</span>
+<div></div>
+</div>
+<!-- ROW 4: SEMANA DESTACADA / EXPANDIDA (Oct 21 - Oct 27) -->
+<!-- 21 Oct -->
+<div class="border-b border-r border-outline-variant/30 p-2 bg-surface-container/30 flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="text-xs font-mono font-medium text-on-surface">21</span>
+</div>
+<div class="space-y-1">
+<div class="flex items-center gap-1 text-[10.5px] text-on-surface truncate">
+<span class="w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
+<span class="truncate font-medium">09:00 Planificación</span>
+</div>
+<div class="text-[10px] text-on-surface-variant/70">2 completadas</div>
+</div>
+</div>
+<!-- 22 Oct -->
+<div class="border-b border-r border-outline-variant/30 p-2 bg-surface-container/30 flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="text-xs font-mono font-medium text-on-surface">22</span>
+</div>
+<div class="space-y-1">
+<div class="flex items-center gap-1 text-[10.5px] text-on-surface truncate">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary shrink-0"></span>
+<span class="truncate">16:30 Auditoría IAM</span>
+</div>
+<div class="text-[10px] text-on-surface-variant/70">3 completadas</div>
+</div>
+</div>
+<!-- 23 Oct -->
+<div class="border-b border-r border-outline-variant/30 p-2 bg-surface-container/30 flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="text-xs font-mono font-medium text-on-surface">23</span>
+</div>
+<div class="space-y-1">
+<div class="text-[10px] text-on-surface-variant/70">4 completadas</div>
+</div>
+</div>
+<!-- 24 Oct (DÍA ACTUAL / SELECCIONADO) -->
+<div class="border-2 border-primary bg-surface-container-high relative p-2 flex flex-col justify-between shadow-sm z-10">
+<!-- Header cell -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="text-xs font-mono font-bold text-primary">24</span>
+</div>
+<span class="text-[9px] font-mono uppercase tracking-wider text-primary bg-primary/10 px-1 py-0.2 rounded-DEFAULT">Hoy</span>
+</div>
+<!-- Events & Tasks inside 24th -->
+<div class="space-y-1 my-1">
+<!-- Chip de día completo -->
+<div class="bg-surface-container border border-outline px-1.5 py-0.5 rounded-DEFAULT text-[10px] text-on-surface/90 truncate flex items-center gap-1" title="Ventana de mantenimiento AWS infra">
+<span class="w-1 h-1 rounded-full bg-secondary shrink-0"></span>
+<span class="truncate font-medium">Ventana mtto AWS</span>
+</div>
+<!-- Tarea con planificación 08:00 (punto verde) -->
+<div class="flex items-center gap-1 text-[10.5px] text-on-surface truncate" title="08:00 - Migración Postgres a RDS">
+<span class="w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
+<span class="font-mono text-[9.5px] text-primary">08:00</span>
+<span class="truncate">Migración Postgres</span>
+</div>
+<!-- Tarea con límite 17:00 (punto coral) -->
+<div class="flex items-center gap-1 text-[10.5px] text-on-surface truncate" title="17:00 - Informe de vulnerabilidades">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary shrink-0"></span>
+<span class="font-mono text-[9.5px] text-tertiary">17:00</span>
+<span class="truncate">Informe vulnerab.</span>
+</div>
+</div>
+<!-- Multi-range bar start (24 to 26 Oct) -->
+<div class="relative w-[calc(300%+16px)] z-20 mt-0.5">
+<div class="bg-secondary/25 border border-secondary/60 text-on-surface text-[9.5px] px-1.5 py-0.5 rounded-DEFAULT font-medium truncate flex items-center gap-1 shadow-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary shrink-0"></span>
+<span class="truncate font-mono">Sprint hardening &amp; pruebas de carga - Daviplata</span>
+</div>
+</div>
+</div>
+<!-- 25 Oct (Participa en multi-rango) -->
+<div class="border-b border-r border-outline-variant/30 p-2 bg-surface-container/30 flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="text-xs font-mono font-medium text-on-surface">25</span>
+</div>
+<div class="space-y-1">
+<div class="flex items-center gap-1 text-[10.5px] text-on-surface truncate pt-5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
+<span class="truncate">11:30 Deploy staging</span>
+</div>
+<div class="text-[10px] text-on-surface-variant/70">1 completada</div>
+</div>
+</div>
+<!-- 26 Oct (Fin de multi-rango) -->
+<div class="border-b border-r border-outline-variant/30 p-2 bg-surface-container/20 flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="text-xs font-mono text-on-surface-variant/70">26</span>
+</div>
+<div class="pt-5 text-[10px] text-on-surface-variant/70">
+                Fin hardening
+              </div>
+</div>
+<!-- 27 Oct (Sun) -->
+<div class="border-b border-outline-variant/30 p-2 bg-surface-container/20 flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="text-xs font-mono text-on-surface-variant/70">27</span>
+</div>
+<div></div>
+</div>
+<!-- ROW 5 (Oct 28 - Nov 3) -->
+<!-- 28 Oct -->
+<div class="border-r border-outline-variant/20 p-1.5 hover:bg-surface-container/40 transition-colors flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant">28</span>
+<div class="space-y-0.5">
+<div class="flex items-center gap-1 text-[10px] text-on-surface truncate">
+<span class="w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
+<span class="truncate">10:00 Retrospectiva</span>
+</div>
+</div>
+</div>
+<!-- 29 Oct -->
+<div class="border-r border-outline-variant/20 p-1.5 hover:bg-surface-container/40 transition-colors flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant">29</span>
+<div class="text-[10px] text-on-surface-variant/70">3 completadas</div>
+</div>
+<!-- 30 Oct -->
+<div class="border-r border-outline-variant/20 p-1.5 hover:bg-surface-container/40 transition-colors flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant">30</span>
+<div class="space-y-0.5">
+<div class="flex items-center gap-1 text-[10px] text-on-surface truncate">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary shrink-0"></span>
+<span class="truncate">19:00 Facturación mes</span>
+</div>
+</div>
+</div>
+<!-- 31 Oct -->
+<div class="border-r border-outline-variant/20 p-1.5 hover:bg-surface-container/40 transition-colors flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant">31</span>
+<div class="text-[10px] text-on-surface-variant/70">2 completadas</div>
+</div>
+<!-- 1 Nov -->
+<div class="border-r border-outline-variant/20 p-1.5 bg-surface/40 opacity-40 flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant">1</span>
+<div></div>
+</div>
+<!-- 2 Nov -->
+<div class="border-r border-outline-variant/20 p-1.5 bg-surface/40 opacity-40 flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant">2</span>
+<div></div>
+</div>
+<!-- 3 Nov -->
+<div class="p-1.5 bg-surface/40 opacity-40 flex flex-col justify-between">
+<span class="text-[11px] font-mono text-on-surface-variant">3</span>
+<div></div>
+</div>
+</div>
+</section>
+<!-- DAY DETAIL PANEL (Right Column) -->
+<aside class="w-80 bg-surface-container/50 flex flex-col justify-between shrink-0 overflow-y-auto">
+<div class="p-3.5 space-y-4">
+<!-- Panel Header -->
+<div class="flex items-start justify-between border-b border-outline-variant/30 pb-3">
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-headline font-bold text-sm text-on-surface">24 de octubre de 2024</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+</div>
+<div class="text-xs text-on-surface-variant font-label mt-0.5">Jueves · 2 tareas, 3 eventos</div>
+</div>
+<button class="p-1 rounded-DEFAULT border border-outline-variant/60 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Añadir a este día">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+</div>
+<!-- SECCIÓN 1: Tareas planificadas hoy -->
+<div class="space-y-1.5">
+<div class="flex items-center justify-between">
+<span class="text-[11px] font-mono uppercase tracking-wider text-on-surface-variant font-medium flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Planificadas hoy
+                </span>
+<span class="text-[10px] font-mono text-on-surface-variant/70">1</span>
+</div>
+<div class="bg-surface-container-high/80 border border-outline-variant/40 rounded-DEFAULT p-2 hover:border-outline/80 transition-colors group">
+<div class="flex items-start justify-between gap-2">
+<div class="space-y-1 min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="font-mono text-[11px] text-primary font-semibold">08:00</span>
+<span class="text-xs text-on-surface font-medium truncate">Migración de base de datos Postgres a RDS</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-on-surface-variant font-label">
+<span class="material-symbols-outlined text-[13px] text-secondary">folder</span>
+<span class="truncate">Seguros Bolívar TI / Cloud Lift</span>
+</div>
+</div>
+<div class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0">
+<button class="p-0.5 text-on-surface-variant hover:text-on-surface" title="Marcar como realizada">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</button>
+<button class="p-0.5 text-on-surface-variant hover:text-on-surface" title="Editar">
+<span class="material-symbols-outlined text-[14px]">edit</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- SECCIÓN 2: Tareas con límite hoy -->
+<div class="space-y-1.5">
+<div class="flex items-center justify-between">
+<span class="text-[11px] font-mono uppercase tracking-wider text-tertiary font-medium flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                  Fecha límite hoy
+                </span>
+<span class="text-[10px] font-mono text-tertiary">1</span>
+</div>
+<div class="bg-surface-container-high/80 border border-tertiary/30 rounded-DEFAULT p-2 hover:border-tertiary/60 transition-colors group">
+<div class="flex items-start justify-between gap-2">
+<div class="space-y-1 min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="font-mono text-[11px] text-tertiary font-semibold">17:00</span>
+<span class="text-xs text-on-surface font-medium truncate">Entrega de informe de vulnerabilidades</span>
+</div>
+<div class="flex items-center gap-1.5 text-[10px] text-on-surface-variant font-label">
+<span class="material-symbols-outlined text-[13px] text-secondary">folder</span>
+<span class="truncate">Tuya S.A.</span>
+</div>
+</div>
+<div class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0">
+<button class="p-0.5 text-on-surface-variant hover:text-on-surface" title="Marcar como realizada">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</button>
+<button class="p-0.5 text-on-surface-variant hover:text-on-surface" title="Editar">
+<span class="material-symbols-outlined text-[14px]">edit</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- SECCIÓN 3: Eventos del día -->
+<div class="space-y-1.5">
+<div class="flex items-center justify-between">
+<span class="text-[11px] font-mono uppercase tracking-wider text-on-surface-variant font-medium flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                  Eventos del día
+                </span>
+<span class="text-[10px] font-mono text-on-surface-variant/70">3</span>
+</div>
+<div class="space-y-1.5">
+<!-- 1. Evento multirango -->
+<div class="bg-surface-container-high/60 border border-secondary/40 rounded-DEFAULT p-2 hover:bg-surface-container-high transition-colors group">
+<div class="flex items-start justify-between gap-2">
+<div class="space-y-0.5 min-w-0">
+<div class="flex items-center gap-1 text-[10px] font-mono text-secondary">
+<span class="material-symbols-outlined text-[12px]">date_range</span>
+<span>24 oct - 26 oct · Multidía</span>
+</div>
+<div class="text-xs text-on-surface font-medium truncate">Sprint hardening &amp; pruebas de carga</div>
+<div class="text-[10px] text-on-surface-variant flex items-center gap-1 font-label">
+<span class="material-symbols-outlined text-[12px]">tag</span>
+<span>Daviplata</span>
+</div>
+</div>
+<div class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0">
+<button class="p-0.5 text-on-surface-variant hover:text-on-surface" title="Abrir">
+<span class="material-symbols-outlined text-[14px]">open_in_new</span>
+</button>
+</div>
+</div>
+</div>
+<!-- 2. Evento día completo -->
+<div class="bg-surface-container-high/60 border border-outline-variant/40 rounded-DEFAULT p-2 hover:bg-surface-container-high transition-colors group">
+<div class="flex items-start justify-between gap-2">
+<div class="space-y-0.5 min-w-0">
+<div class="flex items-center gap-1 text-[10px] font-mono text-on-surface-variant">
+<span class="material-symbols-outlined text-[12px]">schedule</span>
+<span>Día completo</span>
+</div>
+<div class="text-xs text-on-surface font-medium truncate">Ventana de mantenimiento AWS infra</div>
+<div class="text-[10px] text-on-surface-variant flex items-center gap-1 font-label">
+<span class="material-symbols-outlined text-[12px]">tag</span>
+<span>Infraestructura</span>
+</div>
+</div>
+<div class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0">
+<button class="p-0.5 text-on-surface-variant hover:text-on-surface" title="Abrir">
+<span class="material-symbols-outlined text-[14px]">open_in_new</span>
+</button>
+</div>
+</div>
+</div>
+<!-- 3. Evento horario simple -->
+<div class="bg-surface-container-high/60 border border-outline-variant/40 rounded-DEFAULT p-2 hover:bg-surface-container-high transition-colors group">
+<div class="flex items-start justify-between gap-2">
+<div class="space-y-0.5 min-w-0">
+<div class="flex items-center gap-1 text-[10px] font-mono text-primary font-medium">
+<span class="material-symbols-outlined text-[12px]">alarm</span>
+<span>14:30 - 15:30</span>
+</div>
+<div class="text-xs text-on-surface font-medium truncate">Sincronización técnica semanal de arquitectura</div>
+<div class="text-[10px] text-on-surface-variant flex items-center gap-1 font-label">
+<span class="material-symbols-outlined text-[12px]">tag</span>
+<span>Tuya S.A.</span>
+</div>
+</div>
+<div class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0">
+<button class="p-0.5 text-on-surface-variant hover:text-on-surface" title="Abrir">
+<span class="material-symbols-outlined text-[14px]">open_in_new</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Pie del panel lateral: hint discreto -->
+<div class="p-3 border-t border-outline-variant/30 bg-surface-container/80 shrink-0">
+<div class="flex items-center gap-1.5 text-[10px] text-on-surface-variant/75 font-body">
+<span class="material-symbols-outlined text-[13px] text-on-surface-variant/60 shrink-0">info</span>
+<span>Arrastrar una tarea modifica únicamente su planificación</span>
+</div>
+</div>
+</aside>
+</div>
+</main>
+</div>
+<!-- BARRA INFERIOR DE ESTADO (Footer docked) -->
+<footer class="h-6 bg-surface-container border-t border-outline-variant/30 flex items-center justify-between px-3 shrink-0 text-[11px] text-on-surface-variant select-none">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[14px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-on-surface-variant font-mono text-[10.5px]">Datos en este equipo</span>
+</div>
+<div class="flex items-center gap-3 text-[10px] font-mono text-on-surface-variant/60">
+<span>Oct 2024</span>
+<span>UTF-8</span>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bitnode - Finanzas</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600&amp;family=Public+Sans:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            // Precise requested Bitnode palette
+            primary: "#07B478",
+            "primary-container": "rgba(7, 180, 120, 0.12)",
+            "on-primary": "#042115",
+            secondary: "#518166",
+            tertiary: "#FF9676",
+            "tertiary-container": "rgba(255, 150, 118, 0.12)",
+            neutral: "#717973",
+            
+            // Surfaces & borders for compact local app
+            surface: "#101413",
+            "surface-container-low": "#141917",
+            "surface-container": "#181e1b",
+            "surface-container-high": "#202824",
+            "surface-container-highest": "#28332d",
+            "on-surface": "#e4eae6",
+            "on-surface-variant": "#9ba6a0",
+            "outline-variant": "rgba(113, 121, 115, 0.2)"
+          },
+          borderRadius: {
+            DEFAULT: "0.125rem",
+            lg: "0.25rem",
+            xl: "0.5rem",
+            full: "0.75rem"
+          },
+          fontFamily: {
+            headline: ["Space Grotesk", "sans-serif"],
+            display: ["Space Grotesk", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Public Sans", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 350, 'GRAD' 0, 'opsz' 20;
+      font-size: 16px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .material-symbols-outlined.fill-icon {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    }
+    /* Custom scrollbar for desktop native feel */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(113, 121, 115, 0.28);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(113, 121, 115, 0.45);
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-body antialiased text-xs select-none flex h-screen w-screen overflow-hidden">
+<!-- ========================================================================= -->
+<!-- SIDEBAR (Preserved verbatim from Bitnode system specifications)            -->
+<!-- ========================================================================= -->
+<aside class="w-56 flex-shrink-0 bg-surface-container border-r border-outline-variant/30 flex flex-col justify-between p-3 select-none z-20">
+<!-- Top Area: Logo & Global Search -->
+<div class="flex flex-col gap-3">
+<!-- App Header -->
+<div class="flex items-center gap-2.5 px-2 py-1">
+<div class="w-5 h-5 rounded bg-primary/20 flex items-center justify-center text-primary relative">
+<span class="material-symbols-outlined" style="font-size: 15px;">token</span>
+<span class="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-primary ring-2 ring-surface-container"></span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline font-bold text-sm tracking-wide text-on-surface">Bitnode</span>
+<span class="font-label text-[10px] text-on-surface-variant -mt-0.5 tracking-tight">Productividad</span>
+</div>
+</div>
+<!-- Quick Search Bar inside sidebar -->
+<div class="relative px-0.5">
+<span class="material-symbols-outlined absolute left-2.5 top-2 text-on-surface-variant" style="font-size: 14px;">search</span>
+<input class="w-full bg-surface-container-high border-none rounded py-1 pl-7 pr-2 text-xs text-on-surface placeholder:text-on-surface-variant/60 focus:ring-1 focus:ring-primary focus:outline-none" placeholder="Buscar..." type="text"/>
+</div>
+<!-- Main Navigation (10 Sections) -->
+<nav class="flex flex-col gap-0.5 mt-1">
+<!-- 1. Hoy -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">today</span>
+<span>Hoy</span>
+</a>
+<!-- 2. Inbox -->
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined">inbox</span>
+<span>Inbox</span>
+</div>
+<span class="text-[10px] bg-surface-container-highest px-1.5 py-0.2 rounded text-on-surface-variant font-mono">3</span>
+</a>
+<!-- 3. Clientes -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">group</span>
+<span>Clientes</span>
+</a>
+<!-- 4. Proyectos -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">folder_open</span>
+<span>Proyectos</span>
+</a>
+<!-- 5. Contactos -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">contacts</span>
+<span>Contactos</span>
+</a>
+<!-- 6. Notas -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">note</span>
+<span>Notas</span>
+</a>
+<!-- 7. Tiempo -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">timer</span>
+<span>Tiempo</span>
+</a>
+<!-- 8. Finanzas (ACTIVE TAB) -->
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-surface-container-high text-on-surface font-medium text-xs active:scale-[0.98]" href="#">
+<div class="flex items-center gap-2.5 text-primary">
+<span class="material-symbols-outlined fill-icon">account_balance</span>
+<span class="text-on-surface font-medium">Finanzas</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+</a>
+<!-- 9. Calendario -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span>Calendario</span>
+</a>
+<!-- 10. Actividad -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">history</span>
+<span>Actividad</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Sidebar Section -->
+<div class="flex flex-col gap-2 pt-2 border-t border-outline-variant/20">
+<!-- Configuración -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Configuración</span>
+</a>
+<!-- Storage status widget -->
+<div class="flex items-center gap-2 px-2.5 py-1.5 rounded bg-surface-container-low/90 text-on-surface-variant border border-outline-variant/15">
+<span class="material-symbols-outlined text-primary" style="font-size: 14px;">check_circle</span>
+<span class="text-[11px] font-medium tracking-tight">Datos en este equipo</span>
+</div>
+</div>
+</aside>
+<!-- ========================================================================= -->
+<!-- MAIN WORKSPACE                                                            -->
+<!-- ========================================================================= -->
+<main class="flex-1 flex flex-col bg-surface overflow-hidden">
+<!-- Top Window / Context Bar (Discreet Breadcrumb & Window Actions) -->
+<header class="h-9 px-5 flex items-center justify-between border-b border-outline-variant/25 bg-surface select-none">
+<div class="flex items-center gap-1.5 text-xs">
+<span class="text-on-surface-variant">Bitnode</span>
+<span class="text-neutral/50">/</span>
+<span class="text-on-surface font-medium">Finanzas</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Historial de sincronización">
+<span class="material-symbols-outlined" style="font-size: 15px;">sync</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Exportar CSV">
+<span class="material-symbols-outlined" style="font-size: 15px;">download</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Opciones">
+<span class="material-symbols-outlined" style="font-size: 15px;">more_horiz</span>
+</button>
+</div>
+</header>
+<!-- Page Title & Primary Actions Bar -->
+<section class="px-6 pt-5 pb-3 flex items-center justify-between flex-shrink-0">
+<div>
+<h1 class="font-headline font-bold text-lg text-on-surface tracking-tight leading-none">Finanzas</h1>
+</div>
+<div class="flex items-center gap-3">
+<!-- Primary Action Button -->
+<button class="flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-on-primary font-medium px-3 py-1.5 rounded shadow-sm text-xs transition-colors active:scale-98">
+<span class="material-symbols-outlined" style="font-size: 15px; font-weight: 600;">add</span>
+<span>+ Nuevo registro</span>
+</button>
+</div>
+</section>
+<!-- Controls & Filter Toolbar -->
+<section class="px-6 pb-3.5 flex flex-wrap items-center justify-between gap-3 border-b border-outline-variant/20 flex-shrink-0">
+<div class="flex items-center gap-2.5">
+<!-- Filter Tabs (Pills) -->
+<div class="inline-flex p-0.5 rounded bg-surface-container-high border border-outline-variant/30 text-xs">
+<button class="px-2.5 py-1 rounded font-medium bg-surface text-on-surface shadow-sm">Todos</button>
+<button class="px-2.5 py-1 rounded text-on-surface-variant hover:text-on-surface transition-colors">Ingresos</button>
+<button class="px-2.5 py-1 rounded text-on-surface-variant hover:text-on-surface transition-colors">Gastos</button>
+</div>
+<div class="h-4 w-[1px] bg-outline-variant/30"></div>
+<!-- Currency Selector -->
+<div class="relative">
+<select class="bg-surface-container-high border border-outline-variant/30 text-on-surface text-xs rounded py-1 pl-2.5 pr-7 focus:ring-1 focus:ring-primary focus:outline-none appearance-none cursor-pointer">
+<option>Todas las monedas</option>
+<option>COP (Pesos)</option>
+<option>USD (Dólares)</option>
+</select>
+<span class="material-symbols-outlined pointer-events-none absolute right-1.5 top-1.5 text-on-surface-variant" style="font-size: 14px;">arrow_drop_down</span>
+</div>
+<!-- Edit Exchange Rate Button -->
+<button class="flex items-center gap-1 px-2.5 py-1 rounded border border-outline-variant/30 bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high text-xs transition-colors">
+<span class="material-symbols-outlined" style="font-size: 13px;">currency_exchange</span>
+<span>Editar tasa de cambio</span>
+</button>
+</div>
+<!-- Right Toolbar Items: Total Neto & Archived Toggle -->
+<div class="flex items-center gap-5">
+<!-- Discrete Net Total -->
+<div class="flex items-center gap-2 text-xs bg-surface-container-low px-3 py-1 rounded border border-outline-variant/25">
+<span class="text-on-surface-variant">Total neto acumulado:</span>
+<span class="font-mono font-semibold text-primary">$ 18.420.000 COP</span>
+</div>
+<!-- Toggle Switch: Mostrar archivados (off) -->
+<label class="inline-flex items-center gap-2 cursor-pointer select-none">
+<span class="text-xs text-on-surface-variant">Mostrar archivados</span>
+<div class="relative">
+<input class="sr-only peer" disabled="" type="checkbox"/>
+<div class="w-7 h-4 bg-surface-container-highest border border-outline-variant/40 rounded-full peer peer-checked:bg-primary transition-colors"></div>
+<div class="absolute left-0.5 top-0.5 bg-neutral w-3 h-3 rounded-full transition-transform peer-checked:translate-x-3 peer-checked:bg-on-primary"></div>
+</div>
+</label>
+</div>
+</section>
+<!-- Records Table Container -->
+<div class="flex-1 overflow-auto px-6 py-3 relative">
+<table class="w-full border-collapse text-left text-xs">
+<thead>
+<tr class="border-b border-outline-variant/30 text-on-surface-variant font-label text-[11px] uppercase tracking-wider">
+<th class="py-2.5 px-3 font-medium w-24">Tipo</th>
+<th class="py-2.5 px-3 font-medium text-right w-28">Importe</th>
+<th class="py-2.5 px-3 font-medium w-16">Moneda</th>
+<th class="py-2.5 px-3 font-medium w-28">Fecha</th>
+<th class="py-2.5 px-3 font-medium">Concepto</th>
+<th class="py-2.5 px-3 font-medium w-52">Vínculo</th>
+<th class="py-2.5 px-3 font-medium w-64">Estado Equivalente</th>
+<th class="py-2.5 px-3 font-medium text-right w-24">Acciones</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/15 font-body">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/80 transition-colors group">
+<td class="py-2.5 px-3 whitespace-nowrap">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-primary-container text-primary border border-primary/20">
+                Ingreso
+              </span>
+</td>
+<td class="py-2.5 px-3 text-right font-mono font-medium text-on-surface whitespace-nowrap">
+              6.500.000
+            </td>
+<td class="py-2.5 px-3 font-mono text-on-surface-variant whitespace-nowrap">
+              COP
+            </td>
+<td class="py-2.5 px-3 text-on-surface-variant whitespace-nowrap">
+              Hoy 24 oct
+            </td>
+<td class="py-2.5 px-3 font-normal text-on-surface">
+              Anticipo hito 1 backend Facturación
+            </td>
+<td class="py-2.5 px-3 text-on-surface-variant whitespace-nowrap truncate max-w-[200px]" title="Portal Facturación DIAN Alpina">
+<span class="text-on-surface/90">Portal Facturación DIAN Alpina</span>
+</td>
+<td class="py-2.5 px-3 text-neutral/50 font-mono whitespace-nowrap">
+              —
+            </td>
+<td class="py-2.5 px-3 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+<button class="px-1.5 py-0.5 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface">Editar</button>
+<button class="p-0.5 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface">
+<span class="material-symbols-outlined" style="font-size: 15px;">more_horiz</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low/80 transition-colors group">
+<td class="py-2.5 px-3 whitespace-nowrap">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-tertiary-container text-tertiary border border-tertiary/20">
+                Gasto
+              </span>
+</td>
+<td class="py-2.5 px-3 text-right font-mono font-medium text-on-surface whitespace-nowrap">
+              850
+            </td>
+<td class="py-2.5 px-3 font-mono text-on-surface-variant whitespace-nowrap">
+              USD
+            </td>
+<td class="py-2.5 px-3 text-on-surface-variant whitespace-nowrap">
+              23 oct
+            </td>
+<td class="py-2.5 px-3 font-normal text-on-surface">
+              Servidores dedicados EKS y balanceador
+            </td>
+<td class="py-2.5 px-3 text-on-surface-variant whitespace-nowrap truncate max-w-[200px]" title="Infraestructura Daviplata">
+<span class="text-on-surface/90">Infraestructura Daviplata</span>
+</td>
+<td class="py-2.5 px-3 font-mono text-[11px] text-on-surface-variant whitespace-nowrap">
+              850 USD ≈ <span class="text-on-surface">$ 3.570.000 COP</span> <span class="text-neutral/70">(TC: 4.200)</span>
+</td>
+<td class="py-2.5 px-3 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+<button class="px-1.5 py-0.5 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface">Editar</button>
+<button class="p-0.5 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface">
+<span class="material-symbols-outlined" style="font-size: 15px;">more_horiz</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/80 transition-colors group">
+<td class="py-2.5 px-3 whitespace-nowrap">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-primary-container text-primary border border-primary/20">
+                Ingreso
+              </span>
+</td>
+<td class="py-2.5 px-3 text-right font-mono font-medium text-on-surface whitespace-nowrap">
+              1.200
+            </td>
+<td class="py-2.5 px-3 font-mono text-on-surface-variant whitespace-nowrap">
+              USD
+            </td>
+<td class="py-2.5 px-3 text-on-surface-variant whitespace-nowrap">
+              21 oct
+            </td>
+<td class="py-2.5 px-3 font-normal text-on-surface">
+              Horas soporte especializado Cloud
+            </td>
+<td class="py-2.5 px-3 text-on-surface-variant whitespace-nowrap truncate max-w-[200px]" title="Tuya S.A.">
+<span class="text-on-surface/90">Tuya S.A.</span>
+</td>
+<td class="py-2.5 px-3 whitespace-nowrap">
+<span class="inline-flex items-center gap-1 text-[11px] text-tertiary bg-tertiary-container/40 px-1.5 py-0.5 rounded">
+<span class="material-symbols-outlined" style="font-size: 12px;">schedule</span>
+<span>Pendiente de tasa</span>
+</span>
+</td>
+<td class="py-2.5 px-3 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+<button class="px-1.5 py-0.5 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface">Editar</button>
+<button class="p-0.5 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface">
+<span class="material-symbols-outlined" style="font-size: 15px;">more_horiz</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4 (ACTIVE HOVER / DELETE CONFIRMATION STATE SPECIFIED IN PROMPT) -->
+<tr class="bg-surface-container-high border-y border-outline-variant/40 relative">
+<td class="py-2.5 px-3 whitespace-nowrap">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-tertiary-container text-tertiary border border-tertiary/20">
+                Gasto
+              </span>
+</td>
+<td class="py-2.5 px-3 text-right font-mono font-medium text-on-surface whitespace-nowrap">
+              420.000
+            </td>
+<td class="py-2.5 px-3 font-mono text-on-surface-variant whitespace-nowrap">
+              COP
+            </td>
+<td class="py-2.5 px-3 text-on-surface-variant whitespace-nowrap">
+              19 oct
+            </td>
+<td class="py-2.5 px-3 font-normal text-on-surface">
+              Suscripción servicios monitoreo Datadog
+            </td>
+<td class="py-2.5 px-3 text-on-surface-variant whitespace-nowrap truncate max-w-[200px]" title="Infraestructura Daviplata">
+<span class="text-on-surface/90">Infraestructura Daviplata</span>
+</td>
+<td class="py-2.5 px-3 text-neutral/50 font-mono whitespace-nowrap">
+              —
+            </td>
+<td class="py-2.5 px-3 text-right whitespace-nowrap relative">
+<div class="flex items-center justify-end gap-1">
+<button class="px-1.5 py-0.5 rounded text-on-surface-variant hover:text-on-surface">Editar</button>
+<button class="p-0.5 rounded bg-tertiary/20 text-tertiary">
+<span class="material-symbols-outlined" style="font-size: 15px;">delete</span>
+</button>
+</div>
+<!-- Inline Confirmation Popover Box -->
+<div class="absolute right-0 top-9 z-30 w-72 bg-surface-container-highest border border-outline-variant/50 rounded shadow-xl p-2.5 text-left flex flex-col gap-2">
+<div class="flex items-start gap-2">
+<span class="material-symbols-outlined text-tertiary shrink-0 mt-0.5" style="font-size: 15px;">warning</span>
+<p class="text-[11px] leading-snug text-on-surface font-normal">
+                    La entrada se eliminará de forma irrecuperable. ¿Confirmar?
+                  </p>
+</div>
+<div class="flex items-center justify-end gap-2 mt-0.5">
+<button class="px-2 py-0.5 rounded text-[11px] text-on-surface-variant hover:bg-surface-container hover:text-on-surface border border-outline-variant/30">
+                    Cancelar
+                  </button>
+<button class="px-2.5 py-0.5 rounded text-[11px] font-medium bg-tertiary text-on-primary hover:bg-tertiary/90">
+                    Confirmar
+                  </button>
+</div>
+</div>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-container-low/80 transition-colors group">
+<td class="py-2.5 px-3 whitespace-nowrap">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-primary-container text-primary border border-primary/20">
+                Ingreso
+              </span>
+</td>
+<td class="py-2.5 px-3 text-right font-mono font-medium text-on-surface whitespace-nowrap">
+              4.800.000
+            </td>
+<td class="py-2.5 px-3 font-mono text-on-surface-variant whitespace-nowrap">
+              COP
+            </td>
+<td class="py-2.5 px-3 text-on-surface-variant whitespace-nowrap">
+              16 oct
+            </td>
+<td class="py-2.5 px-3 font-normal text-on-surface">
+              Liquidación consultoría arquitectura
+            </td>
+<td class="py-2.5 px-3 text-on-surface-variant whitespace-nowrap truncate max-w-[200px]" title="Seguros Bolívar TI">
+<span class="text-on-surface/90">Seguros Bolívar TI</span>
+</td>
+<td class="py-2.5 px-3 text-neutral/50 font-mono whitespace-nowrap">
+              —
+            </td>
+<td class="py-2.5 px-3 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+<button class="px-1.5 py-0.5 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface">Editar</button>
+<button class="p-0.5 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface">
+<span class="material-symbols-outlined" style="font-size: 15px;">more_horiz</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 6 -->
+<tr class="hover:bg-surface-container-low/80 transition-colors group">
+<td class="py-2.5 px-3 whitespace-nowrap">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-tertiary-container text-tertiary border border-tertiary/20">
+                Gasto
+              </span>
+</td>
+<td class="py-2.5 px-3 text-right font-mono font-medium text-on-surface whitespace-nowrap">
+              185.000
+            </td>
+<td class="py-2.5 px-3 font-mono text-on-surface-variant whitespace-nowrap">
+              COP
+            </td>
+<td class="py-2.5 px-3 text-on-surface-variant whitespace-nowrap">
+              14 oct
+            </td>
+<td class="py-2.5 px-3 font-normal text-on-surface">
+              Certificados SSL Wildcard Digicert
+            </td>
+<td class="py-2.5 px-3 text-on-surface-variant whitespace-nowrap truncate max-w-[200px]" title="Directo / General">
+<span class="text-neutral/80">Directo / General</span>
+</td>
+<td class="py-2.5 px-3 text-neutral/50 font-mono whitespace-nowrap">
+              —
+            </td>
+<td class="py-2.5 px-3 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+<button class="px-1.5 py-0.5 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface">Editar</button>
+<button class="p-0.5 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface">
+<span class="material-symbols-outlined" style="font-size: 15px;">more_horiz</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 7 -->
+<tr class="hover:bg-surface-container-low/80 transition-colors group">
+<td class="py-2.5 px-3 whitespace-nowrap">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-primary-container text-primary border border-primary/20">
+                Ingreso
+              </span>
+</td>
+<td class="py-2.5 px-3 text-right font-mono font-medium text-on-surface whitespace-nowrap">
+              9.200.000
+            </td>
+<td class="py-2.5 px-3 font-mono text-on-surface-variant whitespace-nowrap">
+              COP
+            </td>
+<td class="py-2.5 px-3 text-on-surface-variant whitespace-nowrap">
+              10 oct
+            </td>
+<td class="py-2.5 px-3 font-normal text-on-surface">
+              Pago final migración PostgreSQL a RDS
+            </td>
+<td class="py-2.5 px-3 text-on-surface-variant whitespace-nowrap truncate max-w-[200px]" title="Seguros Bolívar TI">
+<span class="text-on-surface/90">Seguros Bolívar TI</span>
+</td>
+<td class="py-2.5 px-3 text-neutral/50 font-mono whitespace-nowrap">
+              —
+            </td>
+<td class="py-2.5 px-3 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+<button class="px-1.5 py-0.5 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface">Editar</button>
+<button class="p-0.5 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface">
+<span class="material-symbols-outlined" style="font-size: 15px;">more_horiz</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Bottom Status Bar (Discrete Desktop App Footer) -->
+<footer class="h-7 px-6 bg-surface-container-low border-t border-outline-variant/20 flex items-center justify-between text-[11px] text-on-surface-variant select-none">
+<div class="flex items-center gap-4">
+<span>7 transacciones registradas</span>
+<span class="text-neutral/40">•</span>
+<span>Último guardado local hace un momento</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-neutral/60">Tasa de cambio ref: 1 USD = 4.200 COP</span>
+</div>
+</footer>
+</main>
+</body></html>

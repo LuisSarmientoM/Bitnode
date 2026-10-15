@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bitnode - Contactos</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Public+Sans:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#07B478",
+            "primary-container": "#07B478",
+            "on-primary-container": "#FFFFFF",
+            secondary: "#518166",
+            tertiary: "#FF9676",
+            surface: "#121314",
+            "surface-container": "#181a1b",
+            "surface-container-high": "#1e2022",
+            "surface-container-highest": "#26292b",
+            "on-surface": "#e2e4e2",
+            "on-surface-variant": "#9ca19d",
+            "outline-variant": "#2a2e31",
+            neutral: "#717973"
+          },
+          borderRadius: {
+            DEFAULT: "0.125rem",
+            lg: "0.25rem",
+            xl: "0.5rem",
+            full: "0.75rem"
+          },
+          fontFamily: {
+            headline: ["Space Grotesk", "sans-serif"],
+            display: ["Space Grotesk", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Public Sans", "sans-serif"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-size: 16px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    /* Estilos sutiles de scrollbar estilo dev tool */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #26292b;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #2a2e31;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-body text-xs antialiased overflow-hidden select-none h-screen flex">
+<!-- SIDEBAR LATERAL IZQUIERDO -->
+<aside class="w-56 h-screen flex flex-col justify-between bg-surface-container border-r border-outline-variant/30 flex-shrink-0">
+<!-- Top & Navigation Links -->
+<div class="p-3 flex flex-col gap-3">
+<!-- Window Controls & Header Logo -->
+<div class="flex items-center gap-2 pt-1 pb-1">
+<div class="flex items-center gap-1.5 mr-2">
+<span class="w-2.5 h-2.5 rounded-full bg-[#ff5f56] inline-block opacity-80 hover:opacity-100 cursor-pointer"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-[#ffbd2e] inline-block opacity-80 hover:opacity-100 cursor-pointer"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-[#27c93f] inline-block opacity-80 hover:opacity-100 cursor-pointer"></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="font-headline font-bold text-xs tracking-wide text-on-surface">Bitnode</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+</div>
+</div>
+<!-- Quick Search input -->
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" style="font-size: 14px;">search</span>
+<input class="w-full bg-surface-container-high text-on-surface placeholder:text-on-surface-variant text-[11px] rounded py-1 pl-7 pr-2 border border-outline-variant/20 focus:outline-none focus:border-primary/40 transition-colors" placeholder="Buscar tareas, notas..." readonly="" tabindex="-1" type="text"/>
+</div>
+<!-- Navigation tabs (10 exactas según Shared Components JSON) -->
+<nav aria-label="Navegación principal" class="flex flex-col gap-0.5 mt-1">
+<!-- 1. Hoy -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">today</span>
+<span class="font-label text-xs">Hoy</span>
+</a>
+<!-- 2. Inbox -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">inbox</span>
+<span class="font-label text-xs">Inbox</span>
+</a>
+<!-- 3. Clientes (ACTIVA según active state logic) -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#"><span class="material-symbols-outlined">group</span><span class="font-label text-xs">Clientes</span></a>
+<!-- 4. Proyectos -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">folder_open</span>
+<span class="font-label text-xs">Proyectos</span>
+</a>
+<!-- 5. Contactos -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded bg-surface-container-high text-on-surface font-medium text-xs border border-outline-variant/30 active:scale-[0.98]" href="#"><span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">contacts</span><span class="font-label text-xs text-on-surface font-medium">Contactos</span></a>
+<!-- 6. Notas -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">note</span>
+<span class="font-label text-xs">Notas</span>
+</a>
+<!-- 7. Tiempo -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">timer</span>
+<span class="font-label text-xs">Tiempo</span>
+</a>
+<!-- 8. Finanzas -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">account_balance</span>
+<span class="font-label text-xs">Finanzas</span>
+</a>
+<!-- 9. Calendario -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label text-xs">Calendario</span>
+</a>
+<!-- 10. Actividad -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label text-xs">Actividad</span>
+</a>
+</nav>
+</div>
+<!-- Pie del Sidebar & Barra de Estado Local -->
+<div class="p-3 border-t border-outline-variant/20 flex flex-col gap-2">
+<!-- Configuración -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label text-xs">Configuración</span>
+</a>
+<!-- Barra de estado inferior izquierda -->
+<div class="px-2.5 pt-1.5 flex items-center gap-1.5 text-[11px] text-primary/80 font-body select-none">
+<span class="text-primary font-bold">✔</span>
+<span>Datos en este equipo</span>
+</div>
+</div>
+</aside>
+<!-- CONTENIDO PRINCIPAL -->
+<main class="flex-1 flex flex-col h-screen overflow-hidden bg-surface">
+<!-- Header Superior Limpio / Top Navigation Shell -->
+<header class="w-full h-10 flex items-center justify-between px-6 border-b border-outline-variant/30 flex-shrink-0 bg-surface">
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1 text-on-surface-variant text-[11px]">
+<span class="hover:text-on-surface cursor-pointer">Bitnode</span>
+<span class="text-outline-variant">/</span>
+<span class="text-on-surface font-medium">Contactos</span>
+</div>
+</div>
+<!-- Trailing Top bar actions -->
+<div class="flex items-center gap-2">
+<button class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Filtros avanzados">
+<span class="material-symbols-outlined" style="font-size: 15px;">tune</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Opciones">
+<span class="material-symbols-outlined" style="font-size: 15px;">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Canvas Central: Título y Controles -->
+<div class="flex-1 overflow-y-auto px-8 py-6 flex flex-col gap-5">
+<!-- Encabezado de Sección Clientes -->
+<div class="flex items-center justify-between pb-1"><div><h1 class="font-headline font-semibold text-lg text-on-surface tracking-tight leading-none">Contactos</h1></div><button class="flex items-center gap-1.5 bg-primary text-[#121314] font-headline font-semibold text-xs px-3 py-1.5 rounded hover:bg-primary/90 active:scale-[0.98] transition-all duration-100 shadow-sm"><span class="material-symbols-outlined font-bold" style="font-size: 15px;">add</span><span>+ Nuevo contacto</span></button></div>
+<!-- Fila de Controles (Búsqueda y Toggle) -->
+<div class="flex items-center justify-between gap-4 py-1">
+<!-- Input Buscar clientes -->
+<div class="relative w-72">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" style="font-size: 14px;">search</span>
+<input class="w-full bg-surface-container text-on-surface placeholder:text-on-surface-variant text-xs rounded py-1.5 pl-8 pr-8 border border-outline-variant/30 focus:outline-none focus:border-primary/50 transition-colors" placeholder="Buscar contactos..." type="text"/>
+<span class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-on-surface-variant border border-outline-variant/30 px-1 py-0.2 rounded font-mono">/</span>
+</div>
+<!-- Toggle Mostrar archivados -->
+<label class="flex items-center gap-2 cursor-pointer select-none">
+<span class="text-xs text-on-surface-variant font-label">Mostrar archivados</span>
+<div class="relative inline-flex items-center">
+<input class="sr-only peer" id="toggleArchivados" type="checkbox"/>
+<!-- Background bar del switch -->
+<div class="w-7 h-4 bg-surface-container-highest peer-checked:bg-primary/80 rounded-full transition-colors duration-150 border border-outline-variant/40"></div>
+<!-- Thumb -->
+<div class="w-2.5 h-2.5 bg-on-surface-variant peer-checked:bg-surface rounded-full absolute left-0.5 top-0.5 peer-checked:translate-x-3 transition-transform duration-150"></div>
+</div>
+</label>
+</div>
+<!-- Tabla Densa de Clientes -->
+<div class="w-full border border-outline-variant/30 rounded overflow-hidden bg-surface-container/30">
+<table class="w-full border-collapse text-left"><thead><tr class="border-b border-outline-variant/30 bg-surface-container/80 text-[11px] font-label text-on-surface-variant uppercase tracking-wider"><th class="py-2 px-3 font-medium">Nombre</th><th class="py-2 px-3 font-medium">Cargo y Empresa</th><th class="py-2 px-3 font-medium">Clientes vinculados</th><th class="py-2 px-3 font-medium">Correo</th><th class="py-2 px-3 font-medium">Teléfono</th><th class="py-2 px-3 font-medium w-24">Estado</th><th class="py-2 px-3 font-medium text-right w-40"></th></tr></thead><tbody class="divide-y divide-outline-variant/20 font-body text-xs"><tr class="hover:bg-surface-container-high/40 transition-colors group"><td class="py-2 px-3 font-medium text-on-surface">Carlos Mendoza</td><td class="py-2 px-3 text-on-surface-variant">Líder de Arquitectura Cloud, Tuya S.A.</td><td class="py-2 px-3"><span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#1e2022] text-[#6ee7b7] border border-[#07b478]/20">Tuya S.A.</span></td><td class="py-2 px-3 text-on-surface-variant font-mono text-[11px]">carlos.mendoza@tuya.com.co</td><td class="py-2 px-3 text-on-surface-variant font-mono text-[11px]">+57 310 452 8819</td><td class="py-2 px-3"><div class="flex items-center gap-1.5 text-on-surface text-[11px]"><span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span><span>Activo</span></div></td><td class="py-2 px-3 text-right"></td></tr><tr class="hover:bg-surface-container-high/40 transition-colors group"><td class="py-2 px-3 font-medium text-on-surface">Carlos Mendoza</td><td class="py-2 px-3 text-on-surface-variant">Especialista en Seguridad y Hardening, Freelance</td><td class="py-2 px-3"><span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-surface-container-high text-on-surface-variant border border-outline-variant/30">Libre</span></td><td class="py-2 px-3 text-on-surface-variant font-mono text-[11px]">cmendoza.sec@pm.me</td><td class="py-2 px-3 text-on-surface-variant font-mono text-[11px]">+57 301 982 1104</td><td class="py-2 px-3"><div class="flex items-center gap-1.5 text-on-surface text-[11px]"><span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span><span>Activo</span></div></td><td class="py-2 px-3 text-right"></td></tr><tr class="bg-[#1e2022] transition-colors relative border-y border-outline-variant/40"><td class="py-2 px-3 font-medium text-on-surface">Valentina Restrepo</td><td class="py-2 px-3 text-on-surface-variant">VP de Tecnología &amp; Canales, Seguros Bolívar</td><td class="py-2 px-3"><div class="flex items-center gap-1"><span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#1e2022] text-[#6ee7b7] border border-[#07b478]/20">Seguros Bolívar TI</span><span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#1e2022] text-[#6ee7b7] border border-[#07b478]/20">Davivienda</span></div></td><td class="py-2 px-3 text-on-surface-variant font-mono text-[11px]">vrestrepo@segurosbolivar.com</td><td class="py-2 px-3 text-on-surface-variant font-mono text-[11px]">+57 315 220 9410</td><td class="py-2 px-3"><div class="flex items-center gap-1.5 text-on-surface text-[11px]"><span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span><span>Activo</span></div></td><td class="py-2 px-3 text-right"><div class="flex items-center justify-end gap-1.5"><button class="px-2 py-0.5 rounded bg-surface-container-highest hover:bg-surface-container-highest/80 text-on-surface text-[11px] font-medium border border-outline-variant/30 transition-colors">Abrir</button><div class="relative inline-block text-left"><button class="p-1 rounded bg-surface-container-highest hover:bg-surface-container-highest/80 text-on-surface border border-outline-variant/30 flex items-center transition-colors" title="Más opciones"><span class="material-symbols-outlined" style="font-size: 14px;">more_horiz</span></button><div class="absolute right-0 top-full mt-1 w-28 bg-[#181a1b] border border-outline-variant/40 rounded shadow-xl py-1 z-30"><a class="flex items-center gap-2 px-2.5 py-1 text-[11px] text-on-surface hover:bg-surface-container-highest transition-colors" href="#"><span class="material-symbols-outlined" style="font-size: 13px;">edit</span><span>Editar</span></a><a class="flex items-center gap-2 px-2.5 py-1 text-[11px] text-tertiary hover:bg-surface-container-highest transition-colors" href="#"><span class="material-symbols-outlined" style="font-size: 13px;">archive</span><span>Archivar</span></a></div></div></div></td></tr><tr class="hover:bg-surface-container-high/40 transition-colors group"><td class="py-2 px-3 font-medium text-on-surface">David Leonardo Gómez</td><td class="py-2 px-3 text-on-surface-variant">DBA Senior Postgres &amp; Consultor Externo</td><td class="py-2 px-3"><div class="flex items-center gap-1"><span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#1e2022] text-[#6ee7b7] border border-[#07b478]/20">Seguros Bolívar TI</span><span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#1e2022] text-[#6ee7b7] border border-[#07b478]/20">Alpina</span></div></td><td class="py-2 px-3 text-on-surface-variant font-mono text-[11px]">dgomez.data@consultoria.co</td><td class="py-2 px-3 text-on-surface-variant font-mono text-[11px]">+57 312 774 0192</td><td class="py-2 px-3"><div class="flex items-center gap-1.5 text-on-surface text-[11px]"><span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span><span>Activo</span></div></td><td class="py-2 px-3 text-right"></td></tr><tr class="hover:bg-surface-container-high/40 transition-colors group"><td class="py-2 px-3 font-medium text-on-surface">Laura Camila Serrano</td><td class="py-2 px-3 text-on-surface-variant">Product Manager Portal Autoservicio</td><td class="py-2 px-3"><span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#1e2022] text-[#6ee7b7] border border-[#07b478]/20">Compensar EPS</span></td><td class="py-2 px-3 text-on-surface-variant font-mono text-[11px]">laura.serrano@compensar.com</td><td class="py-2 px-3 text-on-surface-variant font-mono text-[11px]">+57 320 891 3450</td><td class="py-2 px-3"><div class="flex items-center gap-1.5 text-on-surface text-[11px]"><span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span><span>Activo</span></div></td><td class="py-2 px-3 text-right"></td></tr><tr class="hover:bg-surface-container-high/40 transition-colors group"><td class="py-2 px-3 font-medium text-on-surface">Andrés Felipe Silva</td><td class="py-2 px-3 text-on-surface-variant">DevOps Engineer &amp; SRE</td><td class="py-2 px-3"><span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-surface-container-high text-on-surface-variant border border-outline-variant/30">Libre</span></td><td class="py-2 px-3 text-on-surface-variant font-mono text-[11px]">a.silva.dev@gmail.com</td><td class="py-2 px-3 text-on-surface-variant font-mono text-[11px]">+57 318 640 2933</td><td class="py-2 px-3"><div class="flex items-center gap-1.5 text-on-surface text-[11px]"><span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span><span>Activo</span></div></td><td class="py-2 px-3 text-right"></td></tr><tr class="hover:bg-surface-container-high/40 transition-colors group"><td class="py-2 px-3 font-medium text-on-surface">Diana Marcela Ortiz</td><td class="py-2 px-3 text-on-surface-variant">Coordinadora de Facturación e Integraciones</td><td class="py-2 px-3"><span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#1e2022] text-[#6ee7b7] border border-[#07b478]/20">Alpina</span></td><td class="py-2 px-3 text-on-surface-variant font-mono text-[11px]">diana.ortiz@alpina.com</td><td class="py-2 px-3 text-on-surface-variant font-mono text-[11px]">+57 311 509 4321</td><td class="py-2 px-3"><div class="flex items-center gap-1.5 text-on-surface text-[11px]"><span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span><span>Activo</span></div></td><td class="py-2 px-3 text-right"></td></tr><tr class="hover:bg-surface-container-high/40 transition-colors group"><td class="py-2 px-3 font-medium text-on-surface">Mateo Echeverry</td><td class="py-2 px-3 text-on-surface-variant">Ingeniero de Infraestructura Core</td><td class="py-2 px-3"><span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#1e2022] text-[#6ee7b7] border border-[#07b478]/20">Davivienda</span></td><td class="py-2 px-3 text-on-surface-variant font-mono text-[11px]">mecheverry@davivienda.com</td><td class="py-2 px-3 text-on-surface-variant font-mono text-[11px]">+57 300 411 7765</td><td class="py-2 px-3"><div class="flex items-center gap-1.5 text-on-surface text-[11px]"><span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span><span>Activo</span></div></td><td class="py-2 px-3 text-right"></td></tr><tr class="hover:bg-surface-container-high/40 transition-colors group"><td class="py-2 px-3 font-medium text-on-surface">Juliana Tamayo</td><td class="py-2 px-3 text-on-surface-variant">Asesora Legal &amp; Cumplimiento Normativo</td><td class="py-2 px-3"><span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-surface-container-high text-on-surface-variant border border-outline-variant/30">Libre</span></td><td class="py-2 px-3 text-on-surface-variant font-mono text-[11px]">j.tamayo.abogada@lexcorp.co</td><td class="py-2 px-3 text-on-surface-variant font-mono text-[11px]">+57 316 832 9014</td><td class="py-2 px-3"><div class="flex items-center gap-1.5 text-on-surface text-[11px]"><span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span><span>Activo</span></div></td><td class="py-2 px-3 text-right"></td></tr></tbody></table>
+</div>
+</div>
+</main>
+<script>
+    // Atajo de teclado nativo rápido para el buscador
+    window.addEventListener('keydown', (e) => {
+      if (e.key === '/' && document.activeElement.tagName !== 'INPUT') {
+        e.preventDefault();
+        const searchInput = document.querySelector('input[placeholder="Buscar contactos..."]');
+        if (searchInput) searchInput.focus();
+      }
+    });
+  </script>
+</body></html>

@@ -2,7 +2,7 @@
 
 Documento de acuerdos de producto tras 46 rondas. La ronda 46 autoriza la revisión final y una propuesta de diseño para detalles menores, sin implementación. No es todavía un esquema de base de datos.
 
-Consultar [revisión final](revision-alcance-local.md) para el modelo consolidado, límites y propuestas pendientes.
+Historial archivado, conservado como referencia de decisiones. Consultar [revisión final](../revision-alcance-local.md) para el modelo consolidado, límites y propuestas pendientes.
 
 - **Confirmado**: solicitado o aceptado por el usuario.
 - **Propuesto**: recomendación que necesita aprobación.
@@ -993,4 +993,4 @@ El usuario pide reducir las vueltas sobre calendario/eventos y responder exclusi
 | Filtros de Hoy | Cliente y proyecto, además de scope. |
 | Siguiente etapa | Revisión final del alcance; detalles menores como propuestas de diseño, sin implementación. |
 
-Las rondas generales de producto terminan aquí por decisión del usuario. Los detalles no resueltos siguen pendientes o propuestos, no se consideran aprobados. Ver [revisión final](revision-alcance-local.md).
+Las rondas generales de producto terminan aquí por decisión del usuario. Los detalles no resueltos siguen pendientes o propuestos, no se consideran aprobados. Ver [revisión final](../revision-alcance-local.md).

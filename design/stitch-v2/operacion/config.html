@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bitnode - Configuración</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Public+Sans:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#07B478",
+            "primary-dark": "#059663",
+            "primary-container": "#07B478",
+            "on-primary": "#042115",
+            "on-primary-container": "#07B478",
+            surface: "#0b0f10",
+            "surface-container": "#111618",
+            "surface-container-high": "#161d20",
+            "surface-container-highest": "#1c2529",
+            "on-surface": "#e5e7eb",
+            "on-surface-variant": "#9ca3af",
+            "outline-variant": "#232e33",
+            "surface-border": "#1e292d"
+          },
+          borderRadius: {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          fontFamily: {
+            headline: ["Space Grotesk", "sans-serif"],
+            display: ["Space Grotesk", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Public Sans", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-size: 18px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+    }
+    /* Custom scrollbar for clean desktop styling */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0b0f10;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e292d;
+      border-radius: 2px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #2b393f;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-body antialiased flex h-screen overflow-hidden select-none">
+<!-- ==================== SIDEBAR (SideNavBar Component) ==================== -->
+<aside class="docked full-height left-0 w-56 flex flex-col bg-surface-container border-r border-outline-variant/30 h-screen justify-between p-3 select-none flex-shrink-0 z-20">
+<!-- Header Brand -->
+<div class="flex flex-col gap-3">
+<div class="flex items-center justify-between px-2 pt-1 pb-2">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded bg-primary/10 border border-primary/40 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[16px]" data-icon="terminal">terminal</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="font-headline font-bold text-sm tracking-wide text-on-surface">Bitnode</span>
+<span class="text-[10px] font-label font-medium px-1.5 py-0.5 rounded bg-primary/15 text-primary border border-primary/20 leading-none">
+              Productividad
+            </span>
+</div>
+</div>
+</div>
+<!-- Quick Action CTA -->
+<button class="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg bg-surface-container-high border border-outline-variant/50 text-xs font-label text-on-surface hover:bg-surface-container-highest/60 hover:border-primary/40 transition-all duration-150 active:scale-[0.98]">
+<span class="material-symbols-outlined text-primary text-[15px]" data-icon="add_task">add_task</span>
+<span class="font-medium text-xs">Nueva Tarea</span>
+</button>
+<!-- Navigation Links -->
+<nav class="flex flex-col gap-0.5 mt-1">
+<!-- 1: Hoy -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-on-surface-variant/80" data-icon="today">today</span>
+<span class="font-label">Hoy</span>
+</a>
+<!-- 2: Inbox -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-on-surface-variant/80" data-icon="inbox">inbox</span>
+<span class="font-label">Inbox</span>
+</a>
+<!-- 3: Clientes -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-on-surface-variant/80" data-icon="group">group</span>
+<span class="font-label">Clientes</span>
+</a>
+<!-- 4: Proyectos -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-on-surface-variant/80" data-icon="folder_open">folder_open</span>
+<span class="font-label">Proyectos</span>
+</a>
+<!-- 5: Contactos -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-on-surface-variant/80" data-icon="contacts">contacts</span>
+<span class="font-label">Contactos</span>
+</a>
+<!-- 6: Notas -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-on-surface-variant/80" data-icon="note">note</span>
+<span class="font-label">Notas</span>
+</a>
+<!-- 7: Tiempo -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-on-surface-variant/80" data-icon="timer">timer</span>
+<span class="font-label">Tiempo</span>
+</a>
+<!-- 8: Finanzas -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-on-surface-variant/80" data-icon="account_balance">account_balance</span>
+<span class="font-label">Finanzas</span>
+</a>
+<!-- 9: Calendario -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-on-surface-variant/80" data-icon="calendar_today">calendar_today</span>
+<span class="font-label">Calendario</span>
+</a>
+<!-- 10: Actividad -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-on-surface-variant/80" data-icon="history">history</span>
+<span class="font-label">Actividad</span>
+</a>
+</nav>
+</div>
+<!-- Footer Controls & Active Settings Anchor -->
+<div class="flex flex-col gap-2 pt-2 border-t border-outline-variant/30">
+<!-- Buscar item -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-on-surface-variant/80" data-icon="search">search</span>
+<span class="font-label">Buscar</span>
+</a>
+<!-- Configuración item (ACTIVE: maps to current screen) -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg bg-surface-container-high text-on-surface font-medium text-xs border border-primary/30 shadow-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-primary" data-icon="settings">settings</span>
+<span class="font-label text-on-surface flex-1">Configuración</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+</a>
+<!-- Local Device Storage Badge -->
+<div class="mt-2 px-2.5 py-2 rounded bg-surface/80 border border-outline-variant/30 flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[15px]" data-icon="check_circle">check_circle</span>
+<span class="text-[11px] font-mono text-on-surface-variant tracking-tight">Datos en este equipo</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-primary/70"></span>
+</div>
+</div>
+</aside>
+<!-- ==================== MAIN WORKSPACE ==================== -->
+<div class="flex-1 flex flex-col h-screen overflow-hidden bg-surface">
+<!-- Top Window / Context Header -->
+<header class="w-full h-11 border-b border-outline-variant/30 px-6 flex items-center justify-between bg-surface-container/60 backdrop-blur shrink-0">
+<!-- Breadcrumb -->
+<div class="flex items-center gap-2 text-xs font-mono text-on-surface-variant">
+<span>Bitnode</span>
+<span class="text-outline-variant">/</span>
+<span class="text-on-surface font-medium">Configuración</span>
+</div>
+<!-- Quick Server Status & Actions -->
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface border border-outline-variant/40 text-[11px] font-mono">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span>
+<span class="text-on-surface-variant">Estado:</span>
+<span class="text-primary font-medium">Servidor activo</span>
+</div>
+<button class="px-2.5 py-1 rounded text-xs font-label text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors border border-outline-variant/40">
+          Restablecer valores
+        </button>
+</div>
+</header>
+<!-- Scrollable Content Canvas -->
+<main class="flex-1 overflow-y-auto px-8 py-6 space-y-6 max-w-5xl">
+<!-- Section Title Area -->
+<div class="pb-1 border-b border-outline-variant/20">
+<h1 class="text-xl font-headline font-semibold text-on-surface tracking-tight">Configuración</h1>
+<p class="text-xs font-label text-on-surface-variant mt-1">Preferencias de la aplicación y servicios locales del sistema.</p>
+</div>
+<!-- ================= SECCIÓN 1: ACCESO EN RED LOCAL ================= -->
+<section class="bg-surface-container border border-outline-variant/30 rounded-lg p-5 transition-all">
+<!-- Section Header -->
+<div class="flex items-start justify-between pb-4 border-b border-outline-variant/20">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary/10 border border-primary/30 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="lan">lan</span>
+</div>
+<div>
+<h2 class="text-sm font-headline font-semibold text-on-surface">Acceso en red local</h2>
+<p class="text-xs font-body text-on-surface-variant mt-0.5">Permite acceder a Bitnode desde otros dispositivos conectados a tu red local Wi-Fi o Ethernet.</p>
+</div>
+</div>
+<!-- Switch Toggle: Servidor LAN -->
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-9 h-5 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<!-- Controls Inside Grid -->
+<div class="mt-4 space-y-4">
+<!-- LAN Access URL Box -->
+<div>
+<label class="block text-xs font-label font-medium text-on-surface-variant mb-1.5">Dirección de acceso LAN</label>
+<div class="flex items-center gap-2">
+<div class="flex-1 bg-surface border border-outline-variant/40 rounded px-3 py-1.5 flex items-center justify-between font-mono text-xs">
+<div class="flex items-center gap-2">
+<span class="text-primary font-medium">http://192.168.1.45:8443</span>
+</div>
+<button class="flex items-center gap-1 text-[11px] text-on-surface-variant hover:text-primary transition-colors px-2 py-0.5 rounded hover:bg-surface-container-high" onclick="navigator.clipboard?.writeText('http://192.168.1.45:8443')" title="Copiar enlace">
+<span class="material-symbols-outlined text-[14px]" data-icon="content_copy">content_copy</span>
+<span>Copiar</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Port Input Row -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+<div>
+<label class="block text-xs font-label font-medium text-on-surface-variant mb-1.5">Puerto de escucha</label>
+<div class="flex items-center gap-2">
+<input class="w-32 bg-surface border border-outline-variant/40 rounded px-3 py-1.5 font-mono text-xs text-on-surface focus:outline-none focus:border-primary" type="text" value="8443"/>
+<button class="px-3 py-1.5 rounded bg-surface-container-high border border-outline-variant/50 text-xs font-label text-on-surface hover:border-primary/40 hover:text-primary transition-all">
+                  Guardar puerto
+                </button>
+</div>
+</div>
+<!-- HTTPS / TLS Local Sub-card -->
+<div class="bg-surface/60 border border-outline-variant/30 rounded p-2.5 flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-xs font-label font-medium text-on-surface">HTTPS / TLS local</span>
+<span class="text-[11px] font-mono text-primary flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[13px]" data-icon="verified">verified</span>
+                  Certificado local válido (320 días)
+                </span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-8 h-4 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+<!-- Subtle Warning Note -->
+<div class="flex items-center gap-2 text-xs text-on-surface-variant/80 pt-1">
+<span class="material-symbols-outlined text-[15px] text-on-surface-variant" data-icon="info">info</span>
+<span>Asegúrate de que el puerto esté permitido en el cortafuegos de tu equipo.</span>
+</div>
+</div>
+</section>
+<!-- ================= SECCIÓN 2: COPIAS DE SEGURIDAD ================= -->
+<section class="bg-surface-container border border-outline-variant/30 rounded-lg p-5">
+<!-- Section Header -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-outline-variant/20 gap-3">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary/10 border border-primary/30 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+</div>
+<div>
+<h2 class="text-sm font-headline font-semibold text-on-surface">Copias de seguridad</h2>
+<p class="text-xs font-body text-on-surface-variant mt-0.5">Archivos comprimidos con la base de datos íntegra y archivos adjuntos locales.</p>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 rounded text-xs font-label bg-surface border border-outline-variant/50 text-on-surface hover:bg-surface-container-high transition-colors">
+              Restaurar desde backup
+            </button>
+<button class="px-3 py-1.5 rounded text-xs font-label font-medium bg-primary text-on-primary hover:bg-primary-dark transition-all flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]" data-icon="add">add</span>
+              Crear backup ahora
+            </button>
+</div>
+</div>
+<!-- Technical restoration note -->
+<div class="mt-4 p-2.5 rounded bg-surface/50 border border-outline-variant/30 text-xs font-mono text-on-surface-variant flex items-start gap-2">
+<span class="material-symbols-outlined text-primary text-[15px] mt-0.5" data-icon="terminal">terminal</span>
+<span class="leading-relaxed">
+<strong class="text-on-surface font-semibold">Nota de restauración:</strong> Para garantizar la integridad de datos, la restauración se realiza mediante terminal CLI ejecutando <code class="text-primary px-1 py-0.5 bg-surface-container rounded border border-outline-variant/40">bitnode restore &lt;archivo&gt;</code> con el servidor detenido.
+          </span>
+</div>
+<!-- Backups List Table -->
+<div class="mt-4 border border-outline-variant/30 rounded overflow-hidden">
+<table class="w-full text-left text-xs">
+<thead class="bg-surface/80 border-b border-outline-variant/30 font-label text-on-surface-variant uppercase text-[10px] tracking-wider">
+<tr>
+<th class="px-3.5 py-2">Nombre del archivo</th>
+<th class="px-3.5 py-2">Fecha y hora</th>
+<th class="px-3.5 py-2">Tamaño</th>
+<th class="px-3.5 py-2 text-right">Acción</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20 font-mono">
+<!-- Item 1 -->
+<tr class="hover:bg-surface-container-high/40 transition-colors">
+<td class="px-3.5 py-2.5 text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[15px]" data-icon="inventory_2">inventory_2</span>
+<span>bitnode_backup_2024-10-24_0300.tar.gz</span>
+</td>
+<td class="px-3.5 py-2.5 text-on-surface-variant font-body">24 oct 2024, 03:00</td>
+<td class="px-3.5 py-2.5 text-on-surface-variant">14.2 MB</td>
+<td class="px-3.5 py-2.5 text-right font-body">
+<div class="inline-flex items-center gap-1.5">
+<button class="px-2 py-0.5 rounded text-[11px] border border-outline-variant/40 hover:border-primary/40 hover:text-primary transition-colors">Descargar</button>
+<button class="p-0.5 text-on-surface-variant hover:text-on-surface">
+<span class="material-symbols-outlined text-[16px]" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Item 2 -->
+<tr class="hover:bg-surface-container-high/40 transition-colors">
+<td class="px-3.5 py-2.5 text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[15px]" data-icon="inventory_2">inventory_2</span>
+<span>bitnode_backup_2024-10-23_0300.tar.gz</span>
+</td>
+<td class="px-3.5 py-2.5 text-on-surface-variant font-body">23 oct 2024, 03:00</td>
+<td class="px-3.5 py-2.5 text-on-surface-variant">14.1 MB</td>
+<td class="px-3.5 py-2.5 text-right font-body">
+<div class="inline-flex items-center gap-1.5">
+<button class="px-2 py-0.5 rounded text-[11px] border border-outline-variant/40 hover:border-primary/40 hover:text-primary transition-colors">Descargar</button>
+<button class="p-0.5 text-on-surface-variant hover:text-on-surface">
+<span class="material-symbols-outlined text-[16px]" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Item 3 -->
+<tr class="hover:bg-surface-container-high/40 transition-colors">
+<td class="px-3.5 py-2.5 text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[15px]" data-icon="inventory_2">inventory_2</span>
+<span>bitnode_backup_2024-10-20_manual.tar.gz</span>
+</td>
+<td class="px-3.5 py-2.5 text-on-surface-variant font-body">20 oct 2024, 18:22</td>
+<td class="px-3.5 py-2.5 text-on-surface-variant">13.9 MB</td>
+<td class="px-3.5 py-2.5 text-right font-body">
+<div class="inline-flex items-center gap-1.5">
+<button class="px-2 py-0.5 rounded text-[11px] border border-outline-variant/40 hover:border-primary/40 hover:text-primary transition-colors">Descargar</button>
+<button class="p-0.5 text-on-surface-variant hover:text-on-surface">
+<span class="material-symbols-outlined text-[16px]" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Directory Path Setting -->
+<div class="mt-4 pt-3 border-t border-outline-variant/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="text-xs font-label text-on-surface-variant">Directorio de destino:</span>
+<code class="text-xs font-mono text-on-surface px-2 py-0.5 bg-surface rounded border border-outline-variant/40">/var/lib/bitnode/backups</code>
+</div>
+<button class="px-2.5 py-1 text-xs rounded border border-outline-variant/40 hover:border-primary/40 hover:text-primary transition-colors flex items-center gap-1 self-start sm:self-auto font-label">
+<span class="material-symbols-outlined text-[14px]" data-icon="folder">folder</span>
+<span>Explorar...</span>
+</button>
+</div>
+</section>
+<!-- ================= SECCIÓN 3: GENERAL ================= -->
+<section class="bg-surface-container border border-outline-variant/30 rounded-lg p-5">
+<!-- Section Header -->
+<div class="flex items-center gap-3 pb-4 border-b border-outline-variant/20">
+<div class="w-8 h-8 rounded bg-primary/10 border border-primary/30 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="tune">tune</span>
+</div>
+<div>
+<h2 class="text-sm font-headline font-semibold text-on-surface">General</h2>
+<p class="text-xs font-body text-on-surface-variant mt-0.5">Parámetros regionales, apariencia y flujo de desbloqueo.</p>
+</div>
+</div>
+<!-- Form Grid -->
+<div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+<!-- Theme Selector -->
+<div>
+<label class="block text-xs font-label font-medium text-on-surface-variant mb-1.5">Tema de la interfaz</label>
+<div class="flex items-center justify-between px-3 py-2 bg-surface border border-outline-variant/40 rounded text-xs">
+<span class="text-on-surface font-medium flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[15px]" data-icon="dark_mode">dark_mode</span>
+                Oscuro (fijo)
+              </span>
+<span class="material-symbols-outlined text-on-surface-variant text-[14px]" data-icon="lock">lock</span>
+</div>
+</div>
+<!-- Currency Format -->
+<div>
+<label class="block text-xs font-label font-medium text-on-surface-variant mb-1.5">Formato de moneda</label>
+<div class="relative">
+<select class="w-full bg-surface border border-outline-variant/40 rounded px-3 py-2 text-xs text-on-surface appearance-none focus:outline-none focus:border-primary pr-8">
+<option selected="">COP ($ Peso colombiano)</option>
+<option>USD ($ Dólar estadounidense)</option>
+<option>EUR (€ Euro)</option>
+<option>MXN ($ Peso mexicano)</option>
+</select>
+<span class="material-symbols-outlined absolute right-2.5 top-2.5 pointer-events-none text-on-surface-variant text-[16px]" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+<!-- Timezone -->
+<div>
+<label class="block text-xs font-label font-medium text-on-surface-variant mb-1.5">Zona horaria</label>
+<div class="relative">
+<select class="w-full bg-surface border border-outline-variant/40 rounded px-3 py-2 text-xs text-on-surface appearance-none focus:outline-none focus:border-primary pr-8">
+<option selected="">America/Bogota (UTC-5)</option>
+<option>America/Mexico_City (UTC-6)</option>
+<option>America/Argentina/Buenos_Aires (UTC-3)</option>
+<option>Europe/Madrid (UTC+1)</option>
+</select>
+<span class="material-symbols-outlined absolute right-2.5 top-2.5 pointer-events-none text-on-surface-variant text-[16px]" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Security Startup Behavior -->
+<div class="mt-5 p-3 rounded bg-surface/40 border border-outline-variant/30 flex items-start gap-2.5">
+<span class="material-symbols-outlined text-primary text-[16px] mt-0.5" data-icon="shield">shield</span>
+<div>
+<span class="text-xs font-label font-semibold text-on-surface">Desbloqueo de sesión</span>
+<p class="text-xs font-body text-on-surface-variant mt-0.5">
+              El PIN o contraseña de acceso local se solicitará cada vez que abras la aplicación o recargues la ventana.
+            </p>
+</div>
+</div>
+</section>
+<!-- Bottom System Footer note -->
+<footer class="pt-2 pb-6 text-center">
+<span class="text-[11px] font-mono text-on-surface-variant/60">
+          Bitnode Core Daemon • Ejecución local autónoma
+        </span>
+</footer>
+</main>
+</div>
+</body></html>

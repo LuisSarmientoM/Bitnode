@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bitnode - Trasladar Tarea</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          colors: {
+            primary: '#07B478',
+            secondary: '#518166',
+            tertiary: '#FF9676',
+            neutral: '#717973',
+            surface: {
+              DEFAULT: '#0d1117',
+              container: '#131822',
+              card: '#161d27',
+              hover: '#1c2432',
+              border: '#232b38'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    }
+    .material-symbols-outlined.fill {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0d1117;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #232b38;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #344054;
+    }
+  </style>
+</head>
+<body class="bg-surface text-gray-200 font-sans text-xs antialiased h-screen flex flex-col overflow-hidden select-none relative">
+
+  <!-- CAPA DE FONDO: DETALLE DE TAREA COMPLETA Y LEGIBLE (CON ATENUADO SUTIL) -->
+  <div class="flex-1 flex overflow-hidden filter brightness-[0.4] pointer-events-none select-none">
+    
+    <!-- SIDEBAR BITNODE -->
+    <aside class="w-56 bg-surface-container border-r border-surface-border flex flex-col justify-between shrink-0">
+      <div class="flex flex-col">
+        <!-- Logo Header -->
+        <div class="h-10 px-4 flex items-center gap-2 border-b border-surface-border/60">
+          <div class="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_8px_rgba(7,180,120,0.6)]"></div>
+          <span class="font-bold text-sm tracking-tight text-white font-mono">Bitnode</span>
+        </div>
+
+        <!-- Buscador Rápido -->
+        <div class="p-2 border-b border-surface-border/40">
+          <div class="flex items-center gap-2 px-2.5 py-1.5 rounded bg-surface border border-surface-border/60 text-gray-400">
+            <span class="material-symbols-outlined text-sm">search</span>
+            <span class="text-[11px] text-gray-500 flex-1">Buscar tareas, notas...</span>
+            <kbd class="text-[10px] font-mono bg-surface-container px-1 py-0.5 rounded text-gray-400">/</kbd>
+          </div>
+        </div>
+
+        <!-- Navegación 10 secciones -->
+        <nav class="p-2 space-y-0.5">
+          <div class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-gray-400">
+            <span class="material-symbols-outlined text-sm">today</span>
+            <span>Hoy</span>
+          </div>
+          <div class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-gray-400">
+            <span class="material-symbols-outlined text-sm">inbox</span>
+            <span>Inbox</span>
+          </div>
+          <div class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-gray-400">
+            <span class="material-symbols-outlined text-sm">group</span>
+            <span>Clientes</span>
+          </div>
+          <!-- Activo: Proyectos -->
+          <div class="flex items-center gap-2.5 px-2.5 py-1.5 rounded bg-surface-card border border-surface-border text-white font-medium">
+            <span class="material-symbols-outlined text-sm text-primary">folder_open</span>
+            <span>Proyectos</span>
+          </div>
+          <div class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-gray-400">
+            <span class="material-symbols-outlined text-sm">contacts</span>
+            <span>Contactos</span>
+          </div>
+          <div class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-gray-400">
+            <span class="material-symbols-outlined text-sm">note</span>
+            <span>Notas</span>
+          </div>
+          <div class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-gray-400">
+            <span class="material-symbols-outlined text-sm">timer</span>
+            <span>Tiempo</span>
+          </div>
+          <div class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-gray-400">
+            <span class="material-symbols-outlined text-sm">account_balance</span>
+            <span>Finanzas</span>
+          </div>
+          <div class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-gray-400">
+            <span class="material-symbols-outlined text-sm">calendar_today</span>
+            <span>Calendario</span>
+          </div>
+          <div class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-gray-400">
+            <span class="material-symbols-outlined text-sm">history</span>
+            <span>Actividad</span>
+          </div>
+        </nav>
+      </div>
+
+      <!-- Pie de Sidebar: Solo Configuración -->
+      <div class="p-2 border-t border-surface-border/60">
+        <div class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-gray-400">
+          <span class="material-symbols-outlined text-sm">settings</span>
+          <span>Configuración</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ÁREA PRINCIPAL -->
+    <main class="flex-1 flex flex-col bg-surface overflow-hidden">
+      <!-- HEADER FILA ÚNICA -->
+      <header class="h-10 px-6 border-b border-surface-border flex items-center justify-between shrink-0 bg-surface">
+        <div class="flex items-center gap-2 text-xs font-mono">
+          <span class="text-gray-400">Proyectos</span>
+          <span class="text-gray-600">/</span>
+          <span class="text-gray-400">Ciberseguridad 2024</span>
+          <span class="text-gray-600">/</span>
+          <span class="text-white font-medium truncate max-w-sm">Auditoría de vulnerabilidades y hardening...</span>
+        </div>
+        <div class="flex items-center gap-2 text-gray-400">
+          <span class="material-symbols-outlined text-sm">tune</span>
+          <span class="material-symbols-outlined text-sm">more_vert</span>
+        </div>
+      </header>
+
+      <!-- CONTENIDO DE DETALLE DE TAREA (ESTRUCTURA LEGIBLE) -->
+      <div class="flex-1 overflow-y-auto p-8 max-w-5xl mx-auto w-full space-y-6">
+        <!-- TÍTULO Y BADGE -->
+        <div>
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono bg-primary/10 text-primary border border-primary/30">
+              <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+              En curso
+            </span>
+            <span class="text-gray-500 font-mono text-[11px]">ID-8823</span>
+          </div>
+          <h1 class="text-xl font-bold text-white tracking-tight">
+            Auditoría de vulnerabilidades y hardening de servidores Ubuntu
+          </h1>
+        </div>
+
+        <!-- FILA DE METADATOS Y TEMPORIZADOR -->
+        <div class="grid grid-cols-5 gap-3 p-3.5 rounded-lg bg-surface-container border border-surface-border">
+          <div>
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 font-mono">Estado</div>
+            <div class="font-medium text-primary flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-primary"></span> En curso
+            </div>
+          </div>
+          <div>
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 font-mono">Prioridad</div>
+            <div class="font-medium text-tertiary flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-sm">flag</span> Alta
+            </div>
+          </div>
+          <div>
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 font-mono">Planificación</div>
+            <div class="font-mono text-gray-300">24 oct, 19:00</div>
+          </div>
+          <div>
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 font-mono">Fecha Límite</div>
+            <div class="font-mono text-tertiary">24 oct, 17:00</div>
+          </div>
+          <div class="border-l border-surface-border pl-3 flex flex-col justify-center">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-0.5 font-mono">Temporizador</div>
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-sm font-semibold text-primary">01:42:15</span>
+              <button class="px-2 py-0.5 rounded bg-surface border border-surface-border text-gray-300 hover:text-white text-[11px]">
+                Pausar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- BARRA DE ACCIONES PRINCIPAL -->
+        <div class="flex items-center gap-2 pb-2 border-b border-surface-border">
+          <button class="flex items-center gap-1.5 px-3 py-1.5 rounded bg-surface-container border border-surface-border text-gray-300 text-xs font-medium">
+            <span class="material-symbols-outlined text-sm">edit</span> Editar
+          </button>
+          <button class="flex items-center gap-1.5 px-3 py-1.5 rounded bg-primary/20 border border-primary text-primary text-xs font-medium">
+            <span class="material-symbols-outlined text-sm">swap_horiz</span> Trasladar
+          </button>
+          <button class="flex items-center gap-1.5 px-3 py-1.5 rounded bg-surface-container border border-surface-border text-red-400 hover:bg-red-500/10 text-xs font-medium">
+            <span class="material-symbols-outlined text-sm">delete</span> Eliminar
+          </button>
+        </div>
+
+        <!-- DESCRIPCIÓN COLAPSADA -->
+        <div class="space-y-1.5">
+          <div class="text-[11px] font-mono text-gray-400 uppercase tracking-wider">Descripción</div>
+          <p class="text-xs text-gray-400 leading-relaxed line-clamp-2">
+            Revisión integral de las políticas de firewall UFW y endurecimiento de bastiones SSH en clúster Ubuntu 22.04 LTS. Análisis forense de accesos no autenticados y configuración de reglas iptables.
+          </p>
+        </div>
+
+        <!-- SUBTAREAS (3) -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2 text-xs font-semibold text-gray-200">
+              <span class="material-symbols-outlined text-sm text-secondary">checklist</span>
+              <span>Subtareas (3)</span>
+            </div>
+            <span class="text-[11px] font-mono text-gray-500">1 de 3 completadas</span>
+          </div>
+
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between p-2.5 rounded bg-surface-container border border-surface-border">
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-primary text-sm">check_box</span>
+                <span class="text-gray-400 line-through">Actualización de paquetes y cierre de puertos de depuración</span>
+              </div>
+              <span class="text-[10px] font-mono text-gray-500">Completada</span>
+            </div>
+            <div class="flex items-center justify-between p-2.5 rounded bg-surface-container border border-surface-border">
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-gray-500 text-sm">check_box_outline_blank</span>
+                <span class="text-gray-200">Verificación de llaves autorizadas en /etc/ssh/sshd_config</span>
+              </div>
+              <span class="text-[10px] font-mono text-primary">En curso</span>
+            </div>
+            <div class="flex items-center justify-between p-2.5 rounded bg-surface-container border border-surface-border">
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-gray-500 text-sm">check_box_outline_blank</span>
+                <span class="text-gray-300">Despliegue de Fail2ban con bloqueo proactivo de IPs</span>
+              </div>
+              <span class="text-[10px] font-mono text-gray-500">Pendiente</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACORDEONES CERRADOS -->
+        <div class="space-y-2 pt-2">
+          <div class="flex items-center justify-between p-2.5 rounded bg-surface-container/60 border border-surface-border/60 text-gray-400">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-sm">history</span>
+              <span class="font-medium text-xs">Registro de sesiones de tiempo (4)</span>
+            </div>
+            <span class="material-symbols-outlined text-sm">expand_more</span>
+          </div>
+          <div class="flex items-center justify-between p-2.5 rounded bg-surface-container/60 border border-surface-border/60 text-gray-400">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-sm">attach_file</span>
+              <span class="font-medium text-xs">Archivos adjuntos locales y reportes (2)</span>
+            </div>
+            <span class="material-symbols-outlined text-sm">expand_more</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL CENTRADO ABIERTO ENCIMA (ÚNICO ELEMENTO SUPERPUESTO) -->
+  <div class="absolute inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-[2px]">
+    <div class="w-full max-w-xl bg-surface-container border border-surface-border rounded-xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150">
+      
+      <!-- CABECERA DEL MODAL -->
+      <div class="px-5 py-4 border-b border-surface-border flex items-center justify-between bg-surface-card/60">
+        <div class="flex items-center gap-2 text-white">
+          <span class="material-symbols-outlined text-primary text-lg">swap_horiz</span>
+          <h2 class="font-semibold text-sm tracking-tight">Trasladar tarea a otro proyecto</h2>
+        </div>
+        <button class="text-gray-400 hover:text-gray-200 transition-colors p-1 rounded-md hover:bg-surface-hover">
+          <span class="material-symbols-outlined text-base">close</span>
+        </button>
+      </div>
+
+      <!-- CUERPO DEL MODAL -->
+      <div class="p-5 space-y-4">
+        
+        <!-- 1. CAJA DE LECTURA CON LA TAREA SELECCIONADA -->
+        <div>
+          <label class="block text-[10px] font-mono uppercase tracking-wider text-gray-400 mb-1.5">
+            Tarea seleccionada
+          </label>
+          <div class="p-3 rounded-lg bg-surface border border-surface-border text-gray-200 font-medium text-xs flex items-center gap-2.5">
+            <span class="w-2 h-2 rounded-full bg-primary shrink-0"></span>
+            <span class="truncate">Auditoría de vulnerabilidades y hardening de servidores Ubuntu</span>
+          </div>
+        </div>
+
+        <!-- 2. SELECTOR DE RAMA O PROYECTO DE DESTINO -->
+        <div>
+          <label class="block text-[10px] font-mono uppercase tracking-wider text-gray-400 mb-1.5">
+            Rama o proyecto de destino
+          </label>
+          <div class="relative">
+            <select class="w-full bg-surface border border-surface-border rounded-lg px-3.5 py-2.5 text-xs text-white appearance-none focus:outline-none focus:border-primary pr-9 font-medium cursor-pointer">
+              <option value="rappi-pay" selected>Pasarela Pagos · Rappi Pay / Infraestructura AWS (Activo)</option>
+              <option value="cloud-lift">Seguros Bolívar TI · Cloud Lift / Migración RDS (Activo)</option>
+              <option value="facturacion-alpina">Facturación Electrónica DIAN · Alpina (Activo)</option>
+              <option value="daviplata">Infraestructura Core · Daviplata (Activo)</option>
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
+              <span class="material-symbols-outlined text-sm">unfold_more</span>
+            </div>
+          </div>
+          <!-- NOTA DISCRETA -->
+          <p class="mt-1.5 text-[11px] text-gray-400 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-xs text-neutral">info</span>
+            <span>Los proyectos completados o archivados deben reactivarse antes de recibir traslados.</span>
+          </p>
+        </div>
+
+        <!-- 3. CHECKLIST DE 4 PUNTOS CON CHECKS VERDES -->
+        <div>
+          <label class="block text-[10px] font-mono uppercase tracking-wider text-gray-400 mb-2">
+            Acciones automáticas de transferencia
+          </label>
+          <div class="rounded-lg bg-surface/80 border border-surface-border p-3 space-y-2.5 text-xs">
+            
+            <div class="flex items-start gap-2.5 text-gray-300">
+              <span class="material-symbols-outlined text-primary text-base shrink-0 mt-0.5">check_circle</span>
+              <span class="leading-snug">Separar del padre (la tarea es hija en su árbol actual)</span>
+            </div>
+
+            <div class="flex items-start gap-2.5 text-gray-300">
+              <span class="material-symbols-outlined text-primary text-base shrink-0 mt-0.5">check_circle</span>
+              <span class="leading-snug">Trasladar descendientes (las 3 subtareas se moverán intactas)</span>
+            </div>
+
+            <div class="flex items-start gap-2.5 text-gray-300">
+              <span class="material-symbols-outlined text-primary text-base shrink-0 mt-0.5">check_circle</span>
+              <span class="leading-snug">Detener y guardar los temporizadores activos</span>
+            </div>
+
+            <div class="flex items-start gap-2.5 text-gray-300">
+              <span class="material-symbols-outlined text-primary text-base shrink-0 mt-0.5">check_circle</span>
+              <span class="leading-snug">Todo el tiempo anterior (01:42:15) se atribuye al nuevo proyecto sin reiniciar contadores</span>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- PIE DEL MODAL CON BOTONES -->
+      <div class="px-5 py-3.5 bg-surface-card border-t border-surface-border flex items-center justify-end gap-3">
+        <button class="px-3.5 py-2 rounded-lg border border-surface-border bg-surface text-gray-300 hover:text-white hover:bg-surface-hover text-xs font-medium transition-colors">
+          Cancelar
+        </button>
+        <button class="px-4 py-2 rounded-lg bg-primary hover:bg-[#069c67] text-gray-950 font-semibold text-xs flex items-center gap-1.5 transition-colors shadow-sm">
+          <span class="material-symbols-outlined text-sm font-semibold">swap_horiz</span>
+          Confirmar traslado
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BARRA DE ESTADO INFERIOR SOLO 'Datos en este equipo' -->
+  <footer class="h-6 px-4 bg-surface-container border-t border-surface-border flex items-center shrink-0 z-40 text-[11px] font-mono text-gray-400">
+    <div class="flex items-center gap-2">
+      <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+      <span class="text-gray-300">Datos en este equipo</span>
+    </div>
+  </footer>
+
+</body>
+</html>

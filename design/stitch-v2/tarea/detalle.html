@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bitnode - Detalle de tarea</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Public+Sans:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            surface: {
+              DEFAULT: '#0b0f14',
+              container: '#0f141c',
+              'container-high': '#161c26',
+              'container-highest': '#1f2735'
+            },
+            primary: {
+              DEFAULT: '#07B478',
+              container: '#064e3b'
+            },
+            'on-surface': '#e2e8f0',
+            'on-surface-variant': '#94a3b8',
+            'outline-variant': '#263142'
+          },
+          borderRadius: {
+            DEFAULT: "0.125rem",
+            lg: "0.25rem",
+            xl: "0.5rem",
+            full: "0.75rem"
+          },
+          fontFamily: {
+            headline: ["Space Grotesk", "sans-serif"],
+            display: ["Space Grotesk", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Public Sans", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 350, 'GRAD' 0, 'opsz' 18;
+      font-size: 16px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .material-symbols-outlined.fill-icon {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 18;
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0b0f14;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1f2735;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #2d384c;
+    }
+  </style>
+</head>
+<body class="bg-[#0b0f14] text-on-surface font-body text-xs antialiased h-screen overflow-hidden flex flex-col select-none">
+<div class="flex h-screen w-screen overflow-hidden">
+<!-- 1. SIDEBAR LATERAL IZQUIERDO -->
+<aside class="w-56 h-screen flex flex-col justify-between p-3 select-none bg-surface-container border-r border-outline-variant/30 flex-shrink-0 z-20">
+<!-- Bloque superior del Sidebar -->
+<div class="flex flex-col gap-3">
+<!-- Mac-style dots + App brand -->
+<div class="flex items-center justify-between px-1 py-1">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-[#ff5f56]/90 block"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]/90 block"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-[#27c93f]/90 block"></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#07B478] animate-pulse"></span>
+<span class="font-headline font-bold text-xs tracking-normal text-on-surface">Bitnode</span>
+</div>
+</div>
+<!-- Buscador -->
+<div class="relative">
+<span class="material-symbols-outlined absolute left-2 top-2 text-on-surface-variant/70 text-[14px]">search</span>
+<input class="w-full bg-surface-container-high border border-outline-variant/40 rounded-lg pl-7 pr-2 py-1 text-[11px] text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all font-body" placeholder="Buscar tareas, notas..." readonly="" type="text"/>
+</div>
+<!-- 10 Secciones de navegación -->
+<nav class="flex flex-col gap-0.5 mt-1">
+<!-- 1. Hoy -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors font-normal text-xs" href="#">
+<span class="material-symbols-outlined text-[15px]">today</span>
+<span class="font-label tracking-tight">Hoy</span>
+</a>
+<!-- 2. Inbox -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors font-normal text-xs justify-between" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[15px]">inbox</span>
+<span class="font-label tracking-tight">Inbox</span>
+</div>
+<span class="text-[10px] font-mono text-on-surface-variant/60 bg-surface-container-high px-1 rounded">4</span>
+</a>
+<!-- 3. Clientes -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors font-normal text-xs" href="#">
+<span class="material-symbols-outlined text-[15px]">group</span>
+<span class="font-label tracking-tight">Clientes</span>
+</a>
+<!-- 4. Proyectos (Activo/En contexto) -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg bg-surface-container-high text-on-surface font-medium text-xs border-l-2 border-primary" href="#">
+<span class="material-symbols-outlined text-primary text-[15px]">folder_open</span>
+<span class="font-label tracking-tight flex-1">Proyectos</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+</a>
+<!-- 5. Contactos -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors font-normal text-xs" href="#">
+<span class="material-symbols-outlined text-[15px]">contacts</span>
+<span class="font-label tracking-tight">Contactos</span>
+</a>
+<!-- 6. Notas -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors font-normal text-xs" href="#">
+<span class="material-symbols-outlined text-[15px]">note</span>
+<span class="font-label tracking-tight">Notas</span>
+</a>
+<!-- 7. Tiempo -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors font-normal text-xs" href="#">
+<span class="material-symbols-outlined text-[15px]">timer</span>
+<span class="font-label tracking-tight">Tiempo</span>
+</a>
+<!-- 8. Finanzas -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors font-normal text-xs" href="#">
+<span class="material-symbols-outlined text-[15px]">account_balance</span>
+<span class="font-label tracking-tight">Finanzas</span>
+</a>
+<!-- 9. Calendario -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors font-normal text-xs" href="#">
+<span class="material-symbols-outlined text-[15px]">calendar_today</span>
+<span class="font-label tracking-tight">Calendario</span>
+</a>
+<!-- 10. Actividad -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors font-normal text-xs" href="#">
+<span class="material-symbols-outlined text-[15px]">history</span>
+<span class="font-label tracking-tight">Actividad</span>
+</a>
+</nav>
+</div>
+<!-- Pie del Sidebar: Configuración + Barra de Estado -->
+<div class="flex flex-col gap-2 pt-2 border-t border-outline-variant/30">
+<a class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors font-normal text-xs" href="#">
+<span class="material-symbols-outlined text-[15px]">settings</span>
+<span class="font-label">Configuración</span>
+</a>
+<!-- Estado local -->
+<div class="px-2.5 py-1 bg-surface-container-high/40 rounded flex items-center justify-between text-[10px] text-on-surface-variant/70 border border-outline-variant/20"><div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span><span class="truncate">Datos en este equipo</span></div><span class="font-mono text-[10px] text-on-surface-variant/60">America/Bogota (UTC-5)</span></div>
+</div>
+</aside>
+<!-- 2 & 3. ÁREA DE TRABAJO PRINCIPAL (DETALLE DE TAREA) -->
+<main class="flex-1 flex flex-col h-screen overflow-hidden bg-[#0c1015] relative">
+<!-- Encabezado Principal / Barra Superior -->
+<header class="w-full h-10 border-b border-outline-variant/30 px-5 flex items-center justify-between bg-surface/90 backdrop-blur flex-shrink-0 z-10"><div class="flex items-center gap-2 text-xs text-on-surface-variant overflow-hidden"><span class="material-symbols-outlined text-primary text-[15px]">folder</span><span class="hover:text-on-surface cursor-pointer transition-colors">Proyectos</span><span class="text-on-surface-variant/40">&gt;</span><span class="hover:text-on-surface cursor-pointer transition-colors">Ciberseguridad 2024</span><span class="text-on-surface-variant/40">&gt;</span><span class="text-on-surface font-medium truncate">Auditoría de vulnerabilidades</span></div><div class="flex items-center gap-3 text-xs"><div class="flex items-center gap-2 bg-surface-container-high/90 border border-outline-variant/50 px-2.5 py-1 rounded-lg"><span class="text-[11px] font-mono text-primary font-semibold flex items-center gap-1"><span class="material-symbols-outlined text-[14px] text-primary animate-spin" style="animation-duration: 4s;">timelapse</span>01:42:15</span><span class="text-[10px] text-on-surface-variant/70 border-l border-outline-variant/50 pl-1.5">Hoy</span><button class="ml-1 px-2 py-0.5 rounded bg-primary/20 text-primary hover:bg-primary/30 transition-colors text-[11px] font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[12px] fill-icon">pause</span>Pausar</button></div></div></header>
+<!-- Lienzo con Scroll del Detalle -->
+<div class="flex-1 overflow-y-auto px-6 py-4 space-y-4 max-w-5xl w-full mx-auto"><section class="bg-surface-container/60 border border-outline-variant/40 rounded-xl p-4 shadow-sm flex flex-col gap-3"><div class="flex items-center justify-between flex-wrap gap-2"><div class="flex items-center gap-1.5 text-[11px] text-primary font-medium tracking-tight"><span class="material-symbols-outlined text-[14px]">security</span><span>Proyecto: Ciberseguridad 2024</span><span class="text-on-surface-variant/40">·</span><span class="text-on-surface-variant">Cliente: Banco de Bogotá</span></div></div><div><h1 class="font-headline font-semibold text-lg md:text-xl text-on-surface tracking-tight leading-snug">Auditoría de vulnerabilidades y hardening de servidores Ubuntu</h1></div><div class="flex items-center justify-between pt-1 border-t border-outline-variant/30 text-xs"><div class="flex items-center gap-2"><button class="px-2.5 py-1 rounded bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/50 text-on-surface flex items-center gap-1.5 transition-colors text-[11px]"><span class="material-symbols-outlined text-[13px]">edit</span><span>Editar</span></button><button class="px-2.5 py-1 rounded bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/50 text-on-surface flex items-center gap-1.5 transition-colors text-[11px]"><span class="material-symbols-outlined text-[13px]">drive_file_move</span><span>Trasladar a proyecto</span></button></div><button class="px-2.5 py-1 rounded hover:bg-rose-500/10 text-rose-400/80 hover:text-rose-400 flex items-center gap-1.5 transition-colors text-[11px]" title="Acción destructiva irrecuperable"><span class="material-symbols-outlined text-[13px]">delete</span><span>Eliminar</span></button></div><div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/25 text-amber-300/90 text-[11px] leading-tight"><span class="material-symbols-outlined text-[15px] text-amber-400 flex-shrink-0">info</span><span>Motivo de bloqueo: Sin motivo de bloqueo (Esperando confirmación de ventana de mantenimiento por parte del cliente).</span></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 pt-1 border-t border-outline-variant/30 text-xs"><div class="flex flex-col gap-1"><span class="text-[10px] text-on-surface-variant/80 uppercase tracking-wider font-mono">Estado</span><div class="relative inline-block"><select class="w-full bg-surface-container-high border border-outline-variant/40 rounded px-2 py-1 text-xs text-primary appearance-none focus:outline-none focus:border-primary/60 cursor-pointer font-medium pl-6"><option value="nueva">Nueva</option><option selected="" value="en_curso">En curso</option><option value="bloqueada">Bloqueada</option><option value="revision">En revisión</option><option value="completada">Completada</option><option value="cancelada">Cancelada</option></select><span class="w-2 h-2 rounded-full bg-emerald-400 absolute left-2.5 top-2.5"></span><span class="material-symbols-outlined absolute right-1.5 top-1.5 text-on-surface-variant pointer-events-none text-[14px]">expand_more</span></div></div><div class="flex flex-col gap-1"><span class="text-[10px] text-on-surface-variant/80 uppercase tracking-wider font-mono">Prioridad</span><div class="relative inline-block"><select class="w-full bg-surface-container-high border border-outline-variant/40 rounded px-2 py-1 text-xs text-amber-400 appearance-none focus:outline-none focus:border-primary/60 cursor-pointer font-medium pl-6"><option value="sin_prioridad">Sin prioridad</option><option value="baja">Baja</option><option value="media">Media</option><option selected="" value="alta">Alta</option></select><span class="material-symbols-outlined absolute left-2 top-1.5 text-amber-400 text-[14px]">flag</span><span class="material-symbols-outlined absolute right-1.5 top-1.5 text-on-surface-variant pointer-events-none text-[14px]">expand_more</span></div></div><div class="flex flex-col gap-1"><span class="text-[10px] text-on-surface-variant/80 uppercase tracking-wider font-mono">Planificación</span><div class="flex items-center gap-1.5 bg-surface-container-high border border-outline-variant/40 rounded px-2 py-1 text-xs text-on-surface font-mono"><span class="material-symbols-outlined text-[14px] text-on-surface-variant">calendar_today</span><span>24 oct, 19:00</span></div></div><div class="flex flex-col gap-1"><span class="text-[10px] text-on-surface-variant/80 uppercase tracking-wider font-mono">Límite</span><div class="flex items-center gap-1.5 bg-surface-container-high border border-amber-500/40 rounded px-2 py-1 text-xs text-amber-300 font-mono"><span class="material-symbols-outlined text-[14px] text-amber-400">event_busy</span><span>24 oct, 17:00</span></div></div></div></section><section class="bg-surface-container/40 border border-outline-variant/30 rounded-xl p-3.5"><div class="flex items-center justify-between mb-2"><span class="text-[11px] font-mono text-on-surface-variant uppercase tracking-wider">Descripción (Markdown)</span><span class="text-[10px] text-on-surface-variant/50 font-mono">2 párrafos · 84 palabras</span></div><div class="text-xs text-on-surface-variant leading-relaxed space-y-1.5 font-body"><p class="line-clamp-2">Revisión de puertos, reglas UFW, hardening SSH y parches del kernel en servidores Ubuntu 22.04 LTS para Core Bancario. Verificación de políticas CIS Benchmark Nivel 2 y reporte técnico de remediación en Bogotá.</p></div><button class="mt-2 text-[11px] text-primary hover:underline flex items-center gap-0.5 font-medium"><span>Mostrar más</span><span class="material-symbols-outlined text-[13px]">expand_more</span></button></section><section class="bg-surface-container/40 border border-outline-variant/30 rounded-xl p-3.5"><div class="flex items-center justify-between mb-2.5"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-primary">checklist</span><span class="font-headline font-semibold text-xs text-on-surface">Subtareas (3)</span><span class="text-[10px] font-mono bg-surface-container-high px-1.5 py-0.2 rounded text-on-surface-variant">1/3 en curso</span></div><button class="text-[11px] text-primary hover:text-primary/80 flex items-center gap-1 font-medium"><span class="material-symbols-outlined text-[13px]">add</span><span>Añadir subtarea</span></button></div><div class="flex flex-col gap-1.5 text-xs font-body"><div class="flex items-center justify-between p-2 rounded-lg bg-surface-container-high/60 border border-outline-variant/30 hover:border-outline-variant/60 transition-colors"><div class="flex items-center gap-2.5 flex-1 min-w-0"><input class="rounded border-outline-variant text-primary focus:ring-0 focus:ring-offset-0 bg-surface-container cursor-pointer w-3.5 h-3.5" type="checkbox"/><span class="text-on-surface truncate">Revisión y cierre de puertos SSH/Telnet no autorizados</span></div><div class="flex items-center gap-3 text-[11px] flex-shrink-0 ml-2"><span class="text-primary font-mono text-[10px] bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20">En curso</span><span class="text-on-surface-variant/70 font-mono text-[10px] flex items-center gap-0.5"><span class="material-symbols-outlined text-[11px]">timer</span> 00:45:00</span></div></div><div class="flex items-center justify-between p-2 rounded-lg bg-surface-container-high/40 border border-outline-variant/20 hover:border-outline-variant/40 transition-colors"><div class="flex items-center gap-2.5 flex-1 min-w-0"><input class="rounded border-outline-variant text-primary focus:ring-0 focus:ring-offset-0 bg-surface-container cursor-pointer w-3.5 h-3.5" type="checkbox"/><span class="text-on-surface-variant truncate">Configuración de reglas iptables y fail2ban</span></div><div class="flex items-center gap-3 text-[11px] flex-shrink-0 ml-2"><span class="text-on-surface-variant/60 font-mono text-[10px] bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant/30">Pendiente</span><span class="text-on-surface-variant/40 font-mono text-[10px]">00:00:00</span></div></div><div class="flex items-center justify-between p-2 rounded-lg bg-surface-container-high/40 border border-outline-variant/20 hover:border-outline-variant/40 transition-colors"><div class="flex items-center gap-2.5 flex-1 min-w-0"><input class="rounded border-outline-variant text-primary focus:ring-0 focus:ring-offset-0 bg-surface-container cursor-pointer w-3.5 h-3.5" type="checkbox"/><span class="text-on-surface-variant truncate">Auditoría de privilegios sudo y llaves públicas</span></div><div class="flex items-center gap-3 text-[11px] flex-shrink-0 ml-2"><span class="text-on-surface-variant/60 font-mono text-[10px] bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant/30">Pendiente</span><span class="text-on-surface-variant/40 font-mono text-[10px]">00:00:00</span></div></div></div></section><div class="space-y-2"><div class="bg-surface-container/30 border border-outline-variant/30 rounded-xl overflow-hidden transition-all"><button class="w-full px-4 py-2.5 flex items-center justify-between hover:bg-surface-container-high/30 text-left transition-colors"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[15px] text-on-surface-variant">schedule</span><span class="font-headline font-semibold text-xs text-on-surface">Tiempo registrado (2 sesiones · 01:42:15)</span></div><span class="material-symbols-outlined text-on-surface-variant/60 text-[16px]">chevron_right</span></button></div><div class="bg-surface-container/30 border border-outline-variant/30 rounded-xl overflow-hidden transition-all"><button class="w-full px-4 py-2.5 flex items-center justify-between hover:bg-surface-container-high/30 text-left transition-colors"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[15px] text-on-surface-variant">info</span><span class="font-headline font-semibold text-xs text-on-surface">Detalles (2 etiquetas · Origen: Captura de Inbox)</span></div><span class="material-symbols-outlined text-on-surface-variant/60 text-[16px]">chevron_right</span></button></div></div><div class="h-4"></div></div>
+</main>
+</div>
+<!-- 4. DIÁLOGO MODAL SUPERPUESTO (Trasladar tarea a otro proyecto) -->
+<script>
+    // Atajo para cerrar modal con ESC
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const modal = document.getElementById('transferModal');
+        if (modal) modal.classList.add('hidden');
+      }
+    });
+  </script>
+</body></html>

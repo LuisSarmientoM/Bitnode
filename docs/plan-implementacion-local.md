@@ -1,6 +1,14 @@
 # Plan de implementación local
 
-Construir por unidades verificables, no implementar todo el alcance en un único cambio. Primero se revisa la [propuesta técnica](propuesta-tecnica-local.md) y se diseña la UI con el [brief de Stitch](diseno-ui-stitch.md), fuera de esta sesión. Este plan no autoriza por sí mismo instalar dependencias ni escribir código.
+## Primera entrega autorizada
+
+El usuario autorizó iniciar con Notas independientes de punta a punta, sin construir antes clientes/proyectos/tareas. Se implementó una base acotada Angular/NestJS/SQLite con crear/listar/abrir/editar Markdown. Ver [base de Notas](base-notas.md) y [README](../README.md). El orden general de abajo se conserva para el producto completo, no como bloqueo retroactivo de esta entrega.
+
+Esto no completa T1–T4 ni T12: faltan CLI, mantenimiento, acceso autenticado, vínculos, etiquetas, archivo/papelera y otras reglas globales. La aprobación visual final de Notas queda pendiente del usuario.
+
+## Plan general previo
+
+Construir por unidades verificables, no implementar todo el alcance en un único cambio. Revisar la [propuesta técnica](propuesta-tecnica-local.md) y el [diseño técnico detallado](diseno-tecnico-local.md), con [matriz T1–T20](diseno-tecnico/verificacion.md) y preguntas finales por puerta. Diseñar la UI con el [brief de Stitch](diseno-ui-stitch.md). Este plan no autoriza por sí mismo instalar dependencias ni escribir código.
 
 ## Orden y condiciones de avance
 
@@ -20,17 +28,17 @@ Cada fila delimita una capacidad; si aún tiene demasiado riesgo o revisión, se
 | D2. Diseño restante | Clientes/proyectos/contactos, notas, tiempo, finanzas, calendario, actividad, búsqueda, papelera y configuración. | Mismo sistema visual; revisar por grupos, no una aprobación ciega de todas las pantallas. Depende de D1. |
 | T1. Base ejecutable | Workspace, Angular vacío servido por NestJS, CLI mínima, configuración y scripts. | Arranque macOS, build, CLI sin servidor, recursos locales. Requiere autorización de implementación. |
 | T2. Base persistente | Driver, migración inicial, FKs/WAL, fábrica compartida, bloqueos de mantenimiento. | FTS5 disponible, migración exclusiva, dos procesos acceden sin corrupción, busy acotado. Depende T1. |
-| T3. Tipos y reglas comunes | Reloj/zona, normalización, dinero exacto, errores y revisiones. | Ñ/n distintos, acentos equivalentes, límites monetarios sin flotantes, fechas inválidas y DST cubiertos. Depende T2. |
+| T3. Tipos y reglas comunes | Reloj/zona, normalización, dinero exacto, errores y revisiones. | Ñ/n distintos, acentos equivalentes, límites monetarios sin flotantes, fechas inválidas y Colombia fija cubiertas. Depende T2. |
 | T4. Acceso local seguro | Bootstrap CLI, contraseña, sesiones, reset, CSRF y HTTPS guiado. | localhost/LAN autenticados, intento sin sesión rechazado, reset invalida, ningún fallback HTTP LAN. Depende T2. |
 | T5. Clientes y contactos | Campos, scopes, archivo, vínculos y etiquetas básicas. | Scope explícito, unicidad de clientes, nombres de contactos duplicados permitidos, sin borrado individual de contactos. Depende T3. |
 | T6. Proyectos | Cliente fijo, estados, fechas, unicidad por cliente. | Cliente archivado bloquea creación/reactivación; fechas invertidas avisan, no bloquean. Depende T5. |
 | T7. Tareas básicas | Crear/editar/listar, prioridad, referencias y fechas separadas. | Toda tarea nueva, proyecto obligatorio; destino cerrado rechazado; planificación posterior al límite avisa. Depende T6. |
 | T8. Jerarquía y transiciones | Subtareas, ciclos, cierre/cancelación y reapertura confirmada. | Misma rama/proyecto, no ciclos; completar con hijas abiertas falla; reabrir ancestros y proyecto exige consentimiento. Depende T7. |
-| T9. Tiempo manual | Entradas, edición, traslados, totales derivados. | Mínimo 1 min; destinos cerrados permitidos, tareas eliminadas no; fecha guardada inmutable ante cambio de zona. Depende T8. |
-| T10. Temporizadores | Persistencia, exclusión por destino, reconciliación y cierre integrado. | Dos procesos no inician duplicado; reinicio y tope12h, medianoche/DST, cierre atómico y solapamientos. Depende T9. |
+| T9. Tiempo manual | Entradas, edición, traslados, totales derivados. | Mínimo 1 min; destinos cerrados permitidos, tareas eliminadas no; fecha guardada permanece; presentación siempre Colombia. Depende T8. |
+| T10. Temporizadores | Persistencia, exclusión por destino, reconciliación y cierre integrado. | Dos procesos no inician duplicado; reinicio y tope12h, medianoche Colombia, cero sin entrada, cierre atómico y solapamientos; Nueva→En curso solo con inicio exitoso. Depende T9. |
 | T11. Traslado y eliminación de tareas | Mover rama, separación de hija, retención irrecuperable y purga. | Detener/guardar tiempo; atribución al destino; tiempo eliminado fuera de totales y solo lectura; purga desvincula sin borrar notas/eventos. Depende T10; última aceptación con T12/T15. |
 | T12. Notas y etiquetas | Markdown, título generado persistente, vínculos independientes, archivo y papelera. | Contextos cruzados admitidos, scopes derivados por cualquier vínculo, color fijo incluso ausencia, restaurar nota activa. Depende T8 y T5. |
-| T13. Inbox | Capturar/editar/descartar y procesar a tarea/nota. | Editar combinación; captura se elimina solo al guardar destino; prueba de fallo conserva captura si se aprueba esa propuesta. Depende T7/T12. |
+| T13. Inbox | Capturar/editar/descartar y procesar a tarea/nota. | Editar antes de crear y combinación; captura se elimina solo al guardar destino; prueba de fallo conserva captura, reglas aprobadas. Depende T7/T12. |
 | T14. Finanzas | COP/USD, tasas, edición/baja y totales. | Enteros positivos, redondeo por movimiento, pendiente visible, moneda limpia tasa, edición tasa confirmada. Depende T3/T6. |
 | T15. Eventos | Rango con hora o días inclusivos, contexto único y papelera. | Cero duración permitido; fin anterior falla; traslado de tarea actualiza contexto derivado. Depende T8. |
 | T16. Hoy y calendario | Consultas y UI con planificación/límite separados. | Selección Hoy persistente, filtros scope/cliente/proyecto; bloques separados; arrastrar solo planificación, cerradas como conteos. Depende T7/T8/T15 y diseños aprobados. |
@@ -56,16 +64,19 @@ Cada unidad de dominio comprende core, repositorios, REST y CLI; UI se añade cu
 
 | Antes de | Resolver |
 |---|---|
-| T1 | Aprobar estructura/versiones concretas e inicio de código/instalaciones. |
+| T1 | Estructura mínima ya aprobada; fijar versiones concretas y autorizar inicio de código/instalaciones. |
 | T3/T7 | Representación de fechas con hora, URLs, límites y formato de contratos. |
-| T10 | Zona en intervalo abierto, tramo cero y procedencia de minutos corregidos. |
-| T11/T12/T15/T18/T19 | Fronteras de retención, restauración de vínculos y contenido en actividad tras purga. |
-| T13 | Edición al crear desde Inbox y tratamiento atómico de fallos. |
-| T16/T17 | Defaults de desempate, ranking y conteos, sin ampliar funciones. |
+| T10 | P1/P6/P10 resueltas: Colombia, cero sin entrada, Nueva→En curso atómico. Verificar procedencia de minutos corregidos. |
+| T11/T12/T15/T18/T19 | P3/P5 plazos y vínculos resueltos; P2 elimina actividad de notas borradas definitivamente. No generalizar P2 a otras familias. |
+| T16/T17 | P7 desempate/horas/conteos pendiente; P8 búsqueda alfabética aprobada. |
+| T19 | P11 conservar contraseña actual/invalidate sesiones y P12 cerrar timers confirmadas; verificar publicación/recuperación real en macOS. |
 | UI de cada grupo | Exportaciones de Stitch revisadas y aceptación de estados/flujos. |
 
-## Estado real
+## Estado previo al inicio de Notas
 
-- Completado: alcance consolidado y documentos de propuesta, plan y brief.
-- Pendiente: revisión técnica, diseño real en Stitch, aprobación de propuestas menores e implementación.
-- No ejecutado: tests funcionales, build, generación de pantallas, instalación o conexión de Stitch.
+- Completado documentalmente: alcance consolidado y diseño técnico por áreas; Inbox atómico/editable y validaciones básicas aprobados. El nuevo diseño no tiene aprobación global ni revisión independiente entregada.
+- En curso: diseño externo de Hoy. Base aprobada: escritorio oscuro compacto, acento verde y navegación lateral.
+- Aprobada: estructura de tres apps y dos paquetes compartidos, core y db; contracts/testing se extraen solo si se justifica su reutilización.
+- Acuerdos de diseño: P1–P6 y P8–P12 resueltos. P7 pendiente de aclaración, sin aprobación por silencio.
+- Pendiente: validar mecanismos técnicos, revisión independiente, cierre de pantallas y autorización de implementación.
+- No ejecutado: tests funcionales, build, instalación o conexión de Stitch desde esta sesión.

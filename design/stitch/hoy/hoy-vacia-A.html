@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bitnode — Hoy</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary-container": "#22523a",
+            "primary-container": "#07b478",
+            "on-secondary": "#023823",
+            "secondary": "#9fd2b3",
+            "on-tertiary-fixed": "#3a0a00",
+            "inverse-surface": "#dde5dd",
+            "on-background": "#dde5dd",
+            "outline": "#86948a",
+            "on-error-container": "#ffdad6",
+            "secondary-fixed-dim": "#9fd2b3",
+            "on-secondary-container": "#91c4a5",
+            "secondary-fixed": "#baeece",
+            "primary": "#51de9e",
+            "surface-container-high": "#242c27",
+            "on-surface": "#dde5dd",
+            "error-container": "#93000a",
+            "surface-tint": "#51de9e",
+            "on-primary-fixed-variant": "#005234",
+            "surface": "#0e1511",
+            "inverse-primary": "#006c46",
+            "background": "#0e1511",
+            "on-primary-fixed": "#002112",
+            "inverse-on-surface": "#2b322d",
+            "surface-variant": "#2f3732",
+            "surface-container-low": "#161d19",
+            "on-tertiary-container": "#631e07",
+            "surface-container": "#1a211d",
+            "error": "#ffb4ab",
+            "on-primary": "#003823",
+            "on-secondary-fixed-variant": "#1f4f38",
+            "primary-fixed-dim": "#51de9e",
+            "on-surface-variant": "#bbcabf",
+            "on-primary-container": "#003e26",
+            "on-tertiary-fixed-variant": "#7a2f17",
+            "tertiary": "#ffb59f",
+            "surface-dim": "#0e1511",
+            "surface-container-highest": "#2f3732",
+            "on-secondary-fixed": "#002112",
+            "surface-bright": "#333b36",
+            "primary-fixed": "#71fcb9",
+            "on-error": "#690005",
+            "tertiary-fixed-dim": "#ffb59f",
+            "surface-container-lowest": "#09100c",
+            "on-tertiary": "#5c1903",
+            "tertiary-fixed": "#ffdbd0",
+            "tertiary-container": "#e78364",
+            "outline-variant": "#3d4a41"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-lg": "0.75rem",
+            "gutter-desktop": "1rem",
+            "margin": "0.75rem",
+            "space-xs": "0.25rem",
+            "gutter": "0.75rem",
+            "space-md": "0.5rem",
+            "margin-desktop": "1rem",
+            "space-sm": "0.375rem",
+            "space-xl": "1rem"
+          },
+          "fontFamily": {
+            "headline-xl": ["Inter"],
+            "body-sm": ["Inter"],
+            "code-sm": ["JetBrains Mono"],
+            "label-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "label-md": ["Inter"],
+            "body-lg": ["Inter"],
+            "headline-lg": ["Inter"],
+            "headline-md": ["Inter"],
+            "headline-sm": ["Inter"]
+          },
+          "fontSize": {
+            "headline-xl": ["1.25rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "body-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "code-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-sm": ["0.6875rem", { "lineHeight": "0.75rem", "letterSpacing": "0.02em", "fontWeight": "500" }],
+            "body-md": ["0.8125rem", { "lineHeight": "1.125rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-md": ["0.75rem", { "lineHeight": "0.875rem", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "body-lg": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+            "headline-lg": ["1.125rem", { "lineHeight": "1.375rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "headline-md": ["1rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-sm": ["0.875rem", { "lineHeight": "1.125rem", "letterSpacing": "-0.005em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 16px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .material-symbols-outlined.filled {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    }
+    /* Native macOS smooth scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #242c27;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3d4a41;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface antialiased select-none font-body-md text-body-md overflow-hidden flex h-screen w-screen">
+<!-- ========================================================================= -->
+<!-- SIDEBAR (240px fija, estilo macOS con controles de semáforo nativo)       -->
+<!-- ========================================================================= -->
+<aside class="fixed top-0 left-0 h-screen w-60 bg-surface-container-low border-r border-outline-variant flex flex-col justify-between py-3 px-2 z-40">
+<div class="flex flex-col gap-2">
+<!-- Controles de ventana macOS y Cabecera de la App -->
+<div class="px-2 pt-1 pb-2 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<!-- Botones de semáforo sutiles nativos macOS -->
+<div class="flex items-center gap-1.5 mr-1">
+<span class="w-2.5 h-2.5 rounded-full bg-[#ff5f56] opacity-80 inline-block"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-[#ffbd2e] opacity-80 inline-block"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-[#27c93f] opacity-80 inline-block"></span>
+</div>
+<div class="flex flex-col ml-1">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface tracking-tight leading-none">Bitnode</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant leading-none mt-1">Local Storage</span>
+</div>
+</div>
+<span class="text-primary font-code-sm text-code-sm border border-outline-variant rounded px-1.5 py-0.5 bg-surface-container">v1.4</span>
+</div>
+<!-- Campo de Búsqueda Global macOS -->
+<div class="px-1 mb-1">
+<div class="flex items-center gap-2 px-2 py-1 bg-surface border border-outline-variant rounded text-on-surface-variant focus-within:border-primary-container transition-colors">
+<span class="material-symbols-outlined text-outline">search</span>
+<input class="bg-transparent border-none p-0 text-on-surface font-body-sm text-body-sm w-full focus:ring-0 focus:outline-none placeholder-outline" placeholder="Búsqueda global" spellcheck="false" type="text"/>
+<kbd class="font-code-sm text-code-sm text-on-surface-variant bg-surface-container border border-outline-variant px-1 rounded">⌘K</kbd>
+</div>
+</div>
+<!-- Navegación Primaria -->
+<nav class="flex flex-col gap-0.5 px-1 mt-1">
+<!-- Hoy (Activo) -->
+<a class="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-surface-container-highest text-primary font-medium border-l-2 border-primary cursor-pointer select-none" href="#hoy">
+<span class="material-symbols-outlined filled text-primary">today</span>
+<span class="font-label-md text-label-md flex-1">Hoy</span>
+<span class="font-code-sm text-code-sm text-primary bg-surface px-1.5 py-0.2 rounded border border-outline-variant">0</span>
+</a>
+<!-- Inbox -->
+<a class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer select-none" href="#inbox">
+<span class="material-symbols-outlined text-outline">inbox</span>
+<span class="font-label-md text-label-md flex-1">Inbox</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant bg-surface-container-high px-1.5 py-0.2 rounded">0</span>
+</a>
+<!-- Clientes -->
+<a class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer select-none" href="#clientes">
+<span class="material-symbols-outlined text-outline">folder_shared</span>
+<span class="font-label-md text-label-md">Clientes</span>
+</a>
+<!-- Proyectos -->
+<a class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer select-none" href="#proyectos">
+<span class="material-symbols-outlined text-outline">assignment</span>
+<span class="font-label-md text-label-md">Proyectos</span>
+</a>
+<!-- Contactos -->
+<a class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer select-none" href="#contactos">
+<span class="material-symbols-outlined text-outline">contacts</span>
+<span class="font-label-md text-label-md">Contactos</span>
+</a>
+<!-- Notas -->
+<a class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer select-none" href="#notas">
+<span class="material-symbols-outlined text-outline">description</span>
+<span class="font-label-md text-label-md">Notas</span>
+</a>
+<!-- Tiempo -->
+<a class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer select-none" href="#tiempo">
+<span class="material-symbols-outlined text-outline">timer</span>
+<span class="font-label-md text-label-md">Tiempo</span>
+</a>
+<!-- Finanzas -->
+<a class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer select-none" href="#finanzas">
+<span class="material-symbols-outlined text-outline">payments</span>
+<span class="font-label-md text-label-md">Finanzas</span>
+</a>
+<!-- Calendario -->
+<a class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer select-none" href="#calendario">
+<span class="material-symbols-outlined text-outline">calendar_today</span>
+<span class="font-label-md text-label-md">Calendario</span>
+</a>
+<!-- Actividad -->
+<a class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer select-none" href="#actividad">
+<span class="material-symbols-outlined text-outline">history</span>
+<span class="font-label-md text-label-md">Actividad</span>
+</a>
+</nav>
+</div>
+<!-- Pie de Barra Lateral: Solo Configuración -->
+<div class="px-1 border-t border-outline-variant pt-2 flex flex-col">
+<a class="flex items-center justify-between px-2 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer" href="#configuracion">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline">settings</span>
+<span class="font-label-md text-label-md">Configuración</span>
+</div>
+<kbd class="font-code-sm text-code-sm text-on-surface-variant bg-surface-container border border-outline-variant px-1 rounded">⌘,</kbd>
+</a>
+</div>
+</aside>
+<!-- ============================================================== -->
+<!-- MAIN WORKSPACE CONTAINER                                       -->
+<!-- ============================================================== -->
+<main class="ml-60 w-[calc(100%-15rem)] h-screen flex flex-col bg-surface overflow-hidden">
+<!-- BARRA SUPERIOR DE CONTEXTO -->
+<header class="flex items-center justify-between h-11 px-4 w-full bg-surface border-b border-outline-variant shrink-0 z-30">
+<div class="flex items-center gap-4">
+<!-- Fecha única y clara -->
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface tracking-tight">Jueves, 24 de octubre</span>
+<span class="w-1 h-1 rounded-full bg-outline"></span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Semana 43</span>
+</div>
+<!-- Scopes: Selector Segmentado Sutil [Todos | Trabajo | Personal] -->
+<div class="flex items-center bg-surface-container-low border border-outline-variant rounded p-0.5 ml-2">
+<button class="px-2 py-0.5 rounded text-primary font-medium bg-surface-container-high font-label-sm text-label-sm transition-colors">Todos</button>
+<button class="px-2 py-0.5 rounded text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-colors">Trabajo</button>
+<button class="px-2 py-0.5 rounded text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-colors">Personal</button>
+</div>
+<!-- Filtros en cascada: Cliente & Proyecto -->
+<div class="flex items-center gap-1.5 ml-2">
+<!-- Dropdown Cliente -->
+<div class="relative flex items-center bg-surface-container-low border border-outline-variant rounded px-2 py-0.5 text-on-surface-variant hover:border-outline transition-colors cursor-pointer">
+<span class="font-label-sm text-label-sm text-outline mr-1">Cliente:</span>
+<span class="font-label-sm text-label-sm text-on-surface">Todos los clientes</span>
+<span class="material-symbols-outlined text-[14px] ml-1 text-outline">expand_more</span>
+</div>
+<!-- Dropdown Proyecto -->
+<div class="relative flex items-center bg-surface-container-low border border-outline-variant rounded px-2 py-0.5 text-on-surface-variant hover:border-outline transition-colors cursor-pointer">
+<span class="font-label-sm text-label-sm text-outline mr-1">Proyecto:</span>
+<span class="font-label-sm text-label-sm text-on-surface">Todos los proyectos</span>
+<span class="material-symbols-outlined text-[14px] ml-1 text-outline">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Temporizadores inactivos / sin sesiones en curso -->
+<div class="flex items-center gap-2 text-outline font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[15px]">timer_off</span>
+<span>Sin temporizadores en curso</span>
+</div>
+</header>
+<!-- LIENZO DE CONTENIDO CON ESTADO VACÍO CENTRADO (Variante 1: Layout Centrado en Contenedor Compacto) -->
+<div class="flex-1 overflow-y-auto px-6 py-6 flex flex-col items-center justify-center">
+<div class="w-full max-w-lg bg-surface-container-low border border-outline-variant rounded-xl p-8 flex flex-col items-center text-center shadow-lg">
+<!-- Icono sutil minimalista -->
+<div class="w-12 h-12 rounded-full bg-surface-container border border-outline-variant flex items-center justify-center mb-4 text-outline">
+<span class="material-symbols-outlined text-[24px]">check_circle_outline</span>
+</div>
+<!-- Título -->
+<h2 class="font-headline-lg text-headline-lg font-semibold text-on-surface mb-2 tracking-tight">
+No hay tareas abiertas
+</h2>
+<!-- Explicación breve -->
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed max-w-sm mb-6">
+Las tareas programadas se gestionan desde tus Proyectos y las capturas rápidas se procesan desde el Inbox.
+</p>
+<!-- Acciones -->
+<div class="flex items-center gap-3">
+<!-- Acción destacada primaria -->
+<button class="flex items-center gap-1.5 bg-[#07B478] hover:bg-[#07B478]/90 text-on-primary-container px-3.5 py-1.5 rounded font-label-md text-label-md font-medium transition-colors cursor-pointer shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-on-primary-container">add</span>
+<span>Capturar a Inbox</span>
+</button>
+<!-- Acción secundaria -->
+<a class="flex items-center gap-1.5 bg-surface-container hover:bg-surface-container-high border border-outline-variant text-on-surface px-3 py-1.5 rounded font-label-md text-label-md font-medium transition-colors cursor-pointer" href="#inbox">
+<span>Ir a Inbox</span>
+<span class="material-symbols-outlined text-[15px] text-outline">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+<!-- BARRA DE ESTADO INFERIOR -->
+<footer class="h-6 bg-surface-container-low border-t border-outline-variant px-3 flex items-center justify-between text-label-sm font-label-sm text-outline shrink-0">
+<div class="flex items-center gap-3">
+<span class="flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+<span class="text-on-surface-variant">Datos en este equipo</span>
+</span>
+<span>•</span>
+<span>Filtro: Todos los alcances</span>
+<span>•</span>
+<span>0 elementos en la vista</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-code-sm text-code-sm">UTF-8</span>
+</div>
+</footer>
+</main>
+</body></html>

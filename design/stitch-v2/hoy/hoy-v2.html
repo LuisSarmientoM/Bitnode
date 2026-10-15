@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bitnode - Gestión de Tareas</title>
+<!-- Google Fonts & Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Public+Sans:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#07B478",
+            "primary-container": "#07B478",
+            "on-primary-container": "#FFFFFF",
+            secondary: "#518166",
+            tertiary: "#FF9676",
+            surface: "#121314",
+            "surface-container": "#181a1b",
+            "surface-container-high": "#1e2022",
+            "surface-container-highest": "#26292b",
+            "on-surface": "#e2e4e2",
+            "on-surface-variant": "#9ca19d",
+            "outline-variant": "#2a2e31",
+            neutral: "#717973"
+          },
+          borderRadius: {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          fontFamily: {
+            headline: ["Space Grotesk", "sans-serif"],
+            display: ["Space Grotesk", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Public Sans", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-size: 16px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    /* macOS-like native scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2a2e31;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3c4246;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-body antialiased selection:bg-primary/20 selection:text-primary overflow-hidden h-screen w-screen flex flex-col select-none">
+<!-- Main Container -->
+<div class="flex-1 flex overflow-hidden">
+<!-- Barra Lateral Izquierda (~220px) -->
+<aside class="w-[220px] bg-surface-container flex flex-col justify-between p-3 border-r border-outline-variant/30 shrink-0 select-none">
+<!-- Top Section: Brand, Search, Nav -->
+<div class="flex flex-col gap-3">
+<!-- macOS Window Traffic Lights Simulator & Brand -->
+<div class="flex items-center gap-2 pt-1 pb-1">
+<div class="flex items-center gap-1.5 mr-2">
+<span class="w-2.5 h-2.5 rounded-full bg-[#FF5F56]/80 block"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-[#FFBD2E]/80 block"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-[#27C93F]/80 block"></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="font-headline font-bold text-sm tracking-wide text-on-surface">Bitnode</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+</div>
+</div>
+<!-- Global Compact Search -->
+<div class="relative">
+<span class="material-symbols-outlined absolute left-2 top-2 text-neutral text-xs pointer-events-none">search</span>
+<input class="w-full bg-surface text-xs text-on-surface placeholder:text-neutral pl-7 pr-2 py-1.5 rounded border border-outline-variant/50 focus:outline-none focus:border-primary/60 transition-colors" placeholder="Buscar tareas, notas..." type="text"/>
+</div>
+<!-- Vertical Navigation Links -->
+<nav class="flex flex-col gap-0.5 mt-1 font-label">
+<!-- Hoy (Activo) -->
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded bg-surface-container-high text-on-surface font-medium text-xs transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary text-sm">today</span>
+<span>Hoy</span>
+</div>
+<span class="text-[10px] font-semibold bg-primary/15 text-primary px-1.5 py-0.5 rounded">6</span>
+</a>
+<!-- Inbox -->
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-neutral text-sm">inbox</span>
+<span>Inbox</span>
+</div>
+<span class="text-[10px] font-medium text-neutral px-1.5 py-0.5">3</span>
+</a>
+<!-- Clientes -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-neutral text-sm">group</span>
+<span>Clientes</span>
+</a>
+<!-- Proyectos -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-neutral text-sm">folder_open</span>
+<span>Proyectos</span>
+</a>
+<!-- Contactos -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-neutral text-sm">contacts</span>
+<span>Contactos</span>
+</a>
+<!-- Notas -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-neutral text-sm">note</span>
+<span>Notas</span>
+</a>
+<!-- Tiempo -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-neutral text-sm">timer</span>
+<span>Tiempo</span>
+</a>
+<!-- Finanzas -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-neutral text-sm">account_balance</span>
+<span>Finanzas</span>
+</a>
+<!-- Calendario -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-neutral text-sm">calendar_today</span>
+<span>Calendario</span>
+</a>
+<!-- Actividad -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-neutral text-sm">history</span>
+<span>Actividad</span>
+</a>
+</nav>
+</div>
+<!-- Footer: ÚNICAMENTE Configuración -->
+<div class="pt-2 border-t border-outline-variant/30">
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-neutral text-sm">settings</span>
+<span>Configuración</span>
+</a>
+</div>
+</aside>
+<!-- Content Workspace -->
+<main class="flex-1 flex flex-col bg-surface min-w-0 overflow-hidden">
+<!-- Encabezado superior del área de trabajo (UNA SOLA FILA EXACTA) -->
+<header class="h-10 border-b border-outline-variant/30 px-4 flex items-center justify-between shrink-0 bg-surface">
+<!-- Izquierda: Fecha exacta Bogotá -->
+<div class="flex items-center gap-2 text-xs font-headline font-semibold text-on-surface tracking-tight">
+<span class="material-symbols-outlined text-primary text-xs">calendar_month</span>
+<span>Jueves, 24 de octubre de 2024</span>
+</div>
+<!-- Derecha: Selector Todos/Trabajo/Personal & Filtros Cliente/Proyecto -->
+<div class="flex items-center gap-3">
+<!-- Scope selector buttons -->
+<div class="inline-flex p-0.5 bg-surface-container rounded border border-outline-variant/40">
+<button class="px-2.5 py-0.5 text-xs font-medium rounded text-primary bg-surface-container-high shadow-xs">Todos</button>
+<button class="px-2.5 py-0.5 text-xs text-on-surface-variant hover:text-on-surface transition-colors">Trabajo</button>
+<button class="px-2.5 py-0.5 text-xs text-on-surface-variant hover:text-on-surface transition-colors">Personal</button>
+</div>
+<!-- Dropdowns discretos -->
+<div class="flex items-center gap-2 border-l border-outline-variant/40 pl-3">
+<button class="flex items-center gap-1 text-xs text-on-surface-variant hover:text-on-surface bg-surface-container/60 hover:bg-surface-container px-2 py-1 rounded border border-outline-variant/30 transition-colors">
+<span>Cliente: Todos</span>
+<span class="material-symbols-outlined text-[13px] text-neutral">expand_more</span>
+</button>
+<button class="flex items-center gap-1 text-xs text-on-surface-variant hover:text-on-surface bg-surface-container/60 hover:bg-surface-container px-2 py-1 rounded border border-outline-variant/30 transition-colors">
+<span>Proyecto: Todos</span>
+<span class="material-symbols-outlined text-[13px] text-neutral">expand_more</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Lista Principal de Tareas con 3 Grupos Densos (6 tareas todas visibles) -->
+<div class="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-4">
+<!-- GRUPO 1: Tareas Abiertas (3) -->
+<section class="flex flex-col">
+<div class="flex items-center justify-between pb-1.5 mb-1 border-b border-outline-variant/20">
+<div class="flex items-center gap-1.5 text-xs font-headline font-semibold text-on-surface">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>Tareas Abiertas (3)</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<!-- Tarea 1: En curso, Temporizador activo, Seleccionada para Hoy -->
+<div class="relative bg-surface-container-high/90 hover:bg-surface-container-high rounded border border-outline-variant/40 pl-3 pr-3 py-2 flex items-center justify-between gap-3 text-xs transition-colors shadow-xs">
+<!-- Indicador discreto de tarea seleccionada para Hoy (borde izquierdo 2px verde) -->
+<div class="absolute left-0 top-0 bottom-0 w-0.5 bg-primary rounded-l"></div>
+<div class="flex items-center gap-2.5 min-w-0 flex-1">
+<!-- Checkbox -->
+<button class="w-3.5 h-3.5 rounded-sm border border-primary/80 flex items-center justify-center shrink-0 hover:bg-primary/20 transition-colors">
+<span class="w-1.5 h-1.5 bg-primary/40 rounded-xs"></span>
+</button>
+<div class="min-w-0 flex-1">
+<div class="text-on-surface font-medium truncate">Migración de base de datos Postgres a RDS en AWS</div>
+<div class="text-[11px] text-neutral font-label truncate">Cloud Lift · Seguros Bolívar</div>
+</div>
+</div>
+<!-- Badges & Timer Activo -->
+<div class="flex items-center gap-2.5 shrink-0">
+<!-- Live timer -->
+<div class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary/10 border border-primary/25 text-primary text-[11px] font-mono font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+<span>02:47:19</span>
+</div>
+<!-- Status Badge -->
+<span class="px-2 py-0.5 rounded text-[10px] font-medium bg-primary/15 text-primary border border-primary/20">En curso</span>
+<span class="text-[11px] text-neutral font-label">Hoy</span>
+</div>
+</div>
+<!-- Tarea 2: En curso -->
+<div class="bg-surface-container-high/40 hover:bg-surface-container-high/80 rounded border border-outline-variant/30 px-3 py-2 flex items-center justify-between gap-3 text-xs transition-colors">
+<div class="flex items-center gap-2.5 min-w-0 flex-1">
+<button class="w-3.5 h-3.5 rounded-sm border border-outline-variant flex items-center justify-center shrink-0 hover:border-primary transition-colors"></button>
+<div class="min-w-0 flex-1">
+<div class="text-on-surface font-normal truncate">Configuración de pipeline CI/CD en GitLab para microservicios de facturación</div>
+<div class="text-[11px] text-neutral font-label truncate">Facturación Electrónica DIAN · Alpina Colombia</div>
+</div>
+</div>
+<div class="flex items-center gap-2.5 shrink-0">
+<span class="px-2 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-primary border border-primary/20">En curso</span>
+<span class="text-[11px] text-neutral font-label flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px] text-neutral">schedule</span>
+                  Hoy, 18:00
+                </span>
+</div>
+</div>
+<!-- Tarea 3: Pendiente -->
+<div class="bg-surface-container-high/40 hover:bg-surface-container-high/80 rounded border border-outline-variant/30 px-3 py-2 flex items-center justify-between gap-3 text-xs transition-colors">
+<div class="flex items-center gap-2.5 min-w-0 flex-1">
+<button class="w-3.5 h-3.5 rounded-sm border border-outline-variant flex items-center justify-center shrink-0 hover:border-primary transition-colors"></button>
+<div class="min-w-0 flex-1">
+<div class="text-on-surface font-normal truncate">Auditoría de vulnerabilidades y hardening de servidores Ubuntu</div>
+<div class="text-[11px] text-neutral font-label truncate">Ciberseguridad 2024 · Banco de Bogotá</div>
+</div>
+</div>
+<div class="flex items-center gap-2.5 shrink-0">
+<span class="px-2 py-0.5 rounded text-[10px] font-medium bg-surface-container-highest text-neutral border border-outline-variant/40">Pendiente</span>
+<span class="text-[11px] text-neutral font-label">Mañana</span>
+</div>
+</div>
+</div>
+</section>
+<!-- GRUPO 2: Bloqueadas (2) -->
+<section class="flex flex-col">
+<div class="flex items-center justify-between pb-1.5 mb-1 border-b border-outline-variant/20">
+<div class="flex items-center gap-1.5 text-xs font-headline font-semibold text-tertiary">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span>Bloqueadas (2)</span>
+</div>
+</div>
+<div class="flex flex-col gap-1.5">
+<!-- Tarea 4: Bloqueada Normal con Motivo visible -->
+<div class="bg-surface-container-high/40 hover:bg-surface-container-high/80 rounded border border-outline-variant/30 px-3 py-2 flex items-center justify-between gap-3 text-xs transition-colors">
+<div class="flex items-center gap-2.5 min-w-0 flex-1">
+<button class="w-3.5 h-3.5 rounded-sm border border-tertiary/40 flex items-center justify-center shrink-0 hover:border-tertiary transition-colors">
+<span class="material-symbols-outlined text-[10px] text-tertiary">block</span>
+</button>
+<div class="min-w-0 flex-1">
+<div class="text-on-surface font-normal truncate">Integración de pasarela Wompi con webhook de confirmación</div>
+<div class="flex items-center gap-2 text-[11px] font-label">
+<span class="text-neutral">Pasarela Pagos · Rappi Pay</span>
+<span class="text-outline-variant">•</span>
+<span class="text-tertiary/90">Motivo: esperando aprobación de costos del proveedor</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2.5 shrink-0">
+<span class="px-2 py-0.5 rounded text-[10px] font-medium bg-tertiary/15 text-tertiary border border-tertiary/25">Bloqueada</span>
+<span class="text-[11px] text-neutral font-label">26 oct</span>
+</div>
+</div>
+<!-- Tarea 5: Bloqueada con Panel/Popover de Inspección Hover Activo -->
+<div class="relative bg-surface-container-high rounded border border-tertiary/30 px-3 py-2.5 text-xs transition-all shadow-md">
+<!-- Top Row de la tarea -->
+<div class="flex items-center justify-between gap-3">
+<div class="flex items-center gap-2.5 min-w-0 flex-1">
+<button class="w-3.5 h-3.5 rounded-sm border border-tertiary flex items-center justify-center shrink-0 bg-tertiary/10">
+<span class="material-symbols-outlined text-[10px] text-tertiary">lock</span>
+</button>
+<div class="min-w-0 flex-1">
+<div class="text-on-surface font-medium truncate">Despliegue de gateway API en clúster Kubernetes EKS</div>
+<div class="text-[11px] text-neutral font-label truncate">Core Bancario · Davivienda Bogotá</div>
+</div>
+</div>
+<div class="flex items-center gap-2.5 shrink-0">
+<span class="px-2 py-0.5 rounded text-[10px] font-medium bg-tertiary/20 text-tertiary border border-tertiary/30">Bloqueada</span>
+<span class="text-[11px] text-neutral font-label">28 oct</span>
+</div>
+</div>
+<!-- Inspector Panel Desplegado / Hover State -->
+<div class="mt-2.5 pt-2 border-t border-outline-variant/40 flex flex-col gap-2 bg-surface-container/70 p-2 rounded">
+<!-- Row 1: Reason and actions -->
+<div class="flex items-center justify-between gap-2">
+<div class="flex items-center gap-1.5 text-[11px] text-tertiary">
+<span class="material-symbols-outlined text-[13px]">warning</span>
+<span class="font-medium">Motivo: sin acceso al ambiente de pruebas del cliente</span>
+</div>
+<div class="flex items-center gap-1.5">
+<button class="px-2 py-0.5 text-[11px] bg-surface-container-highest hover:bg-surface-container-highest/80 text-on-surface rounded border border-outline-variant/40 transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[11px]">mail</span>
+<span>Notificar</span>
+</button>
+<button class="px-2 py-0.5 text-[11px] bg-primary/20 hover:bg-primary/30 text-primary font-medium rounded border border-primary/30 transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[11px]">lock_open</span>
+<span>Desbloquear</span>
+</button>
+</div>
+</div>
+<!-- Row 2: Timer, Planificación y Etiquetas -->
+<div class="flex items-center justify-between text-[11px] text-neutral pt-1">
+<div class="flex items-center gap-3">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">timer</span>
+<span class="font-mono text-neutral">00:00:00 (detenido)</span>
+</span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">schedule</span>
+<span>Est: 4.5h</span>
+</span>
+</div>
+<!-- Etiquetas -->
+<div class="flex items-center gap-1 font-mono text-[10px]">
+<span class="px-1.5 py-0.2 rounded bg-surface border border-outline-variant/40 text-neutral">#infraestructura</span>
+<span class="px-1.5 py-0.2 rounded bg-surface border border-outline-variant/40 text-neutral">#bogota-dc</span>
+<span class="px-1.5 py-0.2 rounded bg-surface border border-outline-variant/40 text-neutral">#seguridad</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- GRUPO 3: En revisión (1) -->
+<section class="flex flex-col">
+<div class="flex items-center justify-between pb-1.5 mb-1 border-b border-outline-variant/20">
+<div class="flex items-center gap-1.5 text-xs font-headline font-semibold text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>En revisión (1)</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<!-- Tarea 6: En revisión -->
+<div class="bg-surface-container-high/40 hover:bg-surface-container-high/80 rounded border border-outline-variant/30 px-3 py-2 flex items-center justify-between gap-3 text-xs transition-colors">
+<div class="flex items-center gap-2.5 min-w-0 flex-1">
+<button class="w-3.5 h-3.5 rounded-sm border border-secondary/50 flex items-center justify-center shrink-0 hover:border-secondary transition-colors">
+<span class="material-symbols-outlined text-[11px] text-secondary">visibility</span>
+</button>
+<div class="min-w-0 flex-1">
+<div class="text-on-surface font-normal truncate">Ajuste de endpoints GraphQL y documentación en Swagger para portal de afiliados</div>
+<div class="text-[11px] text-neutral font-label truncate">Portal Autoservicio · Compensar EPS</div>
+</div>
+</div>
+<div class="flex items-center gap-2.5 shrink-0">
+<span class="px-2 py-0.5 rounded text-[10px] font-medium bg-secondary/15 text-secondary border border-secondary/25">En revisión</span>
+<span class="text-[11px] text-neutral font-label">30 oct</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+<!-- Barra de Estado Inferior Fija (Ultra delgada, h-7) -->
+<footer class="h-7 bg-surface-container border-t border-outline-variant/30 px-3 flex items-center justify-between shrink-0 select-none text-[11px]">
+<div class="flex items-center gap-1.5 text-neutral">
+<span class="material-symbols-outlined text-primary text-xs">check_circle</span>
+<span class="tracking-tight">Datos en este equipo</span>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bitnode - Hoy (Estado Inicial)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: '#07B478',
+            'primary-dark': '#059462',
+            surface: {
+              DEFAULT: '#0D0F12',
+              container: '#13161B',
+              'container-high': '#1A1E24',
+              'container-highest': '#232830'
+            },
+            outline: {
+              DEFAULT: '#2A303C',
+              variant: '#1F242C'
+            },
+            'on-surface': '#E2E8F0',
+            'on-surface-variant': '#8E9AA8',
+            'on-surface-muted': '#5D6778'
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 350, 'GRAD' 0, 'opsz' 20;
+      font-size: 18px;
+    }
+    .material-symbols-outlined.icon-filled {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-sans text-xs antialiased h-screen flex overflow-hidden select-none">
+
+  <!-- SIDEBAR (240px compacto oscuro nativo) -->
+  <aside class="w-60 bg-surface-container border-r border-outline-variant flex flex-col justify-between shrink-0">
+    <!-- Top Brand & Search -->
+    <div class="p-3">
+      <!-- Mac window traffic lights + Brand -->
+      <div class="flex items-center gap-2 mb-3 px-1 pt-1">
+        <div class="flex items-center gap-1.5 mr-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-[#EF4444] opacity-80 inline-block"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-[#F59E0B] opacity-80 inline-block"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-[#10B981] opacity-80 inline-block"></span>
+        </div>
+        <span class="font-bold text-sm tracking-wide text-white flex items-center gap-1.5">
+          Bitnode
+          <span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+        </span>
+      </div>
+
+      <!-- Quick Search input -->
+      <div class="relative mb-3">
+        <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-muted pointer-events-none" style="font-size: 16px;">search</span>
+        <input type="text" placeholder="Buscar tareas, notas..." class="w-full bg-surface/80 border border-outline-variant rounded-md py-1.5 pl-8 pr-2.5 text-xs text-on-surface placeholder:text-on-surface-muted focus:outline-none focus:border-outline focus:ring-1 focus:ring-primary/40 transition-colors" />
+      </div>
+
+      <!-- Navigation 10 Sections -->
+      <nav class="space-y-0.5">
+        <!-- 1. Hoy (Active) -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md bg-surface-container-high text-white font-medium group transition-colors">
+          <span class="material-symbols-outlined text-primary icon-filled">calendar_today</span>
+          <span class="flex-1">Hoy</span>
+        </a>
+
+        <!-- 2. Inbox -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest/40 transition-colors">
+          <span class="material-symbols-outlined">inbox</span>
+          <span class="flex-1">Inbox</span>
+        </a>
+
+        <!-- 3. Clientes -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest/40 transition-colors">
+          <span class="material-symbols-outlined">group</span>
+          <span class="flex-1">Clientes</span>
+        </a>
+
+        <!-- 4. Proyectos -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest/40 transition-colors">
+          <span class="material-symbols-outlined">folder_open</span>
+          <span class="flex-1">Proyectos</span>
+        </a>
+
+        <!-- 5. Contactos -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest/40 transition-colors">
+          <span class="material-symbols-outlined">contacts</span>
+          <span class="flex-1">Contactos</span>
+        </a>
+
+        <!-- 6. Notas -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest/40 transition-colors">
+          <span class="material-symbols-outlined">note</span>
+          <span class="flex-1">Notas</span>
+        </a>
+
+        <!-- 7. Tiempo -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest/40 transition-colors">
+          <span class="material-symbols-outlined">timer</span>
+          <span class="flex-1">Tiempo</span>
+        </a>
+
+        <!-- 8. Finanzas -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest/40 transition-colors">
+          <span class="material-symbols-outlined">account_balance</span>
+          <span class="flex-1">Finanzas</span>
+        </a>
+
+        <!-- 9. Calendario -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest/40 transition-colors">
+          <span class="material-symbols-outlined">event</span>
+          <span class="flex-1">Calendario</span>
+        </a>
+
+        <!-- 10. Actividad -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest/40 transition-colors">
+          <span class="material-symbols-outlined">history</span>
+          <span class="flex-1">Actividad</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Sidebar Footer: Solo Configuración -->
+    <div class="p-3 border-t border-outline-variant/50">
+      <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest/40 transition-colors">
+        <span class="material-symbols-outlined">settings</span>
+        <span class="flex-1">Configuración</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- MAIN AREA (Header + Content + Status Bar) -->
+  <div class="flex-1 flex flex-col h-full bg-surface overflow-hidden">
+    
+    <!-- SINGLE ROW HEADER: Fecha + Filtros (Todos/Trabajo/Personal) + Dropdowns (Cliente/Proyecto) -->
+    <header class="h-12 border-b border-outline-variant/60 px-6 flex items-center justify-between shrink-0 bg-surface/50">
+      <!-- Fecha en español -->
+      <div class="flex items-center gap-2 text-on-surface-variant text-xs">
+        <span class="material-symbols-outlined text-primary" style="font-size: 16px;">calendar_today</span>
+        <span class="font-medium text-on-surface">Jueves, 24 de octubre de 2024</span>
+      </div>
+
+      <!-- Filtros y Selectores -->
+      <div class="flex items-center gap-3">
+        <!-- Segmented Control: Todos / Trabajo / Personal -->
+        <div class="inline-flex p-0.5 rounded-md bg-surface-container border border-outline-variant">
+          <button type="button" class="px-2.5 py-0.5 rounded text-xs font-medium bg-primary/15 text-primary">Todos</button>
+          <button type="button" class="px-2.5 py-0.5 rounded text-xs text-on-surface-variant hover:text-on-surface transition-colors">Trabajo</button>
+          <button type="button" class="px-2.5 py-0.5 rounded text-xs text-on-surface-variant hover:text-on-surface transition-colors">Personal</button>
+        </div>
+
+        <!-- Dropdown Cliente -->
+        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container border border-outline-variant text-on-surface-variant hover:text-on-surface cursor-pointer text-xs">
+          <span>Cliente: Todos</span>
+          <span class="material-symbols-outlined text-on-surface-muted" style="font-size: 14px;">expand_more</span>
+        </div>
+
+        <!-- Dropdown Proyecto -->
+        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container border border-outline-variant text-on-surface-variant hover:text-on-surface cursor-pointer text-xs">
+          <span>Proyecto: Todos</span>
+          <span class="material-symbols-outlined text-on-surface-muted" style="font-size: 14px;">expand_more</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY (Barra de captura rápida integrada + Tarjeta centrada de estado vacío sobrio) -->
+    <main class="flex-1 flex flex-col p-6 overflow-y-auto max-w-5xl w-full mx-auto">
+      
+      <!-- BARRA DE CAPTURA RÁPIDA SUPERIOR INTEGRADA -->
+      <div class="w-full bg-surface-container border border-outline-variant rounded-lg p-2 mb-8 flex items-center gap-2.5 focus-within:border-outline focus-within:ring-1 focus-within:ring-primary/30 transition-all">
+        <span class="material-symbols-outlined text-on-surface-muted pl-1" style="font-size: 18px;">add_task</span>
+        <input 
+          type="text" 
+          placeholder="Captura rápida hacia Inbox" 
+          class="flex-1 bg-transparent border-0 text-xs text-on-surface placeholder:text-on-surface-muted focus:outline-none"
+        />
+        <div class="flex items-center gap-2 shrink-0">
+          <span class="text-[10px] text-on-surface-muted border border-outline-variant/60 rounded px-1.5 py-0.5 font-mono">↵ Enter</span>
+          <button 
+            type="button" 
+            class="px-3 py-1.5 rounded-md bg-primary hover:bg-primary-dark text-black font-medium text-xs flex items-center gap-1.5 transition-colors"
+          >
+            <span>Guardar en Inbox</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ZONA DE CONTENIDO / ESTADO VACÍO SOBRIO Y CENTRADO -->
+      <div class="flex-1 flex items-center justify-center -mt-6">
+        <div class="w-full max-w-md border border-outline-variant/70 rounded-xl bg-surface-container/60 p-8 text-center flex flex-col items-center">
+          
+          <!-- Icono sutil de estado vacío -->
+          <div class="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center mb-4 text-on-surface-muted">
+            <span class="material-symbols-outlined" style="font-size: 20px;">check_circle</span>
+          </div>
+
+          <!-- Título exacto -->
+          <h2 class="text-sm font-semibold text-on-surface mb-2">No hay tareas abiertas</h2>
+          
+          <!-- Texto breve descriptivo requerido -->
+          <p class="text-xs text-on-surface-variant leading-relaxed mb-6 max-w-sm">
+            Las tareas provienen de tus proyectos. Selecciona una manualmente para verla en Hoy, o captura ideas rápidas en Inbox.
+          </p>
+
+          <!-- Acciones requeridas: botón primario + enlace secundario -->
+          <div class="flex items-center gap-3">
+            <button 
+              type="button" 
+              class="px-3.5 py-1.5 rounded-md bg-primary hover:bg-primary-dark text-black font-medium text-xs flex items-center gap-1.5 transition-colors"
+            >
+              <span class="material-symbols-outlined" style="font-size: 16px;">inbox</span>
+              <span>Capturar a Inbox</span>
+            </button>
+            <a 
+              href="#" 
+              class="px-3 py-1.5 rounded-md text-xs font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/60 transition-colors"
+            >
+              Ir a Inbox
+            </a>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+
+    <!-- STATUS BAR INFERIOR: Solo "Datos en este equipo" -->
+    <footer class="h-7 border-t border-outline-variant/50 px-4 flex items-center shrink-0 bg-surface-container/80 text-[11px] text-on-surface-muted">
+      <div class="flex items-center gap-1.5 text-primary">
+        <span class="material-symbols-outlined" style="font-size: 14px;">check_circle</span>
+        <span class="text-on-surface-variant">Datos en este equipo</span>
+      </div>
+    </footer>
+
+  </div>
+
+</body>
+</html>

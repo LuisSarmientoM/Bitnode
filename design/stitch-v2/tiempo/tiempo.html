@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bitnode - Tiempo</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Public+Sans:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            // Bitnode Palette tokens
+            primary: "#07B478",
+            "primary-hover": "#069e69",
+            "primary-container": "rgba(7, 180, 120, 0.12)",
+            secondary: "#518166",
+            accent: "#FF9676",
+            surface: "#0B0F12",
+            "surface-container": "#11161B",
+            "surface-container-high": "#161D24",
+            "surface-container-highest": "#1E262F",
+            outline: "#263238",
+            "outline-variant": "#1E262F",
+            "on-surface": "#F0F4F6",
+            "on-surface-variant": "#9EABB2",
+            "on-surface-muted": "#717973"
+          },
+          borderRadius: {
+            DEFAULT: "0.125rem",
+            lg: "0.25rem",
+            xl: "0.5rem",
+            full: "0.75rem"
+          },
+          fontFamily: {
+            headline: ["Space Grotesk", "sans-serif"],
+            display: ["Space Grotesk", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Public Sans", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-size: 16px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+      user-select: none;
+    }
+    @keyframes pulse-subtle {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.92); }
+    }
+    .animate-live-dot {
+      animation: pulse-subtle 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    /* Technical scrollbars */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B0F12;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1E262F;
+      border-radius: 2px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #263238;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-body text-xs antialiased selection:bg-primary-container selection:text-primary min-h-screen flex overflow-hidden">
+<!-- ======================================================== -->
+<!-- SIDEBAR NAVIGATION (Bitnode Source of Truth: Tiempo active) -->
+<!-- ======================================================== -->
+<aside class="docked full-height left-0 w-56 flex flex-col h-screen select-none bg-surface-container border-r border-outline-variant/30 shrink-0">
+<!-- Header Logo Bitnode -->
+<div class="p-3 pb-2 flex items-center justify-between border-b border-outline-variant/20">
+<div class="flex items-center gap-2">
+<div class="w-5 h-5 rounded-DEFAULT bg-primary flex items-center justify-center text-surface font-mono font-bold text-xs leading-none">
+          B
+        </div>
+<div>
+<span class="font-headline font-bold text-sm tracking-wide text-on-surface">Bitnode</span>
+<span class="text-[10px] text-on-surface-muted block leading-tight font-label">Productividad</span>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors p-1" title="Añadir tarea rápida">
+<span class="material-symbols-outlined">add_task</span>
+</button>
+</div>
+<!-- Global Search in Sidebar -->
+<div class="px-3 pt-2 pb-1.5">
+<div class="relative flex items-center w-full bg-surface-container-high/60 border border-outline-variant/40 rounded-DEFAULT px-2 py-1 focus-within:border-primary/50 transition-colors">
+<span class="material-symbols-outlined text-on-surface-muted mr-1.5 text-xs">search</span>
+<input class="w-full bg-transparent border-0 p-0 text-xs text-on-surface placeholder:text-on-surface-muted focus:ring-0 focus:outline-none font-label" placeholder="Buscar..." type="text"/>
+<span class="text-[9px] font-mono text-on-surface-muted border border-outline-variant/50 px-1 py-0.5 rounded-DEFAULT">/</span>
+</div>
+</div>
+<!-- Navigation List (10 sections: Hoy, Inbox, Clientes, Proyectos, Contactos, Notas, Tiempo, Finanzas, Calendario, Actividad) -->
+<nav class="flex-1 px-2.5 py-1 space-y-0.5 overflow-y-auto">
+<!-- 1. Hoy -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">today</span>
+<span class="font-label text-xs tracking-tight">Hoy</span>
+</a>
+<!-- 2. Inbox -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">inbox</span>
+<span class="font-label text-xs tracking-tight">Inbox</span>
+</a>
+<!-- 3. Clientes -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label text-xs tracking-tight">Clientes</span>
+</a>
+<!-- 4. Proyectos -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">folder_open</span>
+<span class="font-label text-xs tracking-tight">Proyectos</span>
+</a>
+<!-- 5. Contactos -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">contacts</span>
+<span class="font-label text-xs tracking-tight">Contactos</span>
+</a>
+<!-- 6. Notas -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">note</span>
+<span class="font-label text-xs tracking-tight">Notas</span>
+</a>
+<!-- 7. Tiempo (ACTIVE ITEM) -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg bg-surface-container-high text-on-surface font-medium text-xs border border-outline-variant/40 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-primary">timer</span>
+<span class="font-label text-xs tracking-tight flex-1">Tiempo</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-live-dot"></span>
+</a>
+<!-- 8. Finanzas -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">account_balance</span>
+<span class="font-label text-xs tracking-tight">Finanzas</span>
+</a>
+<!-- 9. Calendario -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label text-xs tracking-tight">Calendario</span>
+</a>
+<!-- 10. Actividad -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant font-normal text-xs hover:bg-surface-container-highest/60 hover:text-on-surface transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label text-xs tracking-tight">Actividad</span>
+</a>
+</nav>
+<!-- Sidebar Footer -->
+<div class="p-2.5 pt-2 border-t border-outline-variant/20 space-y-1.5 bg-surface-container">
+<a class="flex items-center gap-2.5 px-2 py-1 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest/60 transition-colors text-xs font-normal" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label text-xs">Configuración</span>
+</a>
+<!-- State bar strictly: "Datos en este equipo" -->
+<div class="px-2 py-1.5 rounded-DEFAULT bg-surface-container-high/40 border border-outline-variant/20 flex items-center justify-between text-[10px] text-on-surface-muted font-mono">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>Datos en este equipo</span>
+</div>
+<span class="material-symbols-outlined text-[12px] opacity-70">laptop_mac</span>
+</div>
+</div>
+</aside>
+<!-- ======================================================== -->
+<!-- MAIN WORKSPACE -->
+<!-- ======================================================== -->
+<main class="flex-1 flex flex-col h-screen overflow-hidden bg-surface">
+<!-- Header de una sola fila limpio: migas de pan "Bitnode / Tiempo", título, botón verde y controles discretos -->
+<header class="h-11 px-5 border-b border-outline-variant/30 flex items-center justify-between shrink-0 bg-surface">
+<!-- Breadcrumbs & Section Title -->
+<div class="flex items-center gap-2.5">
+<div class="flex items-center gap-1.5 text-xs text-on-surface-muted font-label">
+<span>Bitnode</span>
+<span class="text-on-surface-muted/50">/</span>
+<span class="text-on-surface font-medium">Tiempo</span>
+</div>
+<span class="text-outline-variant/60">|</span>
+<span class="font-mono text-[11px] text-on-surface-variant font-medium bg-surface-container-high px-1.5 py-0.5 rounded-DEFAULT border border-outline-variant/40">
+          2 en ejecución
+        </span>
+</div>
+<!-- Controls & Primary Green Button -->
+<div class="flex items-center gap-2">
+<!-- Date Selector / Filter -->
+<div class="flex items-center bg-surface-container border border-outline-variant/40 rounded-DEFAULT px-2 py-1 text-xs text-on-surface-variant gap-1.5">
+<span class="material-symbols-outlined text-xs text-on-surface-muted">calendar_view_week</span>
+<span class="font-label text-xs text-on-surface">Esta semana</span>
+<span class="material-symbols-outlined text-[14px] text-on-surface-muted">arrow_drop_down</span>
+</div>
+<!-- Project Filter Dropdown -->
+<div class="flex items-center bg-surface-container border border-outline-variant/40 rounded-DEFAULT px-2 py-1 text-xs text-on-surface-variant gap-1.5">
+<span class="font-label text-xs">Todos los proyectos</span>
+<span class="material-symbols-outlined text-[14px] text-on-surface-muted">arrow_drop_down</span>
+</div>
+<div class="h-3.5 w-[1px] bg-outline-variant/40 mx-0.5"></div>
+<!-- Discret Filter Action -->
+<button class="p-1 text-on-surface-variant hover:text-on-surface transition-colors" title="Filtros avanzados">
+<span class="material-symbols-outlined">tune</span>
+</button>
+<!-- Primary Action Button: + Añadir entrada manual (#07B478) -->
+<button class="flex items-center gap-1.5 bg-primary hover:bg-primary-hover text-surface font-label font-semibold text-xs px-2.5 py-1 rounded-DEFAULT transition-colors shadow-none active:scale-[0.98]">
+<span class="material-symbols-outlined text-[15px] font-bold">add</span>
+<span>+ Añadir entrada manual</span>
+</button>
+</div>
+</header>
+<!-- Scrollable Content Canvas -->
+<div class="flex-1 overflow-y-auto px-5 py-4 space-y-5">
+<!-- ---------------------------------------------------- -->
+<!-- SECTION 1: TEMPORIZADORES ACTIVOS                    -->
+<!-- ---------------------------------------------------- -->
+<section>
+<div class="flex items-baseline justify-between mb-2">
+<div class="flex items-center gap-2">
+<h2 class="font-headline font-semibold text-xs tracking-tight text-on-surface">Temporizadores activos (2)</h2>
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-live-dot"></span>
+</div>
+<span class="text-[11px] text-on-surface-muted font-mono tracking-tight">
+            Límite máximo por sesión continua: 12:00:00 h
+          </span>
+</div>
+<!-- Grid of Active Timers -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+<!-- Timer 1: Asociado a Tarea -->
+<div class="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-3 flex items-center justify-between hover:border-primary/40 transition-colors">
+<div class="min-w-0 pr-3">
+<div class="flex items-center gap-1.5 mb-1">
+<span class="w-2 h-2 rounded-full bg-primary animate-live-dot shrink-0"></span>
+<span class="font-mono text-[10px] text-primary tracking-wide uppercase font-semibold">En curso</span>
+<span class="text-on-surface-muted/40 text-[10px]">•</span>
+<span class="text-[10px] font-mono text-on-surface-variant truncate">Seguros Bolívar TI</span>
+</div>
+<h3 class="font-body text-xs font-medium text-on-surface truncate" title="Migración de base de datos Postgres a RDS en AWS">
+                Migración de base de datos Postgres a RDS en AWS
+              </h3>
+<p class="text-[11px] text-on-surface-muted truncate mt-0.5">
+                Sesión iniciada hoy a las 09:15
+              </p>
+</div>
+<div class="flex items-center gap-3 shrink-0">
+<span class="font-mono text-base font-semibold text-on-surface tracking-tight bg-surface-container-high px-2 py-0.5 rounded-DEFAULT border border-outline-variant/50">
+                02:47:19
+              </span>
+<button class="flex items-center gap-1 px-2 py-1 rounded-DEFAULT border border-accent/40 text-accent hover:bg-accent/10 transition-colors font-label text-xs active:scale-95" title="Detener temporizador">
+<span class="material-symbols-outlined text-[14px]">stop</span>
+<span>Detener</span>
+</button>
+</div>
+</div>
+<!-- Timer 2: Directo a Proyecto (Sin tarea) -->
+<div class="bg-surface-container border border-outline-variant/60 rounded-DEFAULT p-3 flex items-center justify-between hover:border-primary/40 transition-colors">
+<div class="min-w-0 pr-3">
+<div class="flex items-center gap-1.5 mb-1">
+<span class="w-2 h-2 rounded-full bg-primary animate-live-dot shrink-0"></span>
+<span class="font-mono text-[10px] text-primary tracking-wide uppercase font-semibold">En curso</span>
+<span class="text-on-surface-muted/40 text-[10px]">•</span>
+<span class="text-[10px] font-mono text-on-surface-muted bg-surface-container-high px-1 rounded-DEFAULT border border-outline-variant/30">
+                  Directo a proyecto
+                </span>
+</div>
+<h3 class="font-body text-xs font-medium text-on-surface truncate" title="Infraestructura Cloud Daviplata">
+                Infraestructura Cloud Daviplata
+              </h3>
+<p class="text-[11px] text-on-surface-muted italic truncate mt-0.5">
+                Sin tarea vinculada
+              </p>
+</div>
+<div class="flex items-center gap-3 shrink-0">
+<span class="font-mono text-base font-semibold text-on-surface tracking-tight bg-surface-container-high px-2 py-0.5 rounded-DEFAULT border border-outline-variant/50">
+                00:38:42
+              </span>
+<button class="flex items-center gap-1 px-2 py-1 rounded-DEFAULT border border-accent/40 text-accent hover:bg-accent/10 transition-colors font-label text-xs active:scale-95" title="Detener temporizador">
+<span class="material-symbols-outlined text-[14px]">stop</span>
+<span>Detener</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- ---------------------------------------------------- -->
+<!-- SECTION 2: ENTRADAS MANUALES Y REGISTROS             -->
+<!-- ---------------------------------------------------- -->
+<section class="space-y-2">
+<div class="flex items-baseline justify-between">
+<div class="flex items-center gap-2">
+<h2 class="font-headline font-semibold text-xs tracking-tight text-on-surface">Entradas registradas</h2>
+<span class="text-on-surface-muted text-[11px] font-mono">(6 entradas en periodo)</span>
+</div>
+<span class="text-[11px] text-on-surface-muted font-body">
+            Las sumas diarias pueden contener intervalos de tiempo solapados entre tareas simultáneas. <span class="text-on-surface font-mono font-medium">Total registrado hoy: 3 h 45 min</span>
+</span>
+</div>
+<!-- High Density Data Table -->
+<div class="border border-outline-variant/50 rounded-DEFAULT bg-surface-container overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant/40 bg-surface-container-high/60 text-[11px] text-on-surface-muted font-label uppercase tracking-wider">
+<th class="py-2 px-3 font-medium w-24">Fecha</th>
+<th class="py-2 px-3 font-medium w-64">Tarea o Proyecto directo</th>
+<th class="py-2 px-3 font-medium">Descripción / Nota de trabajo</th>
+<th class="py-2 px-3 font-medium text-right w-20">Minutos</th>
+<th class="py-2 px-3 font-medium text-center w-28">Origen</th>
+<th class="py-2 px-3 font-medium text-right w-28">Acciones</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20 font-body text-xs">
+<!-- Fila 1: Normal -->
+<tr class="hover:bg-surface-container-high/30 transition-colors">
+<td class="py-2 px-3 font-mono text-[11px] text-on-surface-variant whitespace-nowrap">
+                  Hoy 24 oct
+                </td>
+<td class="py-2 px-3">
+<div class="font-medium text-on-surface">Auditoría de vulnerabilidades y hardening</div>
+<div class="text-[10px] text-on-surface-muted font-mono">Proyecto Tuya S.A.</div>
+</td>
+<td class="py-2 px-3 text-on-surface-variant">
+                  Revisión de reglas de firewall ufw y baseline CIS
+                </td>
+<td class="py-2 px-3 text-right font-mono text-on-surface font-medium whitespace-nowrap">
+                  75 min
+                </td>
+<td class="py-2 px-3 text-center">
+<span class="inline-flex items-center gap-1 font-mono text-[10px] text-on-surface-variant bg-surface-container-highest/60 px-1.5 py-0.5 rounded-DEFAULT border border-outline-variant/40">
+<span class="material-symbols-outlined text-[11px] text-primary">timer</span>
+                    Temporizador
+                  </span>
+</td>
+<td class="py-2 px-3 text-right">
+<div class="flex items-center justify-end gap-1 opacity-40 hover:opacity-100 transition-opacity">
+<button class="p-1 hover:text-on-surface text-on-surface-muted rounded-DEFAULT" title="Editar">
+<span class="material-symbols-outlined text-[14px]">edit</span>
+</button>
+<button class="p-1 hover:text-on-surface text-on-surface-muted rounded-DEFAULT" title="Opciones">
+<span class="material-symbols-outlined text-[14px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Fila 2: Proyecto directo (Manual) -->
+<tr class="hover:bg-surface-container-high/30 transition-colors">
+<td class="py-2 px-3 font-mono text-[11px] text-on-surface-variant whitespace-nowrap">
+                  Hoy 24 oct
+                </td>
+<td class="py-2 px-3">
+<div class="font-medium text-on-surface">Consultoría Arquitectura Cloud Personal</div>
+<span class="inline-block text-[9px] font-mono text-secondary bg-surface-container-high px-1 rounded-DEFAULT border border-outline-variant/30">
+                    Directo a proyecto
+                  </span>
+</td>
+<td class="py-2 px-3 text-on-surface-variant">
+                  Documentación de arquitectura de referencia
+                </td>
+<td class="py-2 px-3 text-right font-mono text-on-surface font-medium whitespace-nowrap">
+                  45 min
+                </td>
+<td class="py-2 px-3 text-center">
+<span class="inline-flex items-center gap-1 font-mono text-[10px] text-on-surface-variant bg-surface-container-highest/60 px-1.5 py-0.5 rounded-DEFAULT border border-outline-variant/40">
+<span class="material-symbols-outlined text-[11px] text-on-surface-muted">edit_note</span>
+                    Manual
+                  </span>
+</td>
+<td class="py-2 px-3 text-right">
+<div class="flex items-center justify-end gap-1 opacity-40 hover:opacity-100 transition-opacity">
+<button class="p-1 hover:text-on-surface text-on-surface-muted rounded-DEFAULT" title="Editar">
+<span class="material-symbols-outlined text-[14px]">edit</span>
+</button>
+<button class="p-1 hover:text-on-surface text-on-surface-muted rounded-DEFAULT" title="Opciones">
+<span class="material-symbols-outlined text-[14px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Fila 3: HOVER EXPLÍCITO con acciones expandidas y confirmación de eliminar -->
+<tr class="bg-surface-container-high/90 border-y border-primary/20 relative">
+<td class="py-2 px-3 font-mono text-[11px] text-on-surface whitespace-nowrap font-medium">
+                  24 oct
+                </td>
+<td class="py-2 px-3">
+<div class="font-medium text-on-surface">Configuración de pipeline CI/CD en GitLab</div>
+<div class="text-[10px] text-on-surface-muted font-mono">Alpina DIAN</div>
+</td>
+<td class="py-2 px-3 text-on-surface">
+                  Corrección de script docker runner y variables masked
+                </td>
+<td class="py-2 px-3 text-right font-mono text-on-surface font-semibold whitespace-nowrap">
+                  90 min
+                </td>
+<td class="py-2 px-3 text-center">
+<span class="inline-flex items-center gap-1 font-mono text-[10px] text-on-surface bg-surface-container-highest px-1.5 py-0.5 rounded-DEFAULT border border-outline-variant/70">
+<span class="material-symbols-outlined text-[11px] text-on-surface-muted">edit_note</span>
+                    Manual
+                  </span>
+</td>
+<!-- Acciones en estado visible / desplegado -->
+<td class="py-2 px-3 text-right relative">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-1.5 py-0.5 bg-surface-container-highest text-on-surface hover:bg-surface-container-highest/80 border border-outline-variant/60 rounded-DEFAULT text-[11px] font-label flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">edit</span>
+<span>Editar</span>
+</button>
+<!-- Desplegable / Acción Eliminar preventiva -->
+<div class="relative inline-block text-left">
+<button class="p-1 bg-surface-container-highest text-on-surface border border-outline-variant/60 rounded-DEFAULT" title="Más opciones">
+<span class="material-symbols-outlined text-[14px]">more_horiz</span>
+</button>
+<!-- Tooltip / Popover de advertencia explícito -->
+<div class="absolute right-0 top-full mt-1 z-30 w-64 p-2 bg-[#12181E] border border-accent/40 rounded-DEFAULT shadow-xl text-left">
+<div class="flex items-start gap-1.5 mb-1.5">
+<span class="material-symbols-outlined text-accent text-sm shrink-0 mt-0.5">warning</span>
+<span class="text-[11px] font-medium text-on-surface">Eliminar registro</span>
+</div>
+<p class="text-[10px] text-accent/90 mb-2 leading-tight">
+                          Eliminar (descuenta 90 min del historial)
+                        </p>
+<div class="flex justify-end gap-1.5">
+<button class="px-2 py-0.5 text-[10px] text-on-surface-muted hover:text-on-surface border border-outline-variant/50 rounded-DEFAULT">Cancelar</button>
+<button class="px-2 py-0.5 text-[10px] bg-accent/20 text-accent border border-accent/40 hover:bg-accent/30 rounded-DEFAULT font-medium">Confirmar</button>
+</div>
+</div>
+</div>
+</div>
+</td>
+</tr>
+<!-- Fila 4: Tarea eliminada -->
+<tr class="hover:bg-surface-container-high/30 transition-colors opacity-60">
+<td class="py-2 px-3 font-mono text-[11px] text-on-surface-muted whitespace-nowrap">
+                  23 oct
+                </td>
+<td class="py-2 px-3">
+<div class="flex items-center gap-1.5">
+<span class="text-on-surface-muted font-medium line-through">[Tarea eliminada]</span>
+<span class="text-[9px] font-mono text-on-surface-muted bg-surface-container-high px-1 py-0.2 rounded-DEFAULT border border-outline-variant/30">
+                      Tarea eliminada
+                    </span>
+</div>
+<div class="text-[10px] text-on-surface-muted font-mono italic">Fuera de totales de proyecto activo</div>
+</td>
+<td class="py-2 px-3 text-on-surface-muted">
+                  Pruebas de latencia en endpoint legacy
+                </td>
+<td class="py-2 px-3 text-right font-mono text-on-surface-muted whitespace-nowrap">
+                  30 min
+                </td>
+<td class="py-2 px-3 text-center">
+<span class="inline-flex items-center gap-1 font-mono text-[10px] text-on-surface-muted bg-surface-container-highest/30 px-1.5 py-0.5 rounded-DEFAULT border border-outline-variant/20">
+<span class="material-symbols-outlined text-[11px]">timer</span>
+                    Temporizador
+                  </span>
+</td>
+<td class="py-2 px-3 text-right">
+<div class="flex items-center justify-end gap-1 opacity-20">
+<button class="p-1 text-on-surface-muted rounded-DEFAULT cursor-not-allowed">
+<span class="material-symbols-outlined text-[14px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Fila 5: Normal -->
+<tr class="hover:bg-surface-container-high/30 transition-colors">
+<td class="py-2 px-3 font-mono text-[11px] text-on-surface-variant whitespace-nowrap">
+                  23 oct
+                </td>
+<td class="py-2 px-3">
+<div class="font-medium text-on-surface">Rediseño Portal Autoservicio Afiliados</div>
+<div class="text-[10px] text-on-surface-muted font-mono">Compensar EPS</div>
+</td>
+<td class="py-2 px-3 text-on-surface-variant">
+                  Ajuste de tokens tipográficos y espaciado en tabla
+                </td>
+<td class="py-2 px-3 text-right font-mono text-on-surface font-medium whitespace-nowrap">
+                  60 min
+                </td>
+<td class="py-2 px-3 text-center">
+<span class="inline-flex items-center gap-1 font-mono text-[10px] text-on-surface-variant bg-surface-container-highest/60 px-1.5 py-0.5 rounded-DEFAULT border border-outline-variant/40">
+<span class="material-symbols-outlined text-[11px] text-on-surface-muted">edit_note</span>
+                    Manual
+                  </span>
+</td>
+<td class="py-2 px-3 text-right">
+<div class="flex items-center justify-end gap-1 opacity-40 hover:opacity-100 transition-opacity">
+<button class="p-1 hover:text-on-surface text-on-surface-muted rounded-DEFAULT" title="Editar">
+<span class="material-symbols-outlined text-[14px]">edit</span>
+</button>
+<button class="p-1 hover:text-on-surface text-on-surface-muted rounded-DEFAULT" title="Opciones">
+<span class="material-symbols-outlined text-[14px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Fila 6: Proyecto directo (Temporizador) -->
+<tr class="hover:bg-surface-container-high/30 transition-colors">
+<td class="py-2 px-3 font-mono text-[11px] text-on-surface-variant whitespace-nowrap">
+                  22 oct
+                </td>
+<td class="py-2 px-3">
+<div class="font-medium text-on-surface">Seguros Bolívar TI</div>
+<span class="inline-block text-[9px] font-mono text-secondary bg-surface-container-high px-1 rounded-DEFAULT border border-outline-variant/30">
+                    Directo a proyecto
+                  </span>
+</td>
+<td class="py-2 px-3 text-on-surface-variant">
+                  Sync técnico semanal de arquitectura de datos
+                </td>
+<td class="py-2 px-3 text-right font-mono text-on-surface font-medium whitespace-nowrap">
+                  35 min
+                </td>
+<td class="py-2 px-3 text-center">
+<span class="inline-flex items-center gap-1 font-mono text-[10px] text-on-surface-variant bg-surface-container-highest/60 px-1.5 py-0.5 rounded-DEFAULT border border-outline-variant/40">
+<span class="material-symbols-outlined text-[11px] text-primary">timer</span>
+                    Temporizador
+                  </span>
+</td>
+<td class="py-2 px-3 text-right">
+<div class="flex items-center justify-end gap-1 opacity-40 hover:opacity-100 transition-opacity">
+<button class="p-1 hover:text-on-surface text-on-surface-muted rounded-DEFAULT" title="Editar">
+<span class="material-symbols-outlined text-[14px]">edit</span>
+</button>
+<button class="p-1 hover:text-on-surface text-on-surface-muted rounded-DEFAULT" title="Opciones">
+<span class="material-symbols-outlined text-[14px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Bottom Status Footer within canvas -->
+<div class="flex items-center justify-between text-[11px] text-on-surface-muted font-mono pt-1 pb-3 border-t border-outline-variant/20">
+<div class="flex items-center gap-3">
+<span>Tiempo acumulado período: 5 h 35 min</span>
+<span class="text-outline-variant">•</span>
+<span>6 registros listados</span>
+</div>
+<div class="flex items-center gap-2">
+<span>Sincronización local</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+</div>
+</div>
+</div>
+</main>
+</body></html>

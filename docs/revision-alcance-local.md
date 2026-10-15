@@ -1,6 +1,6 @@
 # Revisión final del alcance local
 
-Las rondas generales de preguntas terminan tras la ronda 46. El usuario autorizó consolidar el alcance y llevar los detalles menores a una propuesta de diseño, no empezar a implementar. La fuente detallada sigue siendo [alcance local](alcance-local.md).
+Las rondas generales de preguntas terminan tras la ronda 46. El usuario autorizó consolidar el alcance y llevar los detalles menores a una propuesta de diseño, no empezar a implementar. La fuente detallada sigue siendo [historial de alcance](archivo/alcance-local.md).
 
 ## Producto confirmado
 
@@ -10,7 +10,7 @@ Una app personal, local y funcional sin Internet, para macOS. Angular + NestJS +
 |---|---|
 | Organización | Clientes work/personal, proyectos de un cliente fijo y contactos con varios clientes o ninguno. |
 | Trabajo | Tareas con proyecto obligatorio, seis estados, prioridad opcional, planificación y límite separados, subtareas multinivel y URLs. |
-| Captura | Inbox global; crear tarea/nota, añadir a existente o descartar. |
+| Captura | Inbox en página propia para consultar/procesar; acceso global solo agregar capturas. Crear tarea/nota, añadir a existente o descartar. |
 | Conocimiento | Notas Markdown libres o con vínculos explícitos independientes; etiquetas planas e inmutables. |
 | Tiempo | Carga manual y temporizadores persistentes simultáneos, con límite de 12 horas por intervalo. |
 | Finanzas | Ingresos/gastos COP o USD, unidades enteras, tasas manuales y totales solo en pesos. |
@@ -41,7 +41,7 @@ Una app personal, local y funcional sin Internet, para macOS. Angular + NestJS +
 | Temporizador | Uno por tarea y uno directo por proyecto; pausar cierra entrada y reanudar inicia otro intervalo. Solapamientos permitidos. |
 | Redondeo | Cada tramo diario se redondea hacia arriba. Medianoche divide el intervalo pero no reinicia el límite de 12 horas. |
 | Cierre/traslado | Detiene y guarda temporizadores afectados, sin reinicio automático. |
-| Zona | Zona actual del equipo para vistas y nuevos tramos; los días del tiempo ya guardado no se redistribuyen. |
+| Zona | Siempre Colombia, America/Bogota; sin cambios de zona del equipo en esta versión. Los días del tiempo ya guardado permanecen. |
 | Finanzas | Importe positivo entero COP/USD; fecha obligatoria, hoy por defecto; concepto opcional. |
 | Conversión | COP por unidad USD, tasa positiva hasta dos decimales; sin tasa, fuera del total y aviso. Equivalente redondeado por movimiento, 0,5 sube. |
 | Cambios financieros | Cambiar moneda limpia tasa. Editar tasa requiere confirmación y recalcula períodos anteriores. Reembolsos independientes del tipo opuesto. |
@@ -75,10 +75,24 @@ No se identificó una contradicción de dominio que exija otra ronda general. Ha
 - Duración cero de evento no introduce recordatorios ni notificaciones.
 - Vínculos explícitos de nota no son su contexto derivado; pueden diferir sin ser un error.
 - La edición general de tiempo no se aplica al tiempo retenido de tareas eliminadas.
-- La zona actual afecta presentación y nuevos tramos, no redistribuye tiempo histórico ya guardado.
+- El acuerdo posterior P1 sustituye zona del equipo por Colombia fija. No cambia días de tiempo ya guardado.
 - Búsqueda exige Todos para palabras; el selector Todas/Cualquiera confirmado es para etiquetas, no para términos de búsqueda.
 
 La sesión web requiere una advertencia de diseño: cerrar el navegador no garantiza invalidación en servidor y algunos navegadores restauran cookies de sesión. Se confirmó no tener máximo por antigüedad; no se debe prometer una garantía de cierre que el navegador no ofrece. Reset de contraseña invalida sesiones.
+
+## Acuerdos posteriores a las 46 rondas
+
+- Inbox: permitir editar contenido antes de crear tarea/nota; guardar destino y eliminar captura atómicamente. Si falla, conservar captura.
+- Validaciones: recortar espacios exteriores, rechazar campos obligatorios vacíos, validar sintaxis de email/URL sin consultas externas y conservar teléfono como texto. URLs duplicadas permitidas, sin restricción de unicidad ni deduplicación automática.
+- Base visual: escritorio oscuro compacto con acento verde y navegación lateral. Es base de trabajo, no aprobación final de pantallas, medidas o estados.
+- Diseño P1/P3/P5/P6: Colombia fija; plazos completos de 30 días/un año; restaurar conserva solo vínculos existentes; tramo cero no registra tiempo.
+- P2: borrar definitivamente una nota elimina también su actividad, sin mantener texto ni placeholder. Archivo/papelera antes del borrado definitivo no eliminan historial.
+- P8/P9: búsqueda alfabética por nombre/título; Inbox página propia y acceso global únicamente para agregar.
+- P10: iniciar timer en Nueva la pasa a En curso de forma atómica. Bloqueada/Revisión no cambian; cerradas requieren reapertura confirmada.
+- P11/P12: restore conserva contraseña actual, invalida sesiones y cierra/guarda timers de la copia sin reiniciarlos.
+- P7 sigue sin respuesta: explicar desempate de Hoy antes de decidir. No aprobar automáticamente sus propuestas de horas/conteos.
+
+Organización técnica aprobada tras revisión: tres apps, web/server/cli, y dos paquetes compartidos, core/db. Contracts/testing se extraen solo cuando exista reutilización concreta. No se autorizó implementación.
 
 ## Detalles propuestos, no aprobados
 
@@ -86,19 +100,17 @@ Estas recomendaciones reducen preguntas menores. No son nuevos acuerdos de produ
 
 | Área | Propuesta para revisar en diseño |
 |---|---|
-| Inbox | Permitir ajustar contenido también al crear destino nuevo. Guardar destino y eliminar captura en una transacción; si falla, conservar captura. |
-| Validaciones | Recortar espacios exteriores; rechazar nombres obligatorios vacíos. Validar sintaxis de email/URL sin consultar proveedores y conservar teléfono como texto. |
-| Restauración | Conservar vínculos que aún existan; no reconstruir vínculos eliminados por purga. No ampliar restauración a tareas. |
-| Retención | Precisar límites de 30 días/un año y ejecutar purgas idempotentes al abrir o mediante servidor activo. |
+| Restauración | Mecanismo para cumplir P5 aprobado: conservar existentes sin reconstruir vínculos purgados. Nunca ampliar a tareas. |
+| Retención | P3 ya aprobado; verificar ejecución idempotente de plazos completos y convención técnica de aniversario. |
 | Hoy | Incluir todas las horas del día; desempate estable después de prioridad/límite. |
 | Calendario | Deduplicar conteos por tarea/día, mostrar marcadores distintos y no inventar duración de tarea. |
-| Actividad | Detalle Markdown expandible; preservar identificación de registros eliminados y agrupar acciones compuestas sin añadir event sourcing. Precisar si el historial conserva contenido tras purga de dominio. |
-| Búsqueda | Definir ranking estable y no añadir filtros o campos nuevos sin indicarlo. |
-| Tiempo editado | Conservar procedencia cronometrada sin recalcular silenciosamente los minutos corregidos. Precisar cambio de zona durante un intervalo aún abierto y tramos de duración exactamente cero. |
+| Actividad | Detalle Markdown expandible y agrupación sin event sourcing. P2 resuelto para notas: eliminar su actividad al borrarlas definitivamente. Política de otras familias no ampliada por inferencia. |
+| Búsqueda | Orden alfabético P8 aprobado; definir clave normalizada/desempate estable sin nuevos filtros o campos de producto. |
+| Tiempo editado | Conservar procedencia sin recalcular minutos corregidos. P1 Colombia fija y P6 cero sin entrada ya aprobados. |
 
 ## Siguiente etapa
 
-Preparar una propuesta técnica separada: esquema Drizzle, servicios compartidos, contratos REST/CLI, fechas y aritmética exacta, concurrencia SQLite, sesiones/certificados, backups/purgas y pruebas de invariantes. Identificadores técnicos y campos auxiliares siguen sin aprobación.
+La organización mínima de la [propuesta técnica](propuesta-tecnica-local.md) ya está aprobada. Resolver detalles técnicos pendientes por unidad antes de autorizar código. Continuar diseño con la base visual seleccionada. Identificadores técnicos y campos auxiliares siguen sin aprobación.
 
 No se implementó código ni se ejecutaron pruebas funcionales. Los checks de esta etapa validan documentación, no funcionamiento de la app.
 
