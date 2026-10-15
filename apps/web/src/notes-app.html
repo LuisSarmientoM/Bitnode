@@ -4,19 +4,22 @@
     <a class="brand" href="/" (click)="$event.preventDefault()"><span class="brand-mark">b</span> Bitnode <span class="version">v{{ version }}</span></a>
     <div class="workspace-label">ESPACIO PERSONAL</div>
     <div class="nav-current" aria-current="page"><span aria-hidden="true">▤</span> Notas <span class="nav-dot"></span></div>
-    <div class="sidebar-bottom"><span class="online-dot"></span> Solo este equipo</div>
+    <div class="sidebar-bottom"><span class="online-dot"></span> {{ lanAccess ? 'Red local temporal' : 'Solo este equipo' }}</div>
   </aside>
 
   <main>
     <header class="topbar">
       <div class="breadcrumb">Bitnode <span>/</span> <strong>Notas</strong></div>
-      <span class="local-badge"><span class="online-dot"></span> Almacenamiento local</span>
+      <span class="local-badge"><span class="online-dot"></span> {{ lanAccess ? 'Red local · sin contraseña' : 'Almacenamiento local' }}</span>
     </header>
     <div class="page-heading">
       <div><div class="eyebrow">TU ESPACIO DE CONOCIMIENTO</div><h1>Notas</h1><p>Ideas que vale la pena conservar.</p></div>
       <button type="button" class="primary" (click)="newNote()" [disabled]="busy()"><span aria-hidden="true">＋</span> Nueva nota</button>
     </div>
 
+    @if (lanAccess) {
+      <p class="lan-warning" role="note">Acceso temporal por red, sin contraseña ni cifrado HTTPS. Cualquiera que alcance este puerto puede leer y editar las notas. Usa solo tu red de confianza.</p>
+    }
     <div class="notes-workspace">
       <section class="note-list" aria-label="Lista de notas" [attr.aria-busy]="busy()">
         <div class="list-heading"><span>{{ total() }} {{ total() === 1 ? 'nota' : 'notas' }}</span><span>Más recientes</span></div>

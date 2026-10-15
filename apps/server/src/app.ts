@@ -9,6 +9,8 @@ import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { DomainError, pagination, type NotesRepository } from '../../../packages/core/src/notes.ts';
 
+import { parseLanHost } from './network.ts';
+
 const REPOSITORY = Symbol('notes.repository');
 
 @Controller('api/v1/notes')
@@ -56,7 +58,8 @@ class ApiErrors implements ExceptionFilter {
   }
 }
 
-export async function createApp(repository: NotesRepository, webRoot = resolve('dist/web/browser')) {
+export async function createApp(repository: NotesRepository, webRoot = resolve('dist/web/browser'), options: { lanHost?: string } = {}) {
+  const lanHost = parseLanHost(options.lanHost);
   @Module({
     controllers: [NotesController],
     providers: [{ provide: REPOSITORY, useValue: repository }],
@@ -72,10 +75,11 @@ export async function createApp(repository: NotesRepository, webRoot = resolve('
     });
     const host = request.headers.host;
     const port = request.socket.localPort;
-    const allowed = host === '127.0.0.1:' + port || host === 'localhost:' + port;
+    const allowed = host === '127.0.0.1:' + port || host === 'localhost:' + port
+      || (lanHost !== undefined && host === lanHost + ':' + port);
     if (!allowed || (request.headers.origin !== undefined && request.headers.origin !== 'http://' + host)
       || request.headers['sec-fetch-site'] === 'cross-site') {
-      response.status(403).json({ error: { code: 'LOCAL_ONLY', message: 'Bitnode acepta solo solicitudes del origen local.' } });
+      response.status(403).json({ error: { code: 'LOCAL_ONLY', message: 'Bitnode acepta solo solicitudes de su origen configurado.' } });
       return;
     }
     if (request.path.startsWith('/api/')) {

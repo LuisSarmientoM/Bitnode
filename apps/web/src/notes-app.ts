@@ -13,6 +13,7 @@ import appPackage from '../../../package.json';
 })
 export class NotesApp {
   readonly version = appPackage.version;
+  readonly lanAccess = !['localhost', '127.0.0.1'].includes(window.location.hostname);
   readonly items = signal<Note[]>([]);
   readonly total = signal(0);
   readonly offset = signal(0);

@@ -23,12 +23,26 @@ npm start
 
 NestJS sirve los archivos Angular compilados y `/api/v1/notes` desde el mismo origen. El backend se ejecuta desde TypeScript con `tsx`; esta entrega no genera un instalador ni un binario de servidor.
 
+## Acceso temporal desde una red de confianza
+
+El modo predeterminado sigue limitado a este equipo. Para una prueba LAN sin autenticación, indica la IPv4 privada de la interfaz de red del servidor:
+
+```sh
+BITNODE_LAN_HOST=192.168.1.20 npm run dev
+```
+
+Sustituye la IP por la de tu equipo y abre `http://IP:3000` desde un dispositivo de la misma red. Solo se escucha en esa dirección concreta; no se admite `0.0.0.0`, una dirección pública ni un hostname. Se mantiene la validación exacta de Host y Origin. La interfaz muestra un aviso de modo temporal.
+
+**No hay contraseña ni HTTPS.** Quien pueda alcanzar ese puerto puede leer y editar las notas. Usa solo una red de confianza; no abras puertos del router, no uses túneles ni publiques mediante un proxy. El firewall del sistema o el aislamiento entre dispositivos de la red pueden impedir el acceso.
+
+Para desactivarlo, detén el proceso con Ctrl+C y arranca `npm start` sin `BITNODE_LAN_HOST`. Si la IP de tu equipo cambia, debes volver a iniciar el proceso con la nueva dirección.
+
 ## Datos y límites
 
 - `npm run db:init` crea `.data/bitnode.sqlite` y aplica la migración inicial sin arrancar el servidor. Se puede repetir sin borrar las notas. El servidor también la inicializa si falta.
 - La base no se borra al reiniciar y queda fuera de Git. También puedes usar `BITNODE_DB=/ruta/bitnode.sqlite npm run db:init`.
 - `BITNODE_DB=/ruta/bitnode.sqlite npm start` cambia el archivo. `PORT=3001 npm start` cambia el puerto.
-- El servidor escucha exclusivamente en `127.0.0.1`. No hay acceso LAN, login ni sesiones todavía. No lo publiques detrás de un proxy ni lo expongas mediante túneles.
+- Por defecto el servidor escucha exclusivamente en `127.0.0.1`. El acceso LAN temporal requiere `BITNODE_LAN_HOST`. No hay login ni sesiones todavía.
 - SQLite usa WAL, migración inicial versionada y revisión de cada nota. Una edición obsoleta devuelve conflicto, sin sobrescribir la versión guardada.
 - No hay borrado, archivo, papelera, etiquetas ni vínculos con otros módulos en esta entrega.
 - Se admite título, contenido o ambos. Sin título, se guarda uno generado del primer encabezado Markdown o la primera línea con contenido. Editar el cuerpo no cambia ese título.
