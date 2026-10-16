@@ -16,6 +16,7 @@
     "db:init": "tsx scripts/db-init.ts",
     "auth:setup": "tsx apps/cli/src/auth.ts setup",
     "auth:reset": "tsx apps/cli/src/auth.ts reset",
+    "tls:setup": "tsx apps/cli/src/tls.ts",
     "build": "npm run typecheck && npm run build:web",
     "build:web": "ng build web",
     "typecheck": "tsc --noEmit -p tsconfig.json",
