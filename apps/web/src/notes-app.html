@@ -58,7 +58,7 @@
           <button type="button" class="note-card" [class.selected]="selected()?.id === note.id" [attr.aria-pressed]="selected()?.id === note.id" (click)="openNote(note)" [disabled]="busy()">
             <div class="card-top"><strong>{{ note.title }}</strong></div>
             @if (note.body) { <p>{{ note.body.slice(0, 120) }}</p> }
-            @if (note.tags?.length) { <div class="tag-chips">@for (tag of note.tags; track tag.id) { <span><i aria-hidden="true" [style.background-color]="tag.color"></i>{{ tag.name }}</span> }</div> }
+            @if (note.tags.length) { <div class="tag-chips">@for (tag of note.tags; track tag.id) { <span><i aria-hidden="true" [style.background-color]="tag.color"></i>{{ tag.name }}</span> }</div> }
             <div class="card-meta"><time>{{ note.updatedAt | date:'dd/MM/yyyy · HH:mm':'-0500' }}</time></div>
           </button>
         }
