@@ -10,6 +10,7 @@ import { resolve } from 'node:path';
 import { DomainError, pagination, type NotesRepository } from '../../../packages/core/src/notes.ts';
 
 import { parseLanHost } from './network.ts';
+import { noteQuery } from '../../../packages/core/src/note-query.ts';
 
 const REPOSITORY = Symbol('notes.repository');
 
@@ -18,9 +19,10 @@ class NotesController {
   constructor(@Inject(REPOSITORY) private readonly notes: NotesRepository) {}
 
   @Get()
-  list(@Query('offset') offset?: string, @Query('limit') limit?: string) {
+  list(@Query('offset') offset?: string, @Query('limit') limit?: string,
+    @Query('q') q?: string, @Query('sort') sort?: string) {
     const page = pagination(offset, limit);
-    return this.notes.list(page.offset, page.limit);
+    return this.notes.list(page.offset, page.limit, noteQuery({ q, sort }));
   }
 
   @Get(':id')

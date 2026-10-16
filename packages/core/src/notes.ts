@@ -76,7 +76,7 @@ export function pagination(offsetValue: unknown, limitValue: unknown): { offset:
 }
 
 export interface NotesRepository {
-  list(offset: number, limit: number): NotePage;
+  list(offset: number, limit: number, query?: import('./note-query.ts').NoteQuery): NotePage;
   get(id: string): Note;
   create(value: unknown): Note;
   update(id: string, value: unknown): Note;

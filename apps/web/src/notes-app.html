@@ -12,7 +12,18 @@
     </div>
     <div class="notes-workspace">
       <section class="note-list" aria-label="Lista de notas" [attr.aria-busy]="busy()">
-        <div class="list-heading"><span>{{ total() }} {{ total() === 1 ? 'nota' : 'notas' }}</span></div>
+        <form class="note-filters" (ngSubmit)="applyFilters()">
+          <label class="visually-hidden" for="note-search">Buscar notas</label>
+          <input id="note-search" name="query" type="search" placeholder="Buscar notas" maxlength="500" [ngModel]="query()" (ngModelChange)="query.set($event)" [disabled]="busy()">
+          <label class="visually-hidden" for="note-sort">Ordenar notas</label>
+          <select id="note-sort" name="sort" [ngModel]="query().trim() ? 'title' : sort()" (ngModelChange)="sort.set($event)" [disabled]="busy() || !!query().trim()">
+            <option value="updated">Última modificación</option>
+            <option value="title">Título</option>
+            <option value="created">Fecha de creación</option>
+          </select>
+          <button type="submit" [disabled]="busy()">Aplicar</button>
+        </form>
+        <div class="list-heading" aria-live="polite"><span>{{ total() }} {{ total() === 1 ? 'nota' : 'notas' }}</span></div>
         @if (listError()) {
           <div class="list-message error" role="alert">{{ listError() }}<button type="button" (click)="loadPage(offset())" [disabled]="busy()">Reintentar lista</button></div>
         }
@@ -27,7 +38,7 @@
           </button>
         }
         @if (!busy() && !listError() && !items().length) {
-          <p class="empty-list">No hay notas.</p>
+          <p class="empty-list">{{ appliedQuery() ? 'No hay notas que coincidan.' : 'No hay notas.' }}</p>
         }
         @if (hasPages()) {
           <nav class="pagination" aria-label="Páginas de notas">

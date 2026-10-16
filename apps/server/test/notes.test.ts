@@ -24,6 +24,10 @@ test('API crea, lista, abre y edita; rechaza conflicto, datos inválidos y desco
     assert.equal((await (await fetch(url + '/api/v1/notes/' + note.id)).json()).id, note.id);
     const page = await (await fetch(url + '/api/v1/notes')).json();
     assert.equal(page.total, 1);
+    assert.equal((await (await fetch(url + '/api/v1/notes?q=desde%20api')).json()).total, 1);
+    assert.equal((await (await fetch(url + '/api/v1/notes?q=ausente')).json()).total, 0);
+    assert.equal((await fetch(url + '/api/v1/notes?sort=random')).status, 400);
+    assert.equal((await fetch(url + '/api/v1/notes?q=x&q=y')).status, 400);
     assert.equal((await send('/' + note.id, 'PATCH', { title: 'Editada', body: 'Markdown', expectedRevision: 1 })).status, 200);
     const stale = await send('/' + note.id, 'PATCH', { title: 'Vieja', expectedRevision: 1 });
     assert.equal(stale.status, 409);

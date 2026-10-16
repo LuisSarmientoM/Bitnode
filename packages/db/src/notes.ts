@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { desc, eq, sql } from 'drizzle-orm';
+import { matchesNote, normalizeText, noteQuery } from '../../core/src/note-query.ts';
 import { randomUUID } from 'node:crypto';
 import { notes } from './schema.ts';
 import { DomainError, inputObject, noteInput, revisionInput, type NotesRepository } from '../../core/src/notes.ts';
@@ -31,6 +32,9 @@ export function openNotes(path: string): NotesRepository {
     sqlite.close();
     throw error;
   }
+  sqlite.function('normalized_title', { deterministic: true }, (title: string) => normalizeText(title));
+  sqlite.function('note_matches', { deterministic: true }, (title: string, body: string, terms: string) =>
+    Number(matchesNote(title, body, terms.split(' '))));
   const db = drizzle(sqlite);
   const get = (id: string) => {
     const note = db.select().from(notes).where(eq(notes.id, id)).get();
@@ -39,10 +43,15 @@ export function openNotes(path: string): NotesRepository {
   };
   return {
     get,
-    list(offset, limit) {
+    list(offset, limit, query = noteQuery({})) {
+      const filter = query.terms.length
+        ? sql`note_matches(${notes.title}, ${notes.body}, ${query.terms.join(' ')}) = 1` : undefined;
+      const order = query.sort === 'title' ? [sql`normalized_title(${notes.title})`, notes.id]
+        : query.sort === 'created' ? [desc(notes.createdAt), desc(notes.id)]
+        : [desc(notes.updatedAt), desc(notes.id)];
       return sqlite.transaction(() => ({
-        items: db.select().from(notes).orderBy(desc(notes.updatedAt), desc(notes.id)).limit(limit).offset(offset).all(),
-        total: db.select({ count: sql<number>`count(*)` }).from(notes).get()!.count,
+        items: db.select().from(notes).where(filter).orderBy(...order).limit(limit).offset(offset).all(),
+        total: db.select({ count: sql<number>`count(*)` }).from(notes).where(filter).get()!.count,
         offset, limit,
       }))();
     },

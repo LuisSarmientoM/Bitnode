@@ -15,6 +15,10 @@ export class NotesApp {
   readonly total = signal(0);
   readonly offset = signal(0);
   readonly pageSize = 50;
+  readonly query = signal('');
+  readonly sort = signal('updated');
+  readonly appliedQuery = signal('');
+  readonly appliedSort = signal('updated');
   readonly hasPages = computed(() => this.total() > this.pageSize);
   readonly selected = signal<Note | null>(null);
   readonly editing = signal(false);
@@ -117,12 +121,24 @@ export class NotesApp {
     } finally { this.busy.set(false); }
   }
 
-  async loadPage(offset: number, initial = false) {
+  private listPath(offset: number, query = this.appliedQuery(), sort = this.appliedSort()) {
+    return '?' + new URLSearchParams({ offset: String(offset), limit: String(this.pageSize), q: query, sort });
+  }
+
+  async applyFilters() {
+    await this.loadPage(0, false, true);
+  }
+
+  async loadPage(offset: number, initial = false, apply = false) {
     if (!initial && (this.busy() || !this.canDiscard())) return;
     this.busy.set(true);
     this.listError.set('');
     try {
-      const page = await notesRequest<NotePage>('?offset=' + offset + '&limit=' + this.pageSize);
+      const query = apply ? this.query().trim() : this.appliedQuery();
+      const sort = apply ? this.sort() : this.appliedSort();
+      const page = await notesRequest<NotePage>(this.listPath(offset, query, sort));
+      this.appliedQuery.set(query);
+      this.appliedSort.set(sort);
       this.items.set(page.items);
       this.total.set(page.total);
       this.offset.set(page.offset);
@@ -151,7 +167,7 @@ export class NotesApp {
       this.setNote(note);
       this.saved.set(true);
       try {
-        const page = await notesRequest<NotePage>('?offset=0&limit=' + this.pageSize);
+        const page = await notesRequest<NotePage>(this.listPath(0));
         this.items.set(page.items);
         this.total.set(page.total);
         this.offset.set(0);
