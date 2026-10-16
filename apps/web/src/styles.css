@@ -46,13 +46,27 @@ h1 { font-size: 30px; letter-spacing: -1px; margin: 9px 0 5px; font-weight: 600;
 .tag-controls { grid-column: 1 / -1; }
 summary { cursor: pointer; padding: 8px 0; }
 summary:focus-visible { outline: 2px solid var(--green); }
-.tag-controls label, .tag-options label { display: flex; align-items: center; gap: 6px; padding: 5px 0; overflow-wrap: anywhere; }
-.note-filters .tag-controls input { width: auto; }
-.editor-tags { padding: 0 26px 12px; }
-.tag-options, .tag-create { display: flex; flex-wrap: wrap; gap: 12px; }
-.tag-create { margin-top: 10px; align-items: end; }
-.tag-create label { display: grid; gap: 6px; min-width: 0; max-width: 100%; font-size: 12px; }
+.tag-controls summary, .editor-tags summary { width: fit-content; color: var(--muted); font-size: 12px; border-radius: 5px; }
+.editor-tags summary { list-style: none; }
+.editor-tags summary::-webkit-details-marker { display: none; }
+.selection-count { margin-left: 5px; background: #254637; color: #c7e9d8; border-radius: 12px; padding: 2px 7px; }
+.note-tags { margin: 0 26px 12px; min-width: 0; }
+.assigned-tags, .tag-options { display: flex; flex-wrap: wrap; gap: 6px; }
+.assigned-tags:empty { display: none; }
+.tag-panel { max-width: 400px; padding: 12px; margin-top: 4px; background: #111514; border: 1px solid var(--line); border-radius: 8px; }
+.tag-options { max-height: 144px; overflow-y: auto; padding: 2px; }
+.tag-chip { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 6px 10px; border-radius: 16px; font-size: 12px; line-height: 1.4; overflow-wrap: anywhere; }
+.tag-chip i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+.tag-chip[aria-pressed="true"], .assigned-tags .tag-chip { background: #1d3429; border-color: #3a6650; color: #d3eddf; }
+.tag-chip > span { color: var(--muted); }
+.tag-create, .tag-match { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; margin-top: 12px; }
+.tag-options + .tag-create { padding-top: 12px; border-top: 1px solid var(--line); }
 .tag-create input { width: 100%; min-width: 0; background: #121314; color: #e2e4e2; border: 1px solid var(--line); border-radius: 5px; padding: 8px; }
+.tag-colors { display: flex; gap: 4px; margin-top: 8px; }
+.tag-colors button { width: 32px; height: 32px; padding: 5px; border-radius: 50%; border-color: transparent; background: transparent; }
+.tag-colors button[aria-pressed="true"] { border-color: var(--green); }
+.tag-colors i { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #303734; font-style: normal; }
+.tag-panel .error { padding: 8px; border-radius: 5px; font-size: 12px; }
 .tag-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; font-size: 11px; }
 .tag-chips span { display: inline-flex; align-items: center; gap: 5px; overflow-wrap: anywhere; max-width: 100%; }
 .tag-chips i { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; background: var(--muted); }
@@ -148,6 +162,7 @@ live-markdown { display: block; flex: 1; min-width: 0; }
 .cm-live-link { color: var(--green); text-decoration: underline; }
 .cm-editor .cm-live-quote { border-left: 2px solid #518166; padding-left: 12px; color: #afbab2; }
 @media (max-width: 760px) {
+  .note-tags { margin-inline: 16px; }
   .note-list { max-height: none; border-bottom: 0; }
   dialog.editor { position: fixed; margin: auto; width: calc(100% - 16px); height: calc(100dvh - 16px); max-height: calc(100dvh - 16px); border: 1px solid var(--line); border-radius: 12px; overscroll-behavior: contain; }
   .cm-editor .cm-content { padding-inline: 16px; }

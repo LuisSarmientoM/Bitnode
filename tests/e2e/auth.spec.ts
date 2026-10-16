@@ -6,7 +6,7 @@ async function login(page: import('@playwright/test').Page, value = password) {
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();
 }
 
-test('login protege notas, recupera tras contraseña incorrecta y logout invalida cookie', async ({ page, request }) => {
+test('login protege notas sin botón de salida y API logout invalida cookie', async ({ page, request }) => {
   expect((await request.get('/api/v1/notes')).status()).toBe(401);
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Acceder a Bitnode' })).toBeVisible();
@@ -22,14 +22,11 @@ test('login protege notas, recupera tras contraseña incorrecta y logout invalid
   expect((await api.post('/api/v1/tags', { data: { name: 'Sin Origin' } })).status()).toBe(403);
   expect((await api.post('/api/v1/tags', { headers: { origin: new URL(page.url()).origin }, data: { name: 'Sin CSRF' } })).status()).toBe(403);
   await page.reload();
-  await expect(page.getByRole('button', { name: 'Cerrar sesión', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Nueva nota', exact: true }).click();
-  await page.getByLabel('Título', { exact: true }).fill('Cancelar salida');
-  page.once('dialog', dialog => dialog.dismiss());
-  await page.getByRole('button', { name: 'Cerrar sesión', exact: true }).click();
-  await expect(page.getByLabel('Título', { exact: true })).toHaveValue('Cancelar salida');
-  page.once('dialog', dialog => dialog.accept());
-  await page.getByRole('button', { name: 'Cerrar sesión', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Notas', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Cerrar sesión', exact: true })).toHaveCount(0);
+  const state = await (await api.get('/api/v1/auth/session')).json();
+  expect((await api.post('/api/v1/auth/logout', { headers: { origin: new URL(page.url()).origin, 'x-csrf-token': state.csrf }, data: {} })).status()).toBe(200);
+  await page.reload();
   await expect(page.getByRole('heading', { name: 'Acceder a Bitnode' })).toBeVisible();
   expect((await page.context().request.get('/api/v1/notes')).status()).toBe(401);
 });

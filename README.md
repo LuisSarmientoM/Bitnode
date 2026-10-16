@@ -13,7 +13,7 @@ npm run auth:setup
 npm run dev
 ```
 
-La dirección es **https://127.0.0.1:3000**. Primero importa manualmente la CA pública y comprueba su huella según la [guía de certificados](docs/organizacion-notas-t4.md#preparación-de-certificados). No ignores errores del certificado. La contraseña requiere al menos doce caracteres; no se muestra al escribir ni se pasa como argumento. La web pide la contraseña antes de cargar notas. Cerrar sesión pide confirmación si hay un borrador; volver a entrar tras una sesión invalidada conserva ese borrador en la pestaña, sin repetir automáticamente el guardado. `dev` compila la web y arranca el servidor. No recarga automáticamente al editar el código. Después de cambiar el frontend, detén el servidor y ejecuta `npm run dev` de nuevo.
+La dirección es **https://127.0.0.1:3000**. Primero importa manualmente la CA pública y comprueba su huella según la [guía de certificados](docs/organizacion-notas-t4.md#preparación-de-certificados). No ignores errores del certificado. La contraseña requiere al menos doce caracteres; no se muestra al escribir ni se pasa como argumento. La web pide la contraseña antes de cargar notas. No hay botón de cerrar sesión. Volver a entrar tras una sesión invalidada conserva el borrador en la pestaña, sin repetir automáticamente el guardado. Para invalidar todas las sesiones, usa `npm run auth:reset` en el Mac. `dev` compila la web y arranca el servidor. No recarga automáticamente al editar el código. Después de cambiar el frontend, detén el servidor y ejecuta `npm run dev` de nuevo.
 
 Para compilar y arrancar por separado:
 
@@ -48,7 +48,7 @@ Para desactivarlo, detén el proceso y arranca sin `BITNODE_LAN_HOST`. Si cambia
 - Por defecto escucha en `127.0.0.1`; LAN requiere `BITNODE_LAN_HOST`. El arranque exige TLS y una contraseña configurada antes de abrir las notas. No hay fallback HTTP ni acceso anónimo.
 - Identidad y certificados se guardan en `<BITNODE_DB>.auth.sqlite` y `<BITNODE_DB>.tls`. Usa las mismas variables al configurar y arrancar. `npm run auth:reset` cambia la contraseña e invalida todas las sesiones, sin tocar notas. No hay TTL de sesión en el servidor; la cookie es de sesión del navegador.
 - SQLite usa WAL, migración inicial versionada y revisión de cada nota. Una edición obsoleta devuelve conflicto, sin sobrescribir la versión guardada.
-- Etiquetas permite crear nombres únicos con color opcional fijo, asignarlas desde el editor y filtrar Todas/Cualquiera. Quitar la asignación no borra la etiqueta. No hay renombrado ni borrado de etiquetas, archivo, papelera ni vínculos con otros módulos.
+- Las etiquetas asignadas aparecen como chips bajo el título. «＋ Etiqueta» abre un selector compacto para asignar o crear; el color opcional se elige de una paleta. Los nombres y colores son fijos. Los filtros usan chips y Todas/Cualquiera. Quitar la asignación no borra la etiqueta. No hay renombrado ni borrado de etiquetas, archivo, papelera ni vínculos con otros módulos.
 - La migración a schema2 conserva las notas. Detén el servidor y conserva una copia previa antes de usar esta versión con tu base real; el ejecutable anterior no admite schema2.
 - Se admite título, contenido o ambos. Sin título, se guarda uno generado del primer encabezado Markdown o la primera línea con contenido. Editar el cuerpo no cambia ese título.
 - El título admite 500 puntos Unicode y el contenido 1 MiB UTF-8. La lista tiene páginas de 50 notas. Permite ordenar por última modificación, título o fecha de creación.

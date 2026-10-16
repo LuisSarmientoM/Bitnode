@@ -22,7 +22,6 @@
   <main>
     <div class="page-heading">
       <h1>Notas</h1>
-      <button type="button" (click)="logout()" [disabled]="busy() || authBusy()">Cerrar sesión</button>
       <button type="button" class="primary" (click)="newNote()" [disabled]="busy()"><span aria-hidden="true">＋</span> Nueva nota</button>
     </div>
     @if (authError()) { <p role="alert">{{ authError() }}</p> }
@@ -39,11 +38,21 @@
           </select>
           <button type="submit" [disabled]="busy()">Aplicar</button>
           @if (tags().length) {
-            <details class="tag-controls"><summary>Filtrar etiquetas</summary>
-              <label for="tag-match">Coincidencia</label><select id="tag-match" name="tagMode" [ngModel]="tagMode()" (ngModelChange)="tagMode.set($event)" [disabled]="busy()"><option value="all">Todas</option><option value="any">Cualquiera</option></select>
-              @for (tag of tags(); track tag.id) {
-                <label><input type="checkbox" [checked]="filterTags().includes(tag.id)" (change)="toggleTag(tag.id, $any($event.target).checked, true)" [disabled]="busy()">{{ tag.name }}</label>
-              }
+            <details class="tag-controls"><summary>Etiquetas @if (filterTags().length) { <span class="selection-count">{{ filterTags().length }}</span> }</summary>
+              <div class="tag-panel">
+                <div class="tag-options" role="group" aria-label="Filtrar por etiquetas">
+                  @for (tag of tags(); track tag.id) {
+                    <button type="button" class="tag-chip" [attr.aria-pressed]="filterTags().includes(tag.id)" (click)="toggleTag(tag.id, !filterTags().includes(tag.id), true)" [disabled]="busy()"><i aria-hidden="true" [style.background-color]="tag.color"></i>{{ tag.name }}</button>
+                  }
+                </div>
+                @if (filterTags().length) {
+                  <div class="tag-match">
+                    <label class="visually-hidden" for="tag-match">Coincidencia</label>
+                    <select id="tag-match" name="tagMode" [ngModel]="tagMode()" (ngModelChange)="tagMode.set($event)" [disabled]="busy()"><option value="all">Todas</option><option value="any">Cualquiera</option></select>
+                    <button type="button" (click)="filterTags.set([])" [disabled]="busy()" aria-label="Limpiar filtro de etiquetas">Limpiar</button>
+                  </div>
+                }
+              </div>
             </details>
           }
         </form>
@@ -81,17 +90,35 @@
             <div class="editor-top"><span class="save-state" role="status" aria-live="polite" [class.unsaved]="dirty()"><span class="online-dot"></span>{{ status() }}</span></div>
             <label class="visually-hidden" for="note-title">Título</label>
             <input id="note-title" name="title" class="title-input" placeholder="Título" [ngModel]="title()" (ngModelChange)="title.set($event)" [disabled]="busy()">
-            <details class="editor-tags"><summary>Etiquetas</summary>
-              <div class="tag-options">@for (tag of tags(); track tag.id) {
-                <label><input type="checkbox" [checked]="tagIds().includes(tag.id)" (change)="toggleTag(tag.id, $any($event.target).checked)" [disabled]="busy()">{{ tag.name }}</label>
-              }</div>
-              <div class="tag-create">
-                <label>Nombre de etiqueta<input name="tagName" [ngModel]="tagName()" (ngModelChange)="tagName.set($event)" maxlength="100" [disabled]="busy()"></label>
-                <label>Color opcional<input name="tagColor" placeholder="#RRGGBB" [ngModel]="tagColor()" (ngModelChange)="tagColor.set($event)" pattern="#[0-9A-Fa-f]{6}" [disabled]="busy()"></label>
-                <button type="button" (click)="createTag()" [disabled]="busy() || !tagName().trim()">Crear etiqueta</button>
+            <div class="note-tags">
+              <div class="assigned-tags" aria-label="Etiquetas de esta nota">
+                @for (tag of assignedTags(); track tag.id) {
+                  <button type="button" class="tag-chip" [attr.aria-label]="'Quitar etiqueta ' + tag.name" (click)="toggleTag(tag.id, false)" [disabled]="busy()"><i aria-hidden="true" [style.background-color]="tag.color"></i>{{ tag.name }}<span aria-hidden="true">×</span></button>
+                }
               </div>
-              @if (tagsError()) { <p class="error" role="alert">{{ tagsError() }}</p> }
-            </details>
+              <details class="editor-tags"><summary>＋ Etiqueta</summary>
+                <div class="tag-panel">
+                  @if (tags().length) {
+                    <div class="tag-options" role="group" aria-label="Asignar etiquetas">
+                      @for (tag of tags(); track tag.id) {
+                        <button type="button" class="tag-chip" [attr.aria-pressed]="tagIds().includes(tag.id)" (click)="toggleTag(tag.id, !tagIds().includes(tag.id))" [disabled]="busy()"><i aria-hidden="true" [style.background-color]="tag.color"></i>{{ tag.name }}</button>
+                      }
+                    </div>
+                  }
+                  <div class="tag-create">
+                    <label class="visually-hidden" for="tag-name">Nombre de etiqueta</label>
+                    <input id="tag-name" name="tagName" placeholder="Nueva etiqueta…" [ngModel]="tagName()" (ngModelChange)="tagName.set($event)" (keydown.enter)="$event.preventDefault(); createTag()" maxlength="100" [disabled]="busy()">
+                    <button type="button" (click)="createTag()" [disabled]="busy() || !tagName().trim()" aria-label="Crear etiqueta">Crear</button>
+                  </div>
+                  <div class="tag-colors" role="group" aria-label="Color de nueva etiqueta">
+                    @for (color of tagColors; track color.name) {
+                      <button type="button" [attr.aria-label]="color.name" [attr.aria-pressed]="tagColor() === color.value" [disabled]="busy()" (click)="tagColor.set(color.value)"><i aria-hidden="true" [style.background-color]="color.value || null">{{ color.value ? '' : '×' }}</i></button>
+                    }
+                  </div>
+                  @if (tagsError()) { <p class="error" role="alert">{{ tagsError() }}</p> }
+                </div>
+              </details>
+            </div>
             <div class="editor-toolbar">
               <div class="mode-switch" role="group" aria-label="Modo del editor"><button type="button" [class.active]="!source()" [attr.aria-pressed]="!source()" (click)="source.set(false)">Editar</button><button type="button" [class.active]="source()" [attr.aria-pressed]="source()" (click)="source.set(true)">Código fuente</button></div>
             </div>

@@ -29,6 +29,12 @@ export class NotesApp {
   readonly tagName = signal('');
   readonly tagColor = signal('');
   readonly tagsError = signal('');
+  readonly assignedTags = computed(() => this.tags().filter(tag => this.tagIds().includes(tag.id)));
+  readonly tagColors = [
+    { name: 'Sin color', value: '' }, { name: 'Verde', value: '#07b478' },
+    { name: 'Azul', value: '#60a5fa' }, { name: 'Violeta', value: '#a78bfa' },
+    { name: 'Ámbar', value: '#fbbf24' }, { name: 'Rosa', value: '#f472b6' },
+  ];
   readonly query = signal('');
   readonly sort = signal('updated');
   readonly appliedQuery = signal('');
@@ -110,17 +116,6 @@ export class NotesApp {
     this.authError.set('La sesión cambió. Vuelve a entrar; tu borrador sigue en esta pestaña.');
   }
 
-  async logout() {
-    if (this.busy() || this.authBusy() || !this.canDiscard()) return;
-    this.authBusy.set(true);
-    try {
-      await apiRequest('/auth/logout', 'POST', {});
-      setCsrf('');
-      this.editing.set(false);
-      window.location.reload();
-    } catch (error) { this.authError.set(this.message(error)); this.authBusy.set(false); }
-  }
-
   @HostListener('window:resize')
   onResize() { this.mobile.set(window.matchMedia('(max-width: 760px)').matches); }
 
@@ -190,7 +185,7 @@ export class NotesApp {
   }
 
   async createTag() {
-    if (this.busy()) return;
+    if (this.busy() || !this.tagName().trim()) return;
     this.busy.set(true);
     this.tagsError.set('');
     try {
