@@ -4,15 +4,16 @@ Base local de Notas con Angular, NestJS y SQLite. Permite crear, listar, abrir y
 
 ## Ejecutar
 
-Requiere Node 26 y npm 11. También admite Node 24.15 o posterior de la rama 24.
+Requiere Node 26, npm 11 y OpenSSL disponible en PATH. También admite Node 24.15 o posterior de la rama 24. Antes de abrir una base existente con esta versión, detén el servidor y conserva una copia, incluidos sus archivos WAL/SHM si existen.
 
 ```sh
 npm ci
-npm run db:init
+npm run tls:setup
+npm run auth:setup
 npm run dev
 ```
 
-Abre **http://127.0.0.1:3000**. `dev` compila la web y arranca el servidor. No recarga automáticamente al editar el código. Después de cambiar el frontend, detén el servidor y ejecuta `npm run dev` de nuevo.
+La dirección es **https://127.0.0.1:3000**. Primero importa manualmente la CA pública y comprueba su huella según la [guía de certificados](docs/organizacion-notas-t4.md#preparación-de-certificados). No ignores errores del certificado. La contraseña requiere al menos doce caracteres; no se muestra al escribir ni se pasa como argumento. La pantalla de acceso web está todavía pendiente de integración, aunque la API ya exige sesión. `dev` compila la web y arranca el servidor. No recarga automáticamente al editar el código. Después de cambiar el frontend, detén el servidor y ejecuta `npm run dev` de nuevo.
 
 Para compilar y arrancar por separado:
 
@@ -23,26 +24,29 @@ npm start
 
 NestJS sirve los archivos Angular compilados y `/api/v1/notes` desde el mismo origen. El backend se ejecuta desde TypeScript con `tsx`; esta entrega no genera un instalador ni un binario de servidor.
 
-## Acceso temporal desde una red de confianza
+## Acceso personal desde la misma LAN
 
-El modo predeterminado sigue limitado a este equipo. Para una prueba LAN sin autenticación, indica la IPv4 privada de la interfaz de red del servidor:
+El modo predeterminado sigue limitado a este equipo, pero también exige HTTPS y contraseña. Para LAN, incluye la IPv4 privada del Mac al preparar el certificado y al arrancar:
 
 ```sh
+BITNODE_LAN_HOST=192.168.1.20 npm run tls:setup
+npm run auth:setup
 BITNODE_LAN_HOST=192.168.1.20 npm run dev
 ```
 
-Sustituye la IP por la de tu equipo y abre `http://IP:3000` desde un dispositivo de la misma red. Solo se escucha en esa dirección concreta; no se admite `0.0.0.0`, una dirección pública ni un hostname. Se mantiene la validación exacta de Host y Origin. El servidor informa del modo temporal en la consola.
+Sustituye la IP por la de tu Mac y usa `https://IP:3000`. Solo escucha en esa dirección concreta; rechaza `0.0.0.0`, direcciones públicas y hostnames. Host y Origin siguen siendo exactos. Comparte únicamente `ca.pem` e importa la CA manualmente en cada dispositivo, tras comprobar su huella. El comando no cambia Keychain ni firewall.
 
-**No hay contraseña ni HTTPS.** Quien pueda alcanzar ese puerto puede leer y editar las notas. Usa solo una red de confianza; no abras puertos del router, no uses túneles ni publiques mediante un proxy. El firewall del sistema o el aislamiento entre dispositivos de la red pueden impedir el acceso.
+No abras puertos del router, no uses túneles ni publiques mediante un proxy. El firewall o el aislamiento entre dispositivos pueden impedir el acceso. No se ha comprobado una conexión LAN física.
 
-Para desactivarlo, detén el proceso con Ctrl+C y arranca `npm start` sin `BITNODE_LAN_HOST`. Si la IP de tu equipo cambia, debes volver a iniciar el proceso con la nueva dirección.
+Para desactivarlo, detén el proceso y arranca sin `BITNODE_LAN_HOST`. Si cambia la IP, el certificado debe incluir la nueva. `tls:setup` no sobrescribe una CA existente; no borres sus claves sin planificar la renovación y la confianza de los dispositivos.
 
 ## Datos y límites
 
 - `npm run db:init` crea `.data/bitnode.sqlite` y aplica la migración inicial sin arrancar el servidor. Se puede repetir sin borrar las notas. El servidor también la inicializa si falta.
 - La base no se borra al reiniciar y queda fuera de Git. También puedes usar `BITNODE_DB=/ruta/bitnode.sqlite npm run db:init`.
 - `BITNODE_DB=/ruta/bitnode.sqlite npm start` cambia el archivo. `PORT=3001 npm start` cambia el puerto.
-- Por defecto el servidor escucha exclusivamente en `127.0.0.1`. El acceso LAN temporal requiere `BITNODE_LAN_HOST`. No hay login ni sesiones todavía.
+- Por defecto escucha en `127.0.0.1`; LAN requiere `BITNODE_LAN_HOST`. El arranque exige TLS y una contraseña configurada antes de abrir las notas. No hay fallback HTTP ni acceso anónimo.
+- Identidad y certificados se guardan en `<BITNODE_DB>.auth.sqlite` y `<BITNODE_DB>.tls`. Usa las mismas variables al configurar y arrancar. `npm run auth:reset` cambia la contraseña e invalida todas las sesiones, sin tocar notas. No hay TTL de sesión en el servidor; la cookie es de sesión del navegador.
 - SQLite usa WAL, migración inicial versionada y revisión de cada nota. Una edición obsoleta devuelve conflicto, sin sobrescribir la versión guardada.
 - Etiquetas permite crear nombres únicos con color opcional fijo, asignarlas desde el editor y filtrar Todas/Cualquiera. Quitar la asignación no borra la etiqueta. No hay renombrado ni borrado de etiquetas, archivo, papelera ni vínculos con otros módulos.
 - La migración a schema2 conserva las notas. Detén el servidor y conserva una copia previa antes de usar esta versión con tu base real; el ejecutable anterior no admite schema2.
@@ -73,4 +77,4 @@ Las pruebas de integración usan SQLite real. Las de navegador arrancan su propi
 | `packages/db` | Esquema Drizzle, migración SQLite y operaciones de notas. |
 | `tests/e2e` | Recorridos reales con Chromium. |
 
-La CLI autónoma y el acceso local autenticado del diseño completo quedan pendientes. Esta base no equivale a completar T1–T4 ni T12 del plan general. Para retomar, consulta [el estado del proyecto](docs/continuar-sesion.md).
+El acceso seguro T4 sigue en integración de pantalla de login y verificación de navegador. La CLI autónoma del diseño completo queda pendiente. Esta base no equivale a completar T1–T4 ni T12 del plan general. Para retomar, consulta [el estado del proyecto](docs/continuar-sesion.md).
