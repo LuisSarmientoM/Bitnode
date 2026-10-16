@@ -149,13 +149,17 @@ live-markdown, .live-markdown { display: flex; flex-direction: column; flex: 1; 
 .cm-editor { height: 100%; min-height: 0; flex: 1; font-size: 14px; }
 .cm-editor.cm-focused { outline: 0; }
 .cm-editor .cm-scroller { font-family: inherit; line-height: 1.85; max-height: 100%; overflow: auto; overscroll-behavior: contain; }
-.cm-live-table { margin: 12px 0; border: 1px solid var(--line); border-radius: 6px; background: #181c1a; white-space: normal; }
+.cm-live-table { min-width: 0; max-width: 100%; margin: 12px 0; border: 1px solid var(--line); border-radius: 6px; background: #181c1a; white-space: normal; }
 .cm-live-table > div { overflow-x: auto; }
-.cm-live-table table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.cm-live-table th, .cm-live-table td { padding: 9px 12px; border: 1px solid var(--line); text-align: left; }
+.cm-live-table table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 13px; }
+.cm-table-heading-measure { display: inline-block; white-space: nowrap; }
+.cm-table-cell-measure { display: inline-block; width: min-content; }
+/* CodeMirror's lineWrapping sets word-break/overflow-wrap values that shrink min-content to single letters.
+   overflow-wrap: break-word only splits a word wider than the column cap. */
+.cm-live-table th, .cm-live-table td { padding: 9px 12px; border: 1px solid var(--line); text-align: left; vertical-align: top; word-break: normal; overflow-wrap: break-word; }
 .cm-live-table th { background: #223029; font-weight: 600; }
 .cm-live-table button { margin: 8px; padding: 5px 9px; font-size: 11px; }
-.cm-editor .cm-content { padding: 16px 26px 30px; caret-color: var(--green); overflow-wrap: anywhere; }
+.cm-editor .cm-content { min-width: 0; padding: 16px 26px 30px; caret-color: var(--green); overflow-wrap: anywhere; }
 .cm-editor .cm-line { padding: 0; }
 .cm-editor .cm-cursor { border-left-color: var(--green); }
 .cm-editor .cm-selectionBackground, .cm-editor.cm-focused .cm-selectionBackground { background: #315344; }
