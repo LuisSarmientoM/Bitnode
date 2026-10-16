@@ -173,7 +173,6 @@ export class NotesApp {
     try {
       this.setNote(await notesRequest<Note>('/' + encodeURIComponent(note.id)));
       this.modalOpen.set(true);
-      this.focusTitle();
     } catch (error) {
       this.openError.set(this.message(error));
     } finally { this.busy.set(false); }

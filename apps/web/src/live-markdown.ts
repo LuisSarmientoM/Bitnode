@@ -2,8 +2,9 @@ import { Component, ElementRef, effect, input, output, viewChild } from '@angula
 import { Compartment, EditorState } from '@codemirror/state';
 import { Decoration, EditorView, ViewPlugin, WidgetType, keymap, type DecorationSet } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
-import { markdown } from '@codemirror/lang-markdown';
+import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { syntaxTree } from '@codemirror/language';
+import { liveTables } from './live-tables.js';
 
 class Bullet extends WidgetType {
   toDOM() { const bullet = document.createElement('span'); bullet.textContent = '•'; return bullet; }
@@ -21,6 +22,7 @@ function renderedLines(view: EditorView): DecorationSet {
   syntaxTree(state).iterate({
     enter(node) {
       const { from, to, name } = node;
+      if (name === 'Table' && !editing(from, to)) return false;
       if (/^ATXHeading/.test(name)) {
         const line = state.doc.lineAt(from);
         if (!editing(line.from, line.to)) add(line.from, line.from,
@@ -79,8 +81,8 @@ export class LiveMarkdown {
         parent: this.host().nativeElement,
         state: EditorState.create({
           extensions: [
-            markdown(), history(), keymap.of([...defaultKeymap, ...historyKeymap]),
-            EditorView.lineWrapping, livePreview,
+            markdown({ base: markdownLanguage }), history(), keymap.of([...defaultKeymap, ...historyKeymap]),
+            EditorView.lineWrapping, livePreview, liveTables,
             EditorView.contentAttributes.of({ 'aria-label': 'Contenido Markdown', 'aria-multiline': 'true' }),
             this.editable.of(EditorState.readOnly.of(false)),
             EditorView.updateListener.of(update => {

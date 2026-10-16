@@ -53,7 +53,8 @@ Para desactivarlo, detén el proceso y arranca sin `BITNODE_LAN_HOST`. Si cambia
 - Se admite título, contenido o ambos. Sin título, se guarda uno generado del primer encabezado Markdown o la primera línea con contenido. Editar el cuerpo no cambia ese título.
 - El título admite 500 puntos Unicode y el contenido 1 MiB UTF-8. La lista tiene páginas de 50 notas. Permite ordenar por última modificación, título o fecha de creación.
 - Buscar notas filtra título y contenido por todos los términos, con prefijos, acentos vocálicos equivalentes y ñ distinta de n. Pulsa Aplicar para buscar o vacía el campo y aplica para volver. Los resultados de búsqueda van por título. No hay búsqueda global ni índice FTS todavía; ver [entregas de organización y T4](docs/organizacion-notas-t4.md).
-- El editor dinámico muestra formato compatible salvo en la línea que estás editando, donde revela el Markdown. Código fuente permite editar el texto completo. No ejecuta HTML del usuario ni carga imágenes remotas; no hay un modo separado de Vista previa.
+- El editor dinámico muestra formato compatible salvo en la línea que estás editando, donde revela el Markdown. Las tablas GFM simples se muestran como tablas; «Editar tabla» revela su bloque para editarlo. Código fuente permite editar el texto completo. No ejecuta HTML del usuario ni carga imágenes remotas; no hay un modo separado de Vista previa.
+- El título recibe foco automático solo en notas nuevas. El editor tiene altura acotada y scroll interno para que el contenido largo no desplace Guardar fuera de la vista.
 - El borrador vive en la pestaña. Se pide confirmación antes de descartarlo, pero no se recupera si el navegador o el equipo fallan. Si un guardado pierde la conexión, consulta otra pestaña antes de repetirlo, porque el resultado puede ser incierto.
 
 ## Verificar
