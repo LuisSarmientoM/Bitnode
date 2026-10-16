@@ -2,6 +2,7 @@
 :root { color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #e2e4e2; background: #121314; font-size: 14px; --green: #07b478; --muted: #9ca19d; --line: #2b302e; }
 * { box-sizing: border-box; }
 body { margin: 0; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 .lan-warning { background: #32231f; color: #ffc5b1; border: 1px solid #745145; border-radius: 6px; padding: 12px 15px; margin: 0 0 16px; font-size: 12px; line-height: 1.6; }
 button, input, textarea { font: inherit; }
 button { cursor: pointer; border: 1px solid var(--line); color: #d6dbd7; background: #1e2022; border-radius: 6px; padding: 8px 12px; transition: background .15s; }
@@ -14,7 +15,7 @@ a { color: #07b478; }
 .skip-link { position: fixed; left: 12px; top: -60px; background: #121314; z-index: 2; padding: 10px; }
 .skip-link:focus { top: 8px; }
 .app-shell { display: grid; grid-template-columns: 188px minmax(0, 1fr); min-height: 100dvh; }
-.sidebar { background: #151819; border-right: 1px solid var(--line); padding: 25px 14px 18px; display: flex; flex-direction: column; }
+.sidebar { background: #151819; border-right: 1px solid var(--line); padding: 25px 14px 18px; display: flex; flex-direction: column; gap: 32px; }
 .brand { display: flex; align-items: center; gap: 8px; color: #e2e4e2; text-decoration: none; font-weight: 750; font-size: 19px; padding: 0 8px; letter-spacing: -.6px; }
 .brand-mark { display: grid; place-items: center; background: var(--green); color: #09271c; font-family: monospace; font-size: 17px; width: 23px; height: 23px; border-radius: 6px; }
 .version { font-size: 10px; color: var(--muted); margin-left: auto; border: 1px solid var(--line); padding: 3px; border-radius: 3px; letter-spacing: 0; }
@@ -33,7 +34,7 @@ main { padding: 0 32px; min-width: 0; display: flex; flex-direction: column; }
 .eyebrow { color: #a8b4ab; letter-spacing: 1.7px; font-size: 9px; font-weight: 600; }
 h1 { font-size: 30px; letter-spacing: -1px; margin: 9px 0 5px; font-weight: 600; }
 .page-heading p { color: var(--muted); font-size: 12px; margin: 0; }
-.notes-workspace { display: grid; grid-template-columns: minmax(245px, 30%) minmax(0, 1fr); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; height: calc(100dvh - 245px); min-height: 560px; }
+.notes-workspace { display: grid; grid-template-columns: minmax(245px, 30%) minmax(0, 1fr); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; height: calc(100dvh - 128px); min-height: 560px; }
 .note-list { background: #181a1b; border-right: 1px solid var(--line); display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow-y: auto; }
 .list-heading { padding: 15px 16px; display: flex; gap: 12px; justify-content: space-between; font-size: 10px; color: var(--muted); border-bottom: 1px solid var(--line); }
 .list-heading > span:first-child { color: #d4dbd5; }
@@ -52,12 +53,12 @@ h1 { font-size: 30px; letter-spacing: -1px; margin: 9px 0 5px; font-weight: 600;
 .empty-list p { line-height: 1.7; }
 .editor { min-width: 0; background: #151718; scroll-margin-top: 20px; overflow-y: auto; }
 .editor form { min-height: 100%; display: flex; flex-direction: column; }
-.editor-top { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 23px 26px 18px; }
+.editor-top { display: flex; justify-content: flex-end; gap: 12px; align-items: center; padding: 23px 26px 18px; }
 .save-state { font-size: 10px; color: #a8b7ac; display: flex; align-items: center; gap: 6px; }
 .save-state.unsaved { color: #ffb89c; }
 .save-state.unsaved .online-dot { background: #ff9676; }
 .field-label { display: block; color: #b9c4bc; font-size: 11px; padding: 0 26px; margin-bottom: 6px; }
-.title-input { background: none; border: none; border-radius: 2px; color: #e2e4e2; margin: 0 26px; padding: 4px 0; font-size: 23px; letter-spacing: -.5px; width: calc(100% - 52px); }
+.title-input { background: none; border: none; border-radius: 2px; color: #e2e4e2; margin: 0 26px; padding: 4px 0; font-size: 23px; letter-spacing: -.5px; width: calc(100% - 52px); margin-bottom: 20px; }
 .title-input::placeholder { color: #78817b; }
 .field-hint { font-size: 10px; color: #9ca19d; line-height: 1.6; margin: 9px 26px 23px; }
 .editor-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 8px; border-block: 1px solid var(--line); background: #181b1c; padding: 8px 24px; }
@@ -99,3 +100,36 @@ textarea:focus-visible { outline-offset: -3px; }
 @media (max-width: 1050px) { .app-shell { grid-template-columns: 150px minmax(0, 1fr); } main { padding: 0 20px; } .notes-workspace { grid-template-columns: 230px minmax(0, 1fr); } .editor-top, .editor-toolbar, .editor-footer { padding-inline: 16px; } .title-input { font-size: 20px; } .editor-top .eyebrow { display: none; } }
 @media (max-width: 760px) { .app-shell { display: block; } .sidebar { flex-direction: row; align-items: center; justify-content: space-between; padding: 12px 18px; border-right: none; border-bottom: 1px solid var(--line); gap: 14px; } .brand { font-size: 17px; padding: 0; } .workspace-label, .version, .sidebar-bottom { display: none; } .nav-current { padding: 7px 12px; font-size: 12px; } .topbar { min-height: 48px; } main { padding: 0 16px; } .page-heading { padding: 22px 0; } .eyebrow { font-size: 8px; letter-spacing: 1px; } h1 { font-size: 27px; } .page-heading p { font-size: 11px; } .notes-workspace { grid-template-columns: minmax(0, 1fr); height: auto; } .note-list { border-right: 0; border-bottom: 1px solid var(--line); max-height: 300px; overflow-y: auto; } .note-card { padding: 12px 16px; } .note-card p { margin: 6px 0; -webkit-line-clamp: 1; } .list-foot { display: none; } .editor-top { padding: 20px 16px 15px; } .editor-top .eyebrow { display: block; } .title-input { margin-inline: 16px; width: calc(100% - 32px); } .field-label { padding-inline: 16px; } .field-hint { margin-inline: 16px; } textarea { padding-inline: 16px; min-height: 340px; } .editor-toolbar { padding-inline: 12px; } .markdown-label { font-size: 8px; } .markdown-preview { padding-inline: 16px; } .editor-footer { padding: 15px 12px; flex-wrap: wrap; } .app-footer { flex-direction: column; gap: 6px; } .empty-editor { min-height: 380px; padding: 30px 20px; } .empty-editor h2 { font-size: 22px; } .local-badge { font-size: 9px; padding: 5px; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* The same editor is inline on desktop and a native modal on mobile. */
+dialog.editor { position: static; margin: 0; padding: 0; border: 0; color: inherit; width: auto; max-width: none; max-height: none; }
+dialog.editor::backdrop { background: #000a; backdrop-filter: blur(3px); }
+body:has(dialog:modal) { overflow: hidden; }
+.close-note { display: flex; justify-content: space-between; align-items: center; margin: 12px 12px 0; padding: 10px 14px; }
+.close-note span { font-size: 22px; }
+.live-hint { margin-block: 12px 0; }
+live-markdown { display: block; flex: 1; min-width: 0; }
+.cm-editor { min-height: 320px; font-size: 14px; }
+.cm-editor.cm-focused { outline: 0; }
+.cm-editor .cm-scroller { font-family: inherit; line-height: 1.85; overflow: auto; }
+.cm-editor .cm-content { padding: 16px 26px 30px; caret-color: var(--green); overflow-wrap: anywhere; }
+.cm-editor .cm-line { padding: 0; }
+.cm-editor .cm-cursor { border-left-color: var(--green); }
+.cm-editor .cm-selectionBackground, .cm-editor.cm-focused .cm-selectionBackground { background: #315344; }
+.cm-editor .cm-live-heading { font-weight: 650; line-height: 1.5; padding-block: 6px; }
+.cm-live-h1 { font-size: 26px; }
+.cm-live-h2 { font-size: 22px; }
+.cm-live-h3 { font-size: 19px; }
+.cm-live-strong { font-weight: 700; }
+.cm-live-em { font-style: italic; }
+.cm-live-strike { text-decoration: line-through; }
+.cm-live-code { font-family: ui-monospace, monospace; color: #a6eacb; background: #101312; border-radius: 3px; }
+.cm-live-link { color: var(--green); text-decoration: underline; }
+.cm-editor .cm-live-quote { border-left: 2px solid #518166; padding-left: 12px; color: #afbab2; }
+@media (max-width: 760px) {
+  .note-list { max-height: none; border-bottom: 0; }
+  dialog.editor { position: fixed; margin: auto; width: calc(100% - 16px); height: calc(100dvh - 16px); max-height: calc(100dvh - 16px); border: 1px solid var(--line); border-radius: 12px; overscroll-behavior: contain; }
+  .cm-editor .cm-content { padding-inline: 16px; }
+  .cm-editor, .title-input, textarea { font-size: 16px; }
+  .editor-toolbar { flex-wrap: wrap; }
+}

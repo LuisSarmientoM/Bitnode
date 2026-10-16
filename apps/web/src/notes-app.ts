@@ -1,19 +1,16 @@
-import { Component, HostListener, computed, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, computed, effect, signal, viewChild } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiError, notesRequest, type Note, type NotePage } from './notes-api';
-import { previewMarkdown } from './markdown';
-import appPackage from '../../../package.json';
+import { LiveMarkdown } from './live-markdown';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [FormsModule, DatePipe],
+  imports: [FormsModule, DatePipe, LiveMarkdown],
   templateUrl: './notes-app.html',
 })
 export class NotesApp {
-  readonly version = appPackage.version;
-  readonly lanAccess = !['localhost', '127.0.0.1'].includes(window.location.hostname);
   readonly items = signal<Note[]>([]);
   readonly total = signal(0);
   readonly offset = signal(0);
@@ -25,21 +22,48 @@ export class NotesApp {
   readonly body = signal('');
   readonly busy = signal(true);
   readonly listError = signal('');
+  readonly openError = signal('');
   readonly editorError = signal('');
   readonly conflict = signal(false);
   readonly saved = signal(false);
-  readonly preview = signal(false);
+  readonly source = signal(false);
+  readonly editorKey = signal(0);
+  readonly mobile = signal(window.matchMedia('(max-width: 760px)').matches);
+  readonly modalOpen = signal(false);
+  private readonly dialog = viewChild<ElementRef<HTMLDialogElement>>('editorDialog');
   readonly dirty = computed(() => this.editing() && (
     this.title() !== (this.selected()?.title ?? '') || this.body() !== (this.selected()?.body ?? '')
   ));
   readonly canSave = computed(() => this.editing() && this.dirty() && !this.busy()
     && !!(this.title().trim() || this.body().trim()));
-  readonly previewHtml = computed(() => this.preview() ? previewMarkdown(this.body()) : '');
   readonly titleLength = computed(() => [...this.title()].length);
   readonly status = computed(() => this.busy() ? 'Procesando…'
     : this.dirty() ? 'Cambios sin guardar' : this.saved() ? 'Guardada' : 'Sin cambios');
 
-  constructor() { void this.loadPage(0, true); }
+  constructor() {
+    effect(() => {
+      const dialog = this.dialog()?.nativeElement;
+      if (!dialog) return;
+      if (this.mobile()) {
+        if (this.modalOpen() && !dialog.matches(':modal')) { dialog.close(); dialog.showModal(); }
+        else if (!this.modalOpen()) dialog.close();
+      } else {
+        if (dialog.matches(':modal')) dialog.close();
+        dialog.open = true;
+      }
+    });
+    void this.loadPage(0, true);
+  }
+
+  @HostListener('window:resize')
+  onResize() { this.mobile.set(window.matchMedia('(max-width: 760px)').matches); }
+
+  closeEditor(event?: Event) {
+    event?.preventDefault();
+    if (this.busy() || !this.canDiscard()) return;
+    if (this.dirty()) this.setNote(this.selected());
+    this.modalOpen.set(false);
+  }
 
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload(event: BeforeUnloadEvent) {
@@ -51,13 +75,15 @@ export class NotesApp {
   }
 
   private setNote(note: Note | null) {
+    this.editorKey.update(key => key + 1);
     this.selected.set(note);
     this.title.set(note?.title ?? '');
     this.body.set(note?.body ?? '');
     this.editing.set(true);
-    this.preview.set(false);
+    this.source.set(false);
     this.saved.set(false);
     this.editorError.set('');
+    this.openError.set('');
     this.conflict.set(false);
   }
 
@@ -68,18 +94,26 @@ export class NotesApp {
   newNote() {
     if (this.busy() || !this.canDiscard()) return;
     this.setNote(null);
+    this.modalOpen.set(true);
     this.focusTitle();
   }
 
   async openNote(note: Note) {
-    if (this.busy() || (this.selected()?.id === note.id && !this.conflict()) || !this.canDiscard()) return;
+    if (this.busy()) return;
+    this.openError.set('');
+    if (this.selected()?.id === note.id && !this.conflict()) {
+      this.modalOpen.set(true);
+      return;
+    }
+    if (!this.canDiscard()) return;
     this.busy.set(true);
     this.editorError.set('');
     try {
       this.setNote(await notesRequest<Note>('/' + encodeURIComponent(note.id)));
+      this.modalOpen.set(true);
       this.focusTitle();
     } catch (error) {
-      this.editorError.set(this.message(error));
+      this.openError.set(this.message(error));
     } finally { this.busy.set(false); }
   }
 

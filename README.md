@@ -1,6 +1,6 @@
-# Bitnode v0.1.0
+# Bitnode v0.2.0
 
-Base local de Notas con Angular, NestJS y SQLite. Permite crear, listar, abrir y editar notas Markdown, con vista previa y guardado explícito. Los demás módulos del producto siguen en diseño.
+Base local de Notas con Angular, NestJS y SQLite. Permite crear, listar, abrir y editar notas Markdown con edición dinámica y guardado explícito. En móvil las notas se abren en un modal. Los demás módulos del producto siguen en diseño.
 
 ## Ejecutar
 
@@ -31,7 +31,7 @@ El modo predeterminado sigue limitado a este equipo. Para una prueba LAN sin aut
 BITNODE_LAN_HOST=192.168.1.20 npm run dev
 ```
 
-Sustituye la IP por la de tu equipo y abre `http://IP:3000` desde un dispositivo de la misma red. Solo se escucha en esa dirección concreta; no se admite `0.0.0.0`, una dirección pública ni un hostname. Se mantiene la validación exacta de Host y Origin. La interfaz muestra un aviso de modo temporal.
+Sustituye la IP por la de tu equipo y abre `http://IP:3000` desde un dispositivo de la misma red. Solo se escucha en esa dirección concreta; no se admite `0.0.0.0`, una dirección pública ni un hostname. Se mantiene la validación exacta de Host y Origin. El servidor informa del modo temporal en la consola.
 
 **No hay contraseña ni HTTPS.** Quien pueda alcanzar ese puerto puede leer y editar las notas. Usa solo una red de confianza; no abras puertos del router, no uses túneles ni publiques mediante un proxy. El firewall del sistema o el aislamiento entre dispositivos de la red pueden impedir el acceso.
 
@@ -47,7 +47,7 @@ Para desactivarlo, detén el proceso con Ctrl+C y arranca `npm start` sin `BITNO
 - No hay borrado, archivo, papelera, etiquetas ni vínculos con otros módulos en esta entrega.
 - Se admite título, contenido o ambos. Sin título, se guarda uno generado del primer encabezado Markdown o la primera línea con contenido. Editar el cuerpo no cambia ese título.
 - El título admite 500 puntos Unicode y el contenido 1 MiB UTF-8. La lista tiene páginas de 50 notas, ordenadas por última modificación.
-- La vista previa omite HTML del usuario e imágenes. Solo permite enlaces HTTP/HTTPS explícitos, abiertos por el usuario. No carga fuentes, scripts ni imágenes de servicios externos.
+- El editor dinámico muestra formato compatible salvo en la línea que estás editando, donde revela el Markdown. Código fuente permite editar el texto completo. No ejecuta HTML del usuario ni carga imágenes remotas; no hay un modo separado de Vista previa.
 - El borrador vive en la pestaña. Se pide confirmación antes de descartarlo, pero no se recupera si el navegador o el equipo fallan. Si un guardado pierde la conexión, consulta otra pestaña antes de repetirlo, porque el resultado puede ser incierto.
 
 ## Verificar
@@ -65,7 +65,7 @@ Las pruebas de integración usan SQLite real. Las de navegador arrancan su propi
 
 | Ruta | Responsabilidad |
 |---|---|
-| `apps/web` | Listado, editor, vista previa y manejo del borrador. |
+| `apps/web` | Listado, editor dinámico, modal móvil y manejo del borrador. |
 | `apps/server` | API NestJS, archivos web y restricción al origen local. |
 | `packages/core` | Tipos, validaciones y contrato del repositorio. |
 | `packages/db` | Esquema Drizzle, migración SQLite y operaciones de notas. |

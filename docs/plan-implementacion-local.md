@@ -4,7 +4,7 @@
 
 El usuario autorizó iniciar con Notas independientes de punta a punta, sin construir antes clientes/proyectos/tareas. Se implementó una base acotada Angular/NestJS/SQLite con crear/listar/abrir/editar Markdown. Ver [base de Notas](base-notas.md) y [README](../README.md). El orden general de abajo se conserva para el producto completo, no como bloqueo retroactivo de esta entrega.
 
-Esto no completa T1–T4 ni T12: faltan CLI, mantenimiento, acceso autenticado, vínculos, etiquetas, archivo/papelera y otras reglas globales. La aprobación visual final de Notas queda pendiente del usuario.
+Esto no completa T1–T4 ni T12: faltan CLI, mantenimiento, acceso autenticado, vínculos, etiquetas, archivo/papelera y otras reglas globales. La interfaz de Notas v0.2.0 tiene aceptación visual del usuario. La siguiente unidad recomendada es T4, acceso seguro; su implementación requiere autorización.
 
 ## Plan general previo
 

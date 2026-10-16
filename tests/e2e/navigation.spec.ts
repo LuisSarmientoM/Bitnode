@@ -5,15 +5,17 @@ test('deshabilita el editor mientras abre otra nota y después admite cambios', 
   await request.post('/api/v1/notes', { data: { title: 'Nota actual', body: 'Segunda' } });
   await page.goto('/');
   await expect(page.getByLabel('Título', { exact: true })).toHaveValue('Nota actual');
+  await page.getByRole('button', { name: 'Código fuente', exact: true }).click();
   let release!: () => void;
   const gate = new Promise<void>(resolve => { release = resolve; });
   await page.route('**/api/v1/notes/' + first.id, async route => { await gate; await route.continue(); });
   await page.getByRole('button', { name: /Abrir con demora/ }).click();
-  await expect(page.getByLabel('Contenido Markdown')).toBeDisabled();
+  await expect(page.locator('#note-body')).toBeDisabled();
   release();
   await expect(page.getByLabel('Título', { exact: true })).toHaveValue('Abrir con demora');
-  await expect(page.getByLabel('Contenido Markdown')).toBeEnabled();
-  await page.getByLabel('Contenido Markdown').fill('Borrador después de abrir');
+  await page.getByRole('button', { name: 'Código fuente', exact: true }).click();
+  await expect(page.locator('#note-body')).toBeEnabled();
+  await page.locator('#note-body').fill('Borrador después de abrir');
   await expect(page.getByRole('status')).toContainText('Cambios sin guardar');
 });
 

@@ -1,10 +1,10 @@
 # Primera base de Notas
 
-Entrega autorizada por el usuario mediante la opción "Notas funcionales de punta a punta". Incluye código y dependencias para Angular/NestJS/SQLite y un recorrido de crear, listar, abrir y editar notas Markdown. La aceptación visual final de la pantalla por el usuario sigue pendiente.
+Entrega autorizada por el usuario mediante la opción "Notas funcionales de punta a punta". Incluye código y dependencias para Angular/NestJS/SQLite y un recorrido de crear, listar, abrir y editar notas Markdown. El usuario aceptó visualmente la pantalla de v0.2.0 tras revisar móvil y escritorio.
 
 ## Versión y SQLite
 
-La primera versión es `v0.1.0`, definida en `package.json` y visible en la UI. `npm run db:init` prepara SQLite sin servidor usando el mismo bootstrap que el arranque web; repetirlo conserva las notas. El comando se ejecutó sobre la base local existente y mantuvo su nota. Los archivos de `.data/`, `.pi/`, `.codegraph/` y `.stitch.json` se excluyen de la publicación.
+La versión actual es `v0.2.0`, definida en `package.json`. La versión ya no ocupa espacio en la interfaz. `npm run db:init` prepara SQLite sin servidor usando el mismo bootstrap que el arranque web; repetirlo conserva las notas. El comando se ejecutó sobre la base local existente y mantuvo su nota. Los archivos de `.data/`, `.pi/`, `.codegraph/` y `.stitch.json` se excluyen de la publicación.
 
 ## Usar y revisar
 
@@ -18,11 +18,11 @@ La primera versión es `v0.1.0`, definida en `package.json` y visible en la UI. 
 | Incluido | Pendiente |
 |---|---|
 | Listado paginado por última modificación, apertura y edición. | Búsqueda global y filtros por contexto. |
-| Markdown y vista previa sin HTML del usuario ni imágenes remotas. | Adjuntos y recursos externos, fuera del alcance general. |
+| Markdown dinámico, Código fuente y modal móvil, sin ejecutar HTML ni cargar imágenes remotas. | Adjuntos y recursos externos, fuera del alcance general. |
 | Título generado y persistido al crear sin título. | Vínculos, etiquetas y colores. |
 | Guardado explícito, aviso antes de descartar, conflictos de revisión y errores visibles. | Recuperación del borrador tras un fallo del navegador. |
 | SQLite real, WAL, migración inicial, transacciones de edición y espera busy de 3 segundos. | Mantenimiento, backup/restauración, purgas, FTS y actividad global. |
-| Servidor limitado a loopback y origen propio, solo JSON para escrituras. | Login, sesiones, HTTPS, acceso LAN y CLI autónoma. |
+| Servidor loopback por defecto, LAN temporal opt-in y Host/Origin estrictos, solo JSON para escrituras. | Login, sesiones, HTTPS y CLI autónoma. |
 
 No se han completado las unidades T1–T4 o T12 del plan global. No hay migraciones ni tablas vacías para los módulos pendientes. Las notas de esta primera versión no generan un historial global de Actividad retroactivo.
 
@@ -37,7 +37,13 @@ No se han completado las unidades T1–T4 o T12 del plan global. No hay migracio
 - Conflicto de revisión devuelve 409; base ocupada, 503; datos inválidos, 400. Ninguno descarta el borrador de la UI.
 - Un fallo de conexión después de enviar una escritura deja resultado incierto. No hay reintento automático ni garantía de idempotencia de creación. Consultar las notas en otra pestaña antes de repetir el guardado.
 
-## Verificación ejecutada
+## Verificación de v0.2.0
+
+`npm test`: 18 aprobadas. `npm run typecheck` y build Angular: exit 0. Chromium: 13 E2E aprobadas, incluidos modal/foco/borradores, edición dinámica/deshacer/persistencia, interfaz mínima y errores móviles 404/503/conexión. Capturas revisadas en 390 y 1280 px; comprobación adicional de la app LAN desde el host. No demuestra acceso desde otro dispositivo.
+
+RDD creó el linaje `review-4b9860171a7d7201`, detectó el error de apertura móvil y motivó su corrección. El validador dirigido final agotó 913291 ms sin aprobación. La limpieza visual posterior cambió el candidato; no se afirma cierre nativo ni se reintentó el slot.
+
+## Verificación histórica de v0.1.0
 
 Entorno local macOS arm64 con Node 26.10.0 y npm 11.19.1. Versiones exactas y árbol resuelto en `package.json` y `package-lock.json`.
 
@@ -65,4 +71,4 @@ El intento adicional del verificador independiente no arrancó porque su modelo 
 
 ## Próximo paso
 
-Revisar visualmente la pantalla con el usuario. Acordar una sola ampliación de Notas antes de añadir módulos, archivo/papelera o conexiones con otros registros. Mantener P7 pendiente para Hoy/Tareas, sin bloquear este módulo.
+La revisión visual está aceptada. Se recomienda T4, acceso seguro con contraseña, sesiones y HTTPS, como siguiente unidad antes de ampliar el uso por red. Requiere acordar alcance y autorizar implementación. Mantener P7 pendiente para Hoy/Tareas.

@@ -1,12 +1,12 @@
 # Continuar Bitnode
 
-Ya existe una primera base ejecutable de Notas independientes. El usuario autorizó expresamente código y dependencias para Angular/NestJS/SQLite, crear/listar/abrir/editar Markdown y revisar su pantalla. Ejecutar `npm run dev` y abrir http://127.0.0.1:3000. Instrucciones y límites en [README](../README.md).
+La entrega actual es v0.2.0 de Notas independientes. Incluye editor Markdown dinámico, modo Código fuente, modal móvil e interfaz mínima. El usuario confirmó la aceptación visual y autorizó publicar main y el tag v0.2.0. Ejecutar `npm run dev` y abrir http://127.0.0.1:3000. Instrucciones y límites en [README](../README.md).
 
-El alcance completo de las 46 rondas sigue documentado, pero esta entrega no lo implementa ni aprueba globalmente. Sin vínculos, etiquetas, búsqueda global, archivo, papelera, CLI, autenticación ni acceso LAN. Los diseños externos se conservaron sin modificaciones.
+El alcance completo de las 46 rondas sigue documentado, pero esta entrega no lo implementa ni aprueba globalmente. Sin vínculos, etiquetas, búsqueda global, archivo, papelera, CLI ni autenticación. Hay acceso LAN temporal opt-in sin contraseña/HTTPS, no equivalente a T4. Los diseños externos se conservaron sin modificaciones.
 
 ## Publicación inicial
 
-El usuario autorizó versionar y subir el proyecto a `https://github.com/LuisSarmientoM/Bitnode.git`. Se prepara `v0.1.0` con código, documentación y diseños, excluyendo datos locales y configuración de herramientas. SQLite ya está integrado; `npm run db:init` permite inicializarlo sin servidor y conserva las notas existentes. Ver [historial de versiones](../CHANGELOG.md).
+El usuario autorizó versionar y subir el proyecto a `https://github.com/LuisSarmientoM/Bitnode.git`. Se publicó `v0.1.0` con código, documentación y diseños, excluyendo datos locales y configuración de herramientas. SQLite ya está integrado; `npm run db:init` permite inicializarlo sin servidor y conserva las notas existentes. Ver [historial de versiones](../CHANGELOG.md).
 
 ## Documentos activos
 
@@ -37,14 +37,14 @@ Decisiones de diseño registradas: Colombia fija; borrar actividad de nota elimi
 
 ## Siguiente paso
 
-Probar la pantalla de Notas con el usuario y recoger ajustes visuales. Antes de ampliar esta entrega, acordar la siguiente capacidad. T1–T4 y T12 del plan completo siguen parciales o pendientes; no marcar esas unidades como terminadas por tener este recorrido mínimo.
+La revisión visual de Notas está aceptada. La siguiente unidad recomendada es T4, acceso seguro con contraseña, sesiones y HTTPS, porque ya se usa la prueba LAN temporal. Acordar su alcance y autorización antes de escribir código. T1–T4 y T12 del plan completo siguen parciales o pendientes.
 
 P7 sigue pendiente antes de Hoy/Tareas, pero no bloquea Notas independientes. No reabrir P1–P6 ni P8–P12 ni aprobar P7 por silencio.
 
-La revisión nativa de esta base de Notas quedó bloqueada en preflight por `lens_context_budget_exceeded`, sin crear autoridad ni aprobación. No repetir ese mismo candidato. La continuación requiere candidatos menores y nueva consulta de status; mantener la separación de commits entre documentación/diseños previos y código de la primera versión, cuya publicación ya fue autorizada. La revisión documental de la etapa anterior tampoco se entregó. No conectar Stitch ni cambiar configuración para desbloquearla. Preservar modificaciones ajenas, incluida design/.
+La revisión nativa inicial de v0.1.0 quedó bloqueada en preflight por `lens_context_budget_exceeded`, sin crear autoridad ni aprobación. No repetir ese mismo candidato. La continuación requiere candidatos menores y nueva consulta de status; mantener la separación de commits entre documentación/diseños previos y código de la primera versión, cuya publicación ya fue autorizada. La revisión documental de la etapa anterior tampoco se entregó. No conectar Stitch ni cambiar configuración para desbloquearla. Preservar modificaciones ajenas, incluida design/.
 
-La UI implementada usa la paleta confirmada y la exportación `design/stitch-v2/conocimiento/notas.png` como referencia. Su aceptación visual final por el usuario sigue pendiente. Hay pruebas funcionales de core, SQLite, API y Chromium, con los comandos en README. La evidencia y limitaciones de esta primera entrega se registran en [base de Notas](base-notas.md).
+La UI implementada usa la paleta confirmada y la exportación `design/stitch-v2/conocimiento/notas.png` como referencia. El usuario aceptó los cambios visuales de v0.2.0. Se aprobaron 18 pruebas unitarias/de integración, typecheck, build y 13 E2E. RDD detectó un fallo de carga móvil que se corrigió; el validador final agotó unos 15 minutos y no produjo aprobación. No repetir el mismo slot sin cambiar sus condiciones. Hay comandos de verificación en README. La evidencia y limitaciones de esta primera entrega se registran en [base de Notas](base-notas.md).
 
 ## Prompt para retomar
 
-> Lee README.md y docs/base-notas.md. Ya se autorizó y construyó una primera entrega de Notas independientes. Revisa la pantalla con el usuario antes de ampliar alcance. Conserva los cambios locales documentales y de design/ previos a esta implementación. No reabras las 46 rondas ni añadas otros módulos sin acuerdo. Usa exclusivamente ask_user_question para decisiones.
+> Lee README.md y docs/base-notas.md. Notas v0.2.0 tiene aceptación visual; la publicación en main y su tag están autorizados. El siguiente paso recomendado es T4, acceso seguro, aún sin autorización de implementación. Conserva los diseños y datos locales. No reabras las 46 rondas ni añadas otros módulos sin acuerdo. Usa exclusivamente ask_user_question para decisiones.

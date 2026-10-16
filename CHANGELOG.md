@@ -1,5 +1,17 @@
 # Historial de versiones
 
+## 0.2.0
+
+- Editor Markdown dinámico por defecto: la línea con foco muestra su sintaxis y las demás conservan el formato compatible. Código fuente sigue disponible; se retira Vista previa.
+- En móvil, las notas se abren en un modal con cierre, foco y confirmación para descartar cambios.
+- Interfaz simplificada, sin instrucciones permanentes, badges de red/Markdown ni lemas.
+- Errores visibles al abrir notas, incluidos 404, 503 y fallos de conexión; reintento mediante la misma nota.
+- Acceso LAN temporal con IPv4 privada explícita, validación de Host/Origin y sin cambios de datos.
+
+Verificado con 18 pruebas unitarias/de integración, comprobación de tipos, build Angular y 13 recorridos Chromium. Aceptación visual confirmada por el usuario. La revisión RDD detectó y motivó la corrección del error de carga móvil; su validador final agotó el límite y no hay aprobación nativa de esta entrega.
+
+El acceso LAN sigue sin contraseña ni HTTPS. La siguiente unidad propuesta es T4, acceso seguro, pendiente de autorización de implementación.
+
 ## 0.1.0
 
 Primera versión ejecutable de Notas independientes.
