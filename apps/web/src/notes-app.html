@@ -22,6 +22,14 @@
             <option value="created">Fecha de creación</option>
           </select>
           <button type="submit" [disabled]="busy()">Aplicar</button>
+          @if (tags().length) {
+            <details class="tag-controls"><summary>Filtrar etiquetas</summary>
+              <label for="tag-match">Coincidencia</label><select id="tag-match" name="tagMode" [ngModel]="tagMode()" (ngModelChange)="tagMode.set($event)" [disabled]="busy()"><option value="all">Todas</option><option value="any">Cualquiera</option></select>
+              @for (tag of tags(); track tag.id) {
+                <label><input type="checkbox" [checked]="filterTags().includes(tag.id)" (change)="toggleTag(tag.id, $any($event.target).checked, true)" [disabled]="busy()">{{ tag.name }}</label>
+              }
+            </details>
+          }
         </form>
         <div class="list-heading" aria-live="polite"><span>{{ total() }} {{ total() === 1 ? 'nota' : 'notas' }}</span></div>
         @if (listError()) {
@@ -34,11 +42,12 @@
           <button type="button" class="note-card" [class.selected]="selected()?.id === note.id" [attr.aria-pressed]="selected()?.id === note.id" (click)="openNote(note)" [disabled]="busy()">
             <div class="card-top"><strong>{{ note.title }}</strong></div>
             @if (note.body) { <p>{{ note.body.slice(0, 120) }}</p> }
+            @if (note.tags?.length) { <div class="tag-chips">@for (tag of note.tags; track tag.id) { <span><i aria-hidden="true" [style.background-color]="tag.color"></i>{{ tag.name }}</span> }</div> }
             <div class="card-meta"><time>{{ note.updatedAt | date:'dd/MM/yyyy · HH:mm':'-0500' }}</time></div>
           </button>
         }
         @if (!busy() && !listError() && !items().length) {
-          <p class="empty-list">{{ appliedQuery() ? 'No hay notas que coincidan.' : 'No hay notas.' }}</p>
+          <p class="empty-list">{{ appliedQuery() || appliedTags().length ? 'No hay notas que coincidan.' : 'No hay notas.' }}</p>
         }
         @if (hasPages()) {
           <nav class="pagination" aria-label="Páginas de notas">
@@ -56,6 +65,17 @@
             <div class="editor-top"><span class="save-state" role="status" aria-live="polite" [class.unsaved]="dirty()"><span class="online-dot"></span>{{ status() }}</span></div>
             <label class="visually-hidden" for="note-title">Título</label>
             <input id="note-title" name="title" class="title-input" placeholder="Título" [ngModel]="title()" (ngModelChange)="title.set($event)" [disabled]="busy()">
+            <details class="editor-tags"><summary>Etiquetas</summary>
+              <div class="tag-options">@for (tag of tags(); track tag.id) {
+                <label><input type="checkbox" [checked]="tagIds().includes(tag.id)" (change)="toggleTag(tag.id, $any($event.target).checked)" [disabled]="busy()">{{ tag.name }}</label>
+              }</div>
+              <div class="tag-create">
+                <label>Nombre de etiqueta<input name="tagName" [ngModel]="tagName()" (ngModelChange)="tagName.set($event)" maxlength="100" [disabled]="busy()"></label>
+                <label>Color opcional<input name="tagColor" placeholder="#RRGGBB" [ngModel]="tagColor()" (ngModelChange)="tagColor.set($event)" pattern="#[0-9A-Fa-f]{6}" [disabled]="busy()"></label>
+                <button type="button" (click)="createTag()" [disabled]="busy() || !tagName().trim()">Crear etiqueta</button>
+              </div>
+              @if (tagsError()) { <p class="error" role="alert">{{ tagsError() }}</p> }
+            </details>
             <div class="editor-toolbar">
               <div class="mode-switch" role="group" aria-label="Modo del editor"><button type="button" [class.active]="!source()" [attr.aria-pressed]="!source()" (click)="source.set(false)">Editar</button><button type="button" [class.active]="source()" [attr.aria-pressed]="source()" (click)="source.set(true)">Código fuente</button></div>
             </div>

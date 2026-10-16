@@ -1,4 +1,7 @@
+import type { Tag } from './tags.ts';
+
 export interface Note {
+  tags: Tag[];
   id: string;
   title: string;
   body: string;
@@ -76,6 +79,8 @@ export function pagination(offsetValue: unknown, limitValue: unknown): { offset:
 }
 
 export interface NotesRepository {
+  listTags(): Tag[];
+  createTag(value: unknown): Tag;
   list(offset: number, limit: number, query?: import('./note-query.ts').NoteQuery): NotePage;
   get(id: string): Note;
   create(value: unknown): Note;

@@ -1,9 +1,10 @@
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
-import { desc, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import { matchesNote, normalizeText, noteQuery } from '../../core/src/note-query.ts';
 import { randomUUID } from 'node:crypto';
 import { notes } from './schema.ts';
+import { migrateTags, tagStore } from './tags.ts';
 import { DomainError, inputObject, noteInput, revisionInput, type NotesRepository } from '../../core/src/notes.ts';
 
 export function openNotes(path: string): NotesRepository {
@@ -14,7 +15,7 @@ export function openNotes(path: string): NotesRepository {
     sqlite.pragma('foreign_keys = ON');
     sqlite.transaction(() => {
       const version = sqlite.pragma('user_version', { simple: true }) as number;
-      if (version > 1) throw new Error('La base usa una versión más reciente de Bitnode.');
+      if (version > 2) throw new Error('La base usa una versión más reciente de Bitnode.');
       if (version === 0) {
         sqlite.exec(`CREATE TABLE notes (
           id TEXT PRIMARY KEY NOT NULL,
@@ -27,6 +28,7 @@ export function openNotes(path: string): NotesRepository {
         CREATE INDEX notes_updated ON notes(updated_at DESC, id DESC);
         PRAGMA user_version = 1;`);
       }
+      if (version < 2) migrateTags(sqlite);
     }).immediate();
   } catch (error) {
     sqlite.close();
@@ -36,36 +38,47 @@ export function openNotes(path: string): NotesRepository {
   sqlite.function('note_matches', { deterministic: true }, (title: string, body: string, terms: string) =>
     Number(matchesNote(title, body, terms.split(' '))));
   const db = drizzle(sqlite);
+  const tags = tagStore(sqlite);
   const get = (id: string) => {
     const note = db.select().from(notes).where(eq(notes.id, id)).get();
     if (!note) throw new DomainError('NOT_FOUND', 'No se encontró la nota.');
-    return note;
+    return { ...note, tags: tags.forNote(id) };
   };
   return {
-    get,
+    get: id => sqlite.transaction(() => get(id))(),
+    listTags: tags.list,
+    createTag: tags.create,
     list(offset, limit, query = noteQuery({})) {
-      const filter = query.terms.length
+      const textFilter = query.terms.length
         ? sql`note_matches(${notes.title}, ${notes.body}, ${query.terms.join(' ')}) = 1` : undefined;
+      const tagFilters = query.tagIds.map(id => sql`EXISTS (SELECT 1 FROM note_tags WHERE note_id = ${notes.id} AND tag_id = ${id})`);
+      const tagFilter = tagFilters.length ? sql`(${sql.join(tagFilters, query.tagMode === 'any' ? sql` OR ` : sql` AND `)})` : undefined;
+      const filter = and(textFilter, tagFilter);
       const order = query.sort === 'title' ? [sql`normalized_title(${notes.title})`, notes.id]
         : query.sort === 'created' ? [desc(notes.createdAt), desc(notes.id)]
         : [desc(notes.updatedAt), desc(notes.id)];
       return sqlite.transaction(() => ({
-        items: db.select().from(notes).where(filter).orderBy(...order).limit(limit).offset(offset).all(),
+        items: db.select().from(notes).where(filter).orderBy(...order).limit(limit).offset(offset).all()
+          .map(note => ({ ...note, tags: tags.forNote(note.id) })),
         total: db.select({ count: sql<number>`count(*)` }).from(notes).where(filter).get()!.count,
         offset, limit,
       }))();
     },
     create(value) {
-      const input = noteInput(value);
-      const now = Date.now();
-      const note = { ...input, id: randomUUID(), revision: 1, createdAt: now, updatedAt: now };
-      db.insert(notes).values(note).run();
-      return note;
+      const fields = inputObject(value, ['title', 'body', 'tagIds']);
+      const input = noteInput({ title: fields.title, body: fields.body });
+      return sqlite.transaction(() => {
+        const now = Date.now();
+        const note = { ...input, id: randomUUID(), revision: 1, createdAt: now, updatedAt: now };
+        db.insert(notes).values(note).run();
+        tags.replace(note.id, fields.tagIds === undefined ? [] : fields.tagIds);
+        return get(note.id);
+      }).immediate();
     },
     update(id, value) {
-      const input = inputObject(value, ['title', 'body', 'expectedRevision']);
+      const input = inputObject(value, ['title', 'body', 'tagIds', 'expectedRevision']);
       const revision = revisionInput(input.expectedRevision);
-      if (input.title === undefined && input.body === undefined) {
+      if (input.title === undefined && input.body === undefined && input.tagIds === undefined) {
         throw new DomainError('VALIDATION_ERROR', 'Indica el título o contenido que quieres editar.');
       }
       return sqlite.transaction(() => {
@@ -83,7 +96,8 @@ export function openNotes(path: string): NotesRepository {
         }
         const updated = { ...current, ...normalized, revision: revision + 1, updatedAt: Date.now() };
         db.update(notes).set(updated).where(eq(notes.id, id)).run();
-        return updated;
+        if (input.tagIds !== undefined) tags.replace(id, input.tagIds);
+        return get(id);
       }).immediate();
     },
     close() { sqlite.close(); },

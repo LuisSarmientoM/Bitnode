@@ -37,7 +37,20 @@ h1 { font-size: 30px; letter-spacing: -1px; margin: 9px 0 5px; font-weight: 600;
 .notes-workspace { display: grid; grid-template-columns: minmax(245px, 30%) minmax(0, 1fr); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; height: calc(100dvh - 128px); min-height: 560px; }
 .note-list { background: #181a1b; border-right: 1px solid var(--line); display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow-y: auto; }
 .note-filters { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 12px; border-bottom: 1px solid var(--line); }
-.note-filters input { grid-column: 1 / -1; }
+.note-filters > input { grid-column: 1 / -1; }
+.tag-controls { grid-column: 1 / -1; }
+summary { cursor: pointer; padding: 8px 0; }
+summary:focus-visible { outline: 2px solid var(--green); }
+.tag-controls label, .tag-options label { display: flex; align-items: center; gap: 6px; padding: 5px 0; overflow-wrap: anywhere; }
+.note-filters .tag-controls input { width: auto; }
+.editor-tags { padding: 0 26px 12px; }
+.tag-options, .tag-create { display: flex; flex-wrap: wrap; gap: 12px; }
+.tag-create { margin-top: 10px; align-items: end; }
+.tag-create label { display: grid; gap: 6px; min-width: 0; max-width: 100%; font-size: 12px; }
+.tag-create input { width: 100%; min-width: 0; background: #121314; color: #e2e4e2; border: 1px solid var(--line); border-radius: 5px; padding: 8px; }
+.tag-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; font-size: 11px; }
+.tag-chips span { display: inline-flex; align-items: center; gap: 5px; overflow-wrap: anywhere; max-width: 100%; }
+.tag-chips i { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; background: var(--muted); }
 .note-filters input, .note-filters select { min-width: 0; width: 100%; color: #e2e4e2; background: #121314; border: 1px solid var(--line); border-radius: 5px; padding: 8px; }
 .list-heading { padding: 15px 16px; display: flex; gap: 12px; justify-content: space-between; font-size: 10px; color: var(--muted); border-bottom: 1px solid var(--line); }
 .list-heading > span:first-child { color: #d4dbd5; }

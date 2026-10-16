@@ -20,9 +20,10 @@ class NotesController {
 
   @Get()
   list(@Query('offset') offset?: string, @Query('limit') limit?: string,
-    @Query('q') q?: string, @Query('sort') sort?: string) {
+    @Query('q') q?: string, @Query('sort') sort?: string,
+    @Query('tagIds') tagIds?: string, @Query('tagMode') tagMode?: string) {
     const page = pagination(offset, limit);
-    return this.notes.list(page.offset, page.limit, noteQuery({ q, sort }));
+    return this.notes.list(page.offset, page.limit, noteQuery({ q, sort, tagIds, tagMode }));
   }
 
   @Get(':id')
@@ -33,6 +34,15 @@ class NotesController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() value: unknown) { return this.notes.update(id, value); }
+}
+
+@Controller('api/v1/tags')
+class TagsController {
+  constructor(@Inject(REPOSITORY) private readonly notes: NotesRepository) {}
+  @Get()
+  list() { return this.notes.listTags(); }
+  @Post()
+  create(@Body() value: unknown) { return this.notes.createTag(value); }
 }
 
 function databaseBusy(error: unknown): boolean {
@@ -47,7 +57,7 @@ class ApiErrors implements ExceptionFilter {
   catch(error: unknown, host: ArgumentsHost) {
     const response = host.switchToHttp().getResponse<Response>();
     if (error instanceof DomainError) {
-      const status = error.code === 'NOT_FOUND' ? 404 : error.code === 'REVISION_CONFLICT' ? 409 : 400;
+      const status = error.code === 'NOT_FOUND' ? 404 : ['REVISION_CONFLICT', 'TAG_EXISTS'].includes(error.code) ? 409 : 400;
       response.status(status).json({ error: { code: error.code, message: error.message } });
     } else if (databaseBusy(error)) {
       response.status(503).json({ error: { code: 'DATABASE_BUSY', message: 'La base de datos está ocupada. Tu borrador no se ha descartado.' } });
@@ -63,7 +73,7 @@ class ApiErrors implements ExceptionFilter {
 export async function createApp(repository: NotesRepository, webRoot = resolve('dist/web/browser'), options: { lanHost?: string } = {}) {
   const lanHost = parseLanHost(options.lanHost);
   @Module({
-    controllers: [NotesController],
+    controllers: [NotesController, TagsController],
     providers: [{ provide: REPOSITORY, useValue: repository }],
   })
   class AppModule {}

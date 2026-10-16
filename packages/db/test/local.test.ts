@@ -21,7 +21,7 @@ test('inicializa directorios y SQLite sin servidor y conserva datos al repetir',
     reopened.repository.close();
     const sqlite = new Database(path, { readonly: true });
     try {
-      assert.equal(sqlite.pragma('user_version', { simple: true }), 1);
+      assert.equal(sqlite.pragma('user_version', { simple: true }), 2);
       assert.equal(sqlite.pragma('journal_mode', { simple: true }), 'wal');
       assert.equal(sqlite.pragma('integrity_check', { simple: true }), 'ok');
     } finally { sqlite.close(); }

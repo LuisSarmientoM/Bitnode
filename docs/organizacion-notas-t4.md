@@ -6,8 +6,8 @@ Implementación autorizada en tres entregas verificables, sin publicación ni pu
 
 | Unidad | Alcance | Estado |
 |---|---|---|
-| 1 | Búsqueda en título/contenido y orden de lista | Código y comprobaciones funcionales listos; revisión pendiente. |
-| 2 | Etiquetas inmutables, asignaciones y filtros Todas/Cualquiera | Pendiente. |
+| 1 | Búsqueda en título/contenido y orden de lista | Commit `909993e`; RDD aprobado y reconocido, 22 tests y 14 E2E aprobados. |
+| 2 | Etiquetas inmutables, asignaciones y filtros Todas/Cualquiera | Implementación en verificación; pendiente de revisión. |
 | 3 | T4: contraseña, sesiones, reset CLI, CSRF y HTTPS guiado | Pendiente de concretar detalles de operación. |
 
 ## Búsqueda y orden
@@ -34,6 +34,12 @@ La reversión de unidad 1 retira `note-query.ts`, sus pruebas y el recorrido `se
 ## Reglas de unidad 2
 
 Etiquetas planas con nombre único normalizado, color opcional inmutable desde creación, incluso su ausencia. No renombrar, fusionar ni borrar. Quitar una asignación no borra la etiqueta. Modificar asignaciones usa la revisión de la nota. Filtro Todas por defecto y Cualquiera alternativo.
+
+`GET/POST /api/v1/tags` lista/crea etiquetas; no hay PATCH/DELETE. `tagIds` en POST/PATCH de Notas guarda asignaciones y contenido en una transacción, en lugar del PUT independiente propuesto para el producto completo. Nombre de 1–100 puntos Unicode, color `#RRGGBB` opcional y hasta 100 IDs por nota. Duplicado de nombre normalizado devuelve 409. Lista acepta `tagIds` separados por coma y `tagMode=all|any`. UI agrupa los controles en desplegables.
+
+Schema2 agrega `tags` y `note_tags` sin cambiar las notas existentes. Migración y asignaciones se verifican con SQLite temporal; no se ejecutaron sobre los datos del usuario. La versión anterior del ejecutable rechaza schema2: no intentar downgrade de la base; conservar copia previa antes de arrancar la nueva versión con datos reales.
+
+RED: dos pruebas fallaron por `createTag` inexistente. GREEN focalizado: tres pruebas de migración, unicidad, rollback y filtros. La primera suite completa agotó 30s sin causa confirmada; el usuario autorizó otra ejecución y aprobó 25 pruebas y typecheck. E2E detectó TS5097 y luego un selector de etiqueta ambiguo; se corrigieron. Verificación final: `npm test && npm run typecheck && npm run test:e2e && git diff --check`, exit 0, 25 pruebas y 15 E2E/build aprobados. Captura móvil de etiquetas revisada. Revisión nativa aún pendiente.
 
 ## T4
 

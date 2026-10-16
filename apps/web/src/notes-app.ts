@@ -1,7 +1,7 @@
 import { Component, ElementRef, HostListener, computed, effect, signal, viewChild } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ApiError, notesRequest, type Note, type NotePage } from './notes-api';
+import { ApiError, apiRequest, notesRequest, type Note, type NotePage, type Tag } from './notes-api';
 import { LiveMarkdown } from './live-markdown';
 
 @Component({
@@ -15,6 +15,15 @@ export class NotesApp {
   readonly total = signal(0);
   readonly offset = signal(0);
   readonly pageSize = 50;
+  readonly tags = signal<Tag[]>([]);
+  readonly tagIds = signal<string[]>([]);
+  readonly filterTags = signal<string[]>([]);
+  readonly tagMode = signal('all');
+  readonly appliedTags = signal<string[]>([]);
+  readonly appliedTagMode = signal('all');
+  readonly tagName = signal('');
+  readonly tagColor = signal('');
+  readonly tagsError = signal('');
   readonly query = signal('');
   readonly sort = signal('updated');
   readonly appliedQuery = signal('');
@@ -37,6 +46,7 @@ export class NotesApp {
   private readonly dialog = viewChild<ElementRef<HTMLDialogElement>>('editorDialog');
   readonly dirty = computed(() => this.editing() && (
     this.title() !== (this.selected()?.title ?? '') || this.body() !== (this.selected()?.body ?? '')
+    || this.tagIds().join(',') !== (this.selected()?.tags ?? []).map(tag => tag.id).sort().join(',')
   ));
   readonly canSave = computed(() => this.editing() && this.dirty() && !this.busy()
     && !!(this.title().trim() || this.body().trim()));
@@ -83,6 +93,7 @@ export class NotesApp {
     this.selected.set(note);
     this.title.set(note?.title ?? '');
     this.body.set(note?.body ?? '');
+    this.tagIds.set((note?.tags ?? []).map(tag => tag.id).sort());
     this.editing.set(true);
     this.source.set(false);
     this.saved.set(false);
@@ -121,8 +132,27 @@ export class NotesApp {
     } finally { this.busy.set(false); }
   }
 
-  private listPath(offset: number, query = this.appliedQuery(), sort = this.appliedSort()) {
-    return '?' + new URLSearchParams({ offset: String(offset), limit: String(this.pageSize), q: query, sort });
+  toggleTag(id: string, checked: boolean, filter = false) {
+    const target = filter ? this.filterTags : this.tagIds;
+    target.update(ids => (checked ? [...new Set([...ids, id])] : ids.filter(value => value !== id)).sort());
+  }
+
+  async createTag() {
+    if (this.busy()) return;
+    this.busy.set(true);
+    this.tagsError.set('');
+    try {
+      const tag = await apiRequest<Tag>('/tags', 'POST', { name: this.tagName(), ...(this.tagColor() ? { color: this.tagColor() } : {}) });
+      this.tags.update(tags => [...tags, tag]);
+      this.toggleTag(tag.id, true);
+      this.tagName.set('');
+      this.tagColor.set('');
+    } catch (error) { this.tagsError.set(this.message(error)); }
+    finally { this.busy.set(false); }
+  }
+
+  private listPath(offset: number, query = this.appliedQuery(), sort = this.appliedSort(), tagIds = this.appliedTags(), tagMode = this.appliedTagMode()) {
+    return '?' + new URLSearchParams({ offset: String(offset), limit: String(this.pageSize), q: query, sort, tagIds: tagIds.join(','), tagMode });
   }
 
   async applyFilters() {
@@ -136,7 +166,13 @@ export class NotesApp {
     try {
       const query = apply ? this.query().trim() : this.appliedQuery();
       const sort = apply ? this.sort() : this.appliedSort();
-      const page = await notesRequest<NotePage>(this.listPath(offset, query, sort));
+      const tagIds = apply ? this.filterTags() : this.appliedTags();
+      const tagMode = apply ? this.tagMode() : this.appliedTagMode();
+      const tags = await apiRequest<Tag[]>('/tags');
+      const page = await notesRequest<NotePage>(this.listPath(offset, query, sort, tagIds, tagMode));
+      this.tags.set(tags);
+      this.appliedTags.set(tagIds);
+      this.appliedTagMode.set(tagMode);
       this.appliedQuery.set(query);
       this.appliedSort.set(sort);
       this.items.set(page.items);
@@ -162,7 +198,7 @@ export class NotesApp {
     const current = this.selected();
     try {
       const note = await notesRequest<Note>(current ? '/' + encodeURIComponent(current.id) : '', current ? 'PATCH' : 'POST', {
-        title: this.title(), body: this.body(), ...(current ? { expectedRevision: current.revision } : {}),
+        title: this.title(), body: this.body(), tagIds: this.tagIds(), ...(current ? { expectedRevision: current.revision } : {}),
       });
       this.setNote(note);
       this.saved.set(true);

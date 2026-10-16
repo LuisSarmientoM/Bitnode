@@ -44,7 +44,8 @@ Para desactivarlo, detén el proceso con Ctrl+C y arranca `npm start` sin `BITNO
 - `BITNODE_DB=/ruta/bitnode.sqlite npm start` cambia el archivo. `PORT=3001 npm start` cambia el puerto.
 - Por defecto el servidor escucha exclusivamente en `127.0.0.1`. El acceso LAN temporal requiere `BITNODE_LAN_HOST`. No hay login ni sesiones todavía.
 - SQLite usa WAL, migración inicial versionada y revisión de cada nota. Una edición obsoleta devuelve conflicto, sin sobrescribir la versión guardada.
-- No hay borrado, archivo, papelera, etiquetas ni vínculos con otros módulos en esta entrega.
+- Etiquetas permite crear nombres únicos con color opcional fijo, asignarlas desde el editor y filtrar Todas/Cualquiera. Quitar la asignación no borra la etiqueta. No hay renombrado ni borrado de etiquetas, archivo, papelera ni vínculos con otros módulos.
+- La migración a schema2 conserva las notas. Detén el servidor y conserva una copia previa antes de usar esta versión con tu base real; el ejecutable anterior no admite schema2.
 - Se admite título, contenido o ambos. Sin título, se guarda uno generado del primer encabezado Markdown o la primera línea con contenido. Editar el cuerpo no cambia ese título.
 - El título admite 500 puntos Unicode y el contenido 1 MiB UTF-8. La lista tiene páginas de 50 notas. Permite ordenar por última modificación, título o fecha de creación.
 - Buscar notas filtra título y contenido por todos los términos, con prefijos, acentos vocálicos equivalentes y ñ distinta de n. Pulsa Aplicar para buscar o vacía el campo y aplica para volver. Los resultados de búsqueda van por título. No hay búsqueda global ni índice FTS todavía; ver [entregas de organización y T4](docs/organizacion-notas-t4.md).

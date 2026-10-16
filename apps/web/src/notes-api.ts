@@ -1,4 +1,8 @@
+import type { Tag } from '../../../packages/core/src/tag-types';
+export type { Tag } from '../../../packages/core/src/tag-types';
+
 export interface Note {
+  tags: Tag[];
   id: string;
   title: string;
   body: string;
@@ -18,9 +22,13 @@ export class ApiError extends Error {
   constructor(public readonly code: string, message: string) { super(message); }
 }
 
-export async function notesRequest<T>(path = '', method = 'GET', value?: unknown): Promise<T> {
+export function notesRequest<T>(path = '', method = 'GET', value?: unknown): Promise<T> {
+  return apiRequest<T>('/notes' + path, method, value);
+}
+
+export async function apiRequest<T>(path: string, method = 'GET', value?: unknown): Promise<T> {
   try {
-    const response = await fetch('/api/v1/notes' + path, {
+    const response = await fetch('/api/v1' + path, {
       method,
       headers: value === undefined ? {} : { 'content-type': 'application/json' },
       body: value === undefined ? undefined : JSON.stringify(value),

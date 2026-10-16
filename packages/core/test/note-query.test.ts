@@ -15,8 +15,8 @@ test('búsqueda exige todos los términos con prefijos entre título y contenido
 });
 
 test('valida consulta y fija título al buscar, sin interpretar operadores', () => {
-  assert.deepEqual(noteQuery({}), { query: '', terms: [], sort: 'updated' });
-  assert.deepEqual(noteQuery({ q: ' ÁRBOL niño ', sort: 'created' }), { query: 'ÁRBOL niño', terms: ['arbol', 'niño'], sort: 'title' });
+  assert.deepEqual(noteQuery({}), { query: '', terms: [], sort: 'updated', tagIds: [], tagMode: 'all' });
+  assert.deepEqual(noteQuery({ q: ' ÁRBOL niño ', sort: 'created' }), { query: 'ÁRBOL niño', terms: ['arbol', 'niño'], sort: 'title', tagIds: [], tagMode: 'all' });
   assert.deepEqual(noteQuery({ q: '"árbol" OR *' }).terms, ['arbol', 'or']);
   for (const input of [{ q: [] }, { sort: 'random' }, { q: 'x'.repeat(501) }]) {
     assert.throws(() => noteQuery(input), { code: 'VALIDATION_ERROR' });
