@@ -1,7 +1,7 @@
 import { Component, ElementRef, HostListener, computed, effect, signal, viewChild } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ApiError, apiRequest, notesRequest, type Note, type NotePage, type Tag } from './notes-api';
+import { ApiError, apiRequest, notesRequest, setCsrf, type Note, type NotePage, type Tag } from './notes-api';
 import { LiveMarkdown } from './live-markdown';
 
 @Component({
@@ -11,6 +11,11 @@ import { LiveMarkdown } from './live-markdown';
   templateUrl: './notes-app.html',
 })
 export class NotesApp {
+  readonly authenticated = signal(false);
+  readonly authBusy = signal(true);
+  readonly authError = signal('');
+  readonly password = signal('');
+  private notesReady = false;
   readonly items = signal<Note[]>([]);
   readonly total = signal(0);
   readonly offset = signal(0);
@@ -66,7 +71,54 @@ export class NotesApp {
         dialog.open = true;
       }
     });
-    void this.loadPage(0, true);
+    void this.checkSession();
+  }
+
+  private async enterSession(csrf: string) {
+    setCsrf(csrf);
+    this.authenticated.set(true);
+    if (!this.notesReady) {
+      this.notesReady = true;
+      await this.loadPage(0, true);
+    }
+  }
+
+  private async checkSession() {
+    try { await this.enterSession((await apiRequest<{ csrf: string }>('/auth/session')).csrf); }
+    catch (error) {
+      if (!(error instanceof ApiError && error.code === 'UNAUTHENTICATED')) this.authError.set(this.message(error));
+    } finally { this.authBusy.set(false); }
+  }
+
+  async login() {
+    if (this.authBusy()) return;
+    this.authBusy.set(true);
+    this.authError.set('');
+    const password = this.password();
+    this.password.set('');
+    try {
+      setCsrf((await apiRequest<{ csrf: string }>('/auth/pre-session')).csrf);
+      const session = await apiRequest<{ csrf: string }>('/auth/login', 'POST', { password });
+      await this.enterSession(session.csrf);
+    } catch (error) { setCsrf(''); this.authError.set(this.message(error)); }
+    finally { this.authBusy.set(false); }
+  }
+
+  @HostListener('window:bitnode-auth-required')
+  requireLogin() {
+    this.authenticated.set(false);
+    this.authError.set('La sesión cambió. Vuelve a entrar; tu borrador sigue en esta pestaña.');
+  }
+
+  async logout() {
+    if (this.busy() || this.authBusy() || !this.canDiscard()) return;
+    this.authBusy.set(true);
+    try {
+      await apiRequest('/auth/logout', 'POST', {});
+      setCsrf('');
+      this.editing.set(false);
+      window.location.reload();
+    } catch (error) { this.authError.set(this.message(error)); this.authBusy.set(false); }
   }
 
   @HostListener('window:resize')

@@ -1,21 +1,24 @@
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createApp } from '../apps/server/src/app.ts';
-import { openNotes } from '../packages/db/src/notes.ts';
+import { openAuth } from '../apps/server/src/auth-store.ts';
+import { openRuntime } from '../apps/server/src/runtime.ts';
+import { defaultTlsDirectory, setupTls } from '../apps/server/src/tls.ts';
 
 async function main() {
+  process.umask(0o077);
   const directory = mkdtempSync(join(tmpdir(), 'bitnode-browser-'));
-  const repository = openNotes(join(directory, 'notes.sqlite'));
-  const app = await createApp(repository);
-  await app.listen(3107, '127.0.0.1');
+  const path = join(directory, 'notes.sqlite');
+  await setupTls(defaultTlsDirectory(path));
+  const auth = openAuth(path + '.auth.sqlite');
+  try { await auth.setPassword('browser test password'); } finally { auth.close(); }
+  const runtime = await openRuntime({ BITNODE_DB: path, PORT: '3107' });
+  await runtime.app.listen(runtime.port, runtime.listenHost);
   let closing = false;
   const stop = async () => {
     if (closing) return;
     closing = true;
-    await app.close();
-    repository.close();
-    rmSync(directory, { recursive: true, force: true });
+    try { await runtime.close(); } finally { rmSync(directory, { recursive: true, force: true }); }
   };
   process.once('SIGTERM', () => { void stop(); });
   process.once('SIGINT', () => { void stop(); });

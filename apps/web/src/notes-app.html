@@ -1,3 +1,17 @@
+@if (!authenticated()) {
+  <main class="login-panel">
+    <h1>Acceder a Bitnode</h1>
+    <p>Usa la contraseña compartida de este Mac.</p>
+    <form (ngSubmit)="login()">
+      <label for="password">Contraseña</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required maxlength="1024" [ngModel]="password()" (ngModelChange)="password.set($event)" [disabled]="authBusy()">
+      <button class="primary" type="submit" [disabled]="authBusy()">Entrar</button>
+    </form>
+    @if (authBusy()) { <p role="status">Comprobando acceso…</p> }
+    @if (authError()) { <p role="alert">{{ authError() }}</p> }
+    <p>Si olvidaste la contraseña, ejecuta <code>npm run auth:reset</code> en el Mac.</p>
+  </main>
+} @else {
 <a class="skip-link" href="#editor">Ir al editor</a>
 <div class="app-shell">
   <aside class="sidebar" aria-label="Navegación principal">
@@ -8,8 +22,10 @@
   <main>
     <div class="page-heading">
       <h1>Notas</h1>
+      <button type="button" (click)="logout()" [disabled]="busy() || authBusy()">Cerrar sesión</button>
       <button type="button" class="primary" (click)="newNote()" [disabled]="busy()"><span aria-hidden="true">＋</span> Nueva nota</button>
     </div>
+    @if (authError()) { <p role="alert">{{ authError() }}</p> }
     <div class="notes-workspace">
       <section class="note-list" aria-label="Lista de notas" [attr.aria-busy]="busy()">
         <form class="note-filters" (ngSubmit)="applyFilters()">
@@ -108,3 +124,4 @@
     </div>
   </main>
 </div>
+}

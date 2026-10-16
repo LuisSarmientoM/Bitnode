@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 for (const width of [1280, 390]) {
   test(`interfaz sin vista previa ni texto redundante a ${width}px`, async ({ page }) => {

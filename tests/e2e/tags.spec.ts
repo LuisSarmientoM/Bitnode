@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 test('crea etiquetas, guarda asignaciones y filtra Todas/Cualquiera en móvil', async ({ page, request }) => {
   await page.setViewportSize({ width: 390, height: 844 });

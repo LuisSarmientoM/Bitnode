@@ -18,6 +18,9 @@ export interface NotePage {
   limit: number;
 }
 
+let csrf = '';
+export function setCsrf(value: string) { csrf = value; }
+
 export class ApiError extends Error {
   constructor(public readonly code: string, message: string) { super(message); }
 }
@@ -30,13 +33,19 @@ export async function apiRequest<T>(path: string, method = 'GET', value?: unknow
   try {
     const response = await fetch('/api/v1' + path, {
       method,
-      headers: value === undefined ? {} : { 'content-type': 'application/json' },
+      headers: { ...(value === undefined ? {} : { 'content-type': 'application/json' }),
+        ...(!['GET', 'HEAD'].includes(method) && csrf ? { 'x-csrf-token': csrf } : {}) },
+      credentials: 'same-origin',
       body: value === undefined ? undefined : JSON.stringify(value),
       signal: AbortSignal.timeout(15000),
       cache: 'no-store',
     });
     const data = await response.json();
     if (!response.ok) {
+      if (!path.startsWith('/auth/') && (response.status === 401 || data.error?.code === 'CSRF_REJECTED')) {
+        setCsrf('');
+        window.dispatchEvent(new Event('bitnode-auth-required'));
+      }
       throw new ApiError(data.error?.code ?? 'REQUEST_FAILED', data.error?.message ?? 'No se pudo completar la operación.');
     }
     return data as T;

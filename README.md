@@ -13,7 +13,7 @@ npm run auth:setup
 npm run dev
 ```
 
-La dirección es **https://127.0.0.1:3000**. Primero importa manualmente la CA pública y comprueba su huella según la [guía de certificados](docs/organizacion-notas-t4.md#preparación-de-certificados). No ignores errores del certificado. La contraseña requiere al menos doce caracteres; no se muestra al escribir ni se pasa como argumento. La pantalla de acceso web está todavía pendiente de integración, aunque la API ya exige sesión. `dev` compila la web y arranca el servidor. No recarga automáticamente al editar el código. Después de cambiar el frontend, detén el servidor y ejecuta `npm run dev` de nuevo.
+La dirección es **https://127.0.0.1:3000**. Primero importa manualmente la CA pública y comprueba su huella según la [guía de certificados](docs/organizacion-notas-t4.md#preparación-de-certificados). No ignores errores del certificado. La contraseña requiere al menos doce caracteres; no se muestra al escribir ni se pasa como argumento. La web pide la contraseña antes de cargar notas. Cerrar sesión pide confirmación si hay un borrador; volver a entrar tras una sesión invalidada conserva ese borrador en la pestaña, sin repetir automáticamente el guardado. `dev` compila la web y arranca el servidor. No recarga automáticamente al editar el código. Después de cambiar el frontend, detén el servidor y ejecuta `npm run dev` de nuevo.
 
 Para compilar y arrancar por separado:
 
@@ -65,7 +65,7 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-Las pruebas de integración usan SQLite real. Las de navegador arrancan su propio servidor en el puerto 3107 con una base temporal, sin tocar tus notas. Generan capturas de escritorio y móvil en `test-results/`, que se excluye de Git.
+Las pruebas de integración usan SQLite real. Las de navegador arrancan el mismo runtime protegido en HTTPS, puerto 3107, con base, identidad y CA temporales, sin tocar tus notas. Chromium omite la comprobación de confianza solo para esa CA temporal; las pruebas TLS/runtime verifican la cadena con una CA explícita. Esto no demuestra confianza del sistema ni acceso desde otro dispositivo. Generan capturas de escritorio y móvil en `test-results/`, que se excluye de Git.
 
 ## Organización
 
@@ -77,4 +77,4 @@ Las pruebas de integración usan SQLite real. Las de navegador arrancan su propi
 | `packages/db` | Esquema Drizzle, migración SQLite y operaciones de notas. |
 | `tests/e2e` | Recorridos reales con Chromium. |
 
-El acceso seguro T4 sigue en integración de pantalla de login y verificación de navegador. La CLI autónoma del diseño completo queda pendiente. Esta base no equivale a completar T1–T4 ni T12 del plan general. Para retomar, consulta [el estado del proyecto](docs/continuar-sesion.md).
+El acceso T4 está implementado y probado en loopback con certificados temporales. La confianza de la CA en tus dispositivos y una conexión LAN física requieren comprobación manual; no se han instalado ni configurado aquí. La CLI autónoma del diseño completo queda pendiente. Esta base no implementa el plan general completo. Para retomar, consulta [el estado del proyecto](docs/continuar-sesion.md).

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 test('buscar y ordenar conserva filtros, protege borradores y funciona en móvil', async ({ page, request }) => {
   for (const title of ['Zorro único', 'Árbol único', 'Árbol nino']) {

@@ -1,8 +1,8 @@
 # Continuar Bitnode
 
-La entrega actual es v0.2.0 de Notas independientes. Incluye editor Markdown dinámico, modo Código fuente, modal móvil e interfaz mínima. El usuario confirmó la aceptación visual y autorizó publicar main y el tag v0.2.0. Ejecutar `npm run dev` y abrir http://127.0.0.1:3000. Instrucciones y límites en [README](../README.md).
+El trabajo actual está en `feat/notes-organization-t4`, con commits locales y sin autorización de push para esta entrega. Notas incorpora búsqueda local, orden y etiquetas/filtros. T4 agrega una contraseña compartida, sesiones, reset CLI, CSRF, CA local guiada, arranque HTTPS obligatorio y login web. La aceptación visual/publicación de v0.2.0 pertenece a la entrega anterior, no autoriza publicar esta rama. Instrucciones en [README](../README.md) y evidencia en [organización y T4](organizacion-notas-t4.md).
 
-El alcance completo de las 46 rondas sigue documentado, pero esta entrega no lo implementa ni aprueba globalmente. Sin vínculos, etiquetas, búsqueda global, archivo, papelera, CLI ni autenticación. Hay acceso LAN temporal opt-in sin contraseña/HTTPS, no equivalente a T4. Los diseños externos se conservaron sin modificaciones.
+La suite integrada aprobó 33 pruebas y 17 E2E con build Angular. TLS y navegador usaron certificados temporales, sin instalar confianza ni tocar datos reales. La comprobación operativa de confianza de la CA en el Mac y acceso desde otro dispositivo LAN sigue pendiente. Sin carpetas, archivo, papelera, vínculos, otros módulos ni CLI general. Los diseños externos se conservan sin cambios. No confundir esta implementación con el alcance completo de las 46 rondas.
 
 ## Publicación inicial
 
@@ -31,13 +31,13 @@ El [historial de las 46 rondas](archivo/alcance-local.md) se conserva archivado.
 
 ## Decisiones recientes
 
-Aprobados: Inbox editable antes de crear destino y conservación atómica ante fallo; validaciones básicas de texto/email/URL y teléfono como texto; base visual oscura compacta verde con navegación lateral. URLs duplicadas permitidas. Organización mínima aprobada: apps/web, server, cli y packages/core, db. Contracts/testing solo se extraen cuando la reutilización lo justifique. Posteriormente se autorizó implementar solo la primera entrega funcional de Notas descrita al inicio.
+Aprobados: Inbox editable antes de crear destino y conservación atómica ante fallo; validaciones básicas de texto/email/URL y teléfono como texto; base visual oscura compacta verde con navegación lateral. URLs duplicadas permitidas. Organización mínima aprobada: apps/web, server, cli y packages/core, db. Contracts/testing solo se extraen cuando la reutilización lo justifique. Posteriormente se autorizaron Notas independientes y las unidades de organización y T4, sin otros módulos.
 
-Decisiones de diseño registradas: Colombia fija; borrar actividad de nota eliminada definitivamente; plazos completos; URLs repetidas permitidas; restauración solo vínculos existentes; tramo cero sin entrada; búsqueda alfabética; Inbox página propia/global solo agregar; timer Nueva→En curso; restore conserva contraseña actual/invalida sesiones y cierra timers. Son acuerdos de producto. La autorización de código se limita a la primera entrega de Notas.
+Decisiones de diseño registradas: Colombia fija; borrar actividad de nota eliminada definitivamente; plazos completos; URLs repetidas permitidas; restauración solo vínculos existentes; tramo cero sin entrada; búsqueda alfabética; Inbox página propia/global solo agregar; timer Nueva→En curso; restore conserva contraseña actual/invalida sesiones y cierra timers. Son acuerdos de producto. La autorización actual cubre Notas, organización y T4 en esta rama, sin publicación.
 
 ## Siguiente paso
 
-La revisión visual de Notas está aceptada. La siguiente unidad recomendada es T4, acceso seguro con contraseña, sesiones y HTTPS, porque ya se usa la prueba LAN temporal. Acordar su alcance y autorización antes de escribir código. T1–T4 y T12 del plan completo siguen parciales o pendientes.
+Cerrar la revisión nativa del login web y confirmar el estado actual antes de nuevas ediciones. Después, con decisión expresa del usuario, configurar contraseña/CA reales y comprobar confianza y acceso desde otro dispositivo LAN. No instalar confianza, cambiar Keychain, abrir firewall, migrar notas reales ni publicar por inferencia. El arranque ahora falla si falta identidad o TLS; ya no hay alternativa HTTP sin contraseña. T1–T4 y T12 del plan completo no se dan por implementadas globalmente.
 
 P7 sigue pendiente antes de Hoy/Tareas, pero no bloquea Notas independientes. No reabrir P1–P6 ni P8–P12 ni aprobar P7 por silencio.
 
@@ -47,4 +47,4 @@ La UI implementada usa la paleta confirmada y la exportación `design/stitch-v2/
 
 ## Prompt para retomar
 
-> Lee README.md y docs/base-notas.md. Notas v0.2.0 tiene aceptación visual; la publicación en main y su tag están autorizados. El siguiente paso recomendado es T4, acceso seguro, aún sin autorización de implementación. Conserva los diseños y datos locales. No reabras las 46 rondas ni añadas otros módulos sin acuerdo. Usa exclusivamente ask_user_question para decisiones.
+> Lee README.md y docs/organizacion-notas-t4.md y consulta git/status y la autoridad RDD vigente. La rama feat/notes-organization-t4 contiene organización de Notas y acceso HTTPS con contraseña. Pruebas integradas en loopback aprobadas; comprobar la revisión final del login antes de seguir. Falta la validación operativa de confianza CA y LAN física. Sin push ni cambios en Keychain/firewall o datos reales sin autorización concreta. Conserva diseños y alcance; no reabras las 46 rondas ni añadas módulos. Usa ask_user_question para decisiones.

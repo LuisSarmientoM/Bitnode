@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 test('crear, editar Markdown y recuperar la nota tras recargar', async ({ page }) => {
   await page.goto('/');
