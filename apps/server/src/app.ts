@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import {
   ArgumentsHost, Body, Catch, Controller, Get, HttpException, Inject, Module,
-  Param, Patch, Post, Query, type ExceptionFilter,
+  Param, Patch, Post, Query, type ExceptionFilter, type NestApplicationOptions,
 } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import express, { type ErrorRequestHandler, type Request, type Response } from 'express';
@@ -9,6 +9,8 @@ import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { DomainError, pagination, type NotesRepository } from '../../../packages/core/src/notes.ts';
 
+import { authMiddleware } from './auth-http.ts';
+import type { AuthStore } from './auth-store.ts';
 import { parseLanHost } from './network.ts';
 import { noteQuery } from '../../../packages/core/src/note-query.ts';
 
@@ -70,15 +72,17 @@ class ApiErrors implements ExceptionFilter {
   }
 }
 
-export async function createApp(repository: NotesRepository, webRoot = resolve('dist/web/browser'), options: { lanHost?: string } = {}) {
+export async function createApp(repository: NotesRepository, webRoot = resolve('dist/web/browser'), options: { lanHost?: string; auth?: AuthStore; httpsOptions?: NestApplicationOptions['httpsOptions'] } = {}) {
   const lanHost = parseLanHost(options.lanHost);
+  if (options.auth && !options.httpsOptions) throw new Error('La autenticación requiere HTTPS.');
+  const scheme = options.httpsOptions ? 'https' : 'http';
   @Module({
     controllers: [NotesController, TagsController],
     providers: [{ provide: REPOSITORY, useValue: repository }],
   })
   class AppModule {}
 
-  const app = await NestFactory.create(AppModule, { logger: false, bodyParser: false });
+  const app = await NestFactory.create(AppModule, { logger: false, bodyParser: false, httpsOptions: options.httpsOptions });
   app.use((request: Request, response: Response, next: () => void) => {
     response.set({
       'X-Content-Type-Options': 'nosniff',
@@ -89,7 +93,7 @@ export async function createApp(repository: NotesRepository, webRoot = resolve('
     const port = request.socket.localPort;
     const allowed = host === '127.0.0.1:' + port || host === 'localhost:' + port
       || (lanHost !== undefined && host === lanHost + ':' + port);
-    if (!allowed || (request.headers.origin !== undefined && request.headers.origin !== 'http://' + host)
+    if (!allowed || (request.headers.origin !== undefined && request.headers.origin !== scheme + '://' + host)
       || request.headers['sec-fetch-site'] === 'cross-site') {
       response.status(403).json({ error: { code: 'LOCAL_ONLY', message: 'Bitnode acepta solo solicitudes de su origen configurado.' } });
       return;
@@ -112,6 +116,7 @@ export async function createApp(repository: NotesRepository, webRoot = resolve('
     } else { next(error); }
   };
   app.use(bodyErrors);
+  if (options.auth) app.use(authMiddleware(options.auth, { scheme }));
   if (existsSync(resolve(webRoot, 'index.html'))) {
     app.use(express.static(webRoot, { index: 'index.html' }));
   }

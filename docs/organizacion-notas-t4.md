@@ -7,8 +7,8 @@ Implementación autorizada en tres entregas verificables, sin publicación ni pu
 | Unidad | Alcance | Estado |
 |---|---|---|
 | 1 | Búsqueda en título/contenido y orden de lista | Commit `909993e`; RDD aprobado y reconocido, 22 tests y 14 E2E aprobados. |
-| 2 | Etiquetas inmutables, asignaciones y filtros Todas/Cualquiera | Implementación en verificación; pendiente de revisión. |
-| 3 | T4: contraseña, sesiones, reset CLI, CSRF y HTTPS guiado | Pendiente de concretar detalles de operación. |
+| 2 | Etiquetas inmutables, asignaciones y filtros Todas/Cualquiera | Commit `10dfe33`; RDD reconocido, 25 tests y 15 E2E aprobados. |
+| 3 | T4: contraseña, sesiones, reset CLI, CSRF y HTTPS guiado | Base credenciales/reset en `9fc6b76`, RDD reconocido. Middleware HTTP en verificación. Arranque HTTPS y pantalla de acceso pendientes. |
 
 ## Búsqueda y orden
 
@@ -45,8 +45,20 @@ RED: dos pruebas fallaron por `createTag` inexistente. GREEN focalizado: tres pr
 
 El usuario confirmó una sola contraseña para Mac y dispositivos de la misma red, sin cuentas, roles, OAuth ni servicios externos. Eligió CA local guiada. Autenticar tanto loopback como LAN, invalidar sesiones al reset y no degradar a HTTP LAN. No instalar confianza de certificados, modificar Keychain ni abrir firewall sin autorización concreta. Validar seguridad independientemente y con pruebas de API/navegador. No afirmar acceso desde otro dispositivo sin prueba real allí.
 
-Base T4 escrita sin integrar ni dar por terminada: `apps/server/src/auth-store.ts`, `apps/cli/src/auth.ts`, `apps/server/test/auth.test.ts` y scripts `auth:setup`/`auth:reset`. Identidad en `<BITNODE_DB>.auth.sqlite`, permisos 0600, Argon2id de Node, token de sesión almacenado como SHA-256, reset transaccional y límite global de diez intentos en quince minutos. Sesiones sin TTL por acuerdo previo; cookie de navegador pendiente. No usa dependencias nuevas ni modifica las notas.
+Base T4 escrita sin integrar ni dar por terminada: `apps/server/src/auth-store.ts`, `apps/cli/src/auth.ts`, `apps/server/test/auth.test.ts` y scripts `auth:setup`/`auth:reset`. Identidad en `<BITNODE_DB>.auth.sqlite`, permisos 0600, Argon2id de Node, token de sesión almacenado como SHA-256, reset transaccional y límite global de diez intentos en quince minutos. Sesiones sin TTL por acuerdo previo. El middleware HTTP usa una cookie de sesión de navegador sin vencimiento persistente. No usa dependencias nuevas ni modifica las notas.
 
-RED de auth observado por módulo ausente; GREEN focalizado 2/2 y typecheck exit 0. Setup y reset se ejecutaron en PTY real contra identidad temporal, exit 0 y sin eco de contraseña. No se configuró identidad real del usuario. El verificador independiente ejecutó las pruebas focalizadas y typecheck sin bloqueantes, y confirmó ausencia de mutaciones del repositorio. Quedan revisión nativa y toda integración HTTP/CSRF/login/TLS. Se conservan como límites las carreras de reemplazo del archivo por un proceso local con acceso al directorio y la falta de pruebas específicas de permisos/concurrencia.
+RED de auth observado por módulo ausente; GREEN focalizado 2/2 y typecheck exit 0. Setup y reset se ejecutaron en PTY real contra identidad temporal, exit 0 y sin eco de contraseña. No se configuró identidad real del usuario. El verificador independiente ejecutó las pruebas focalizadas y typecheck sin bloqueantes, y confirmó ausencia de mutaciones del repositorio. La revisión nativa high `review-0373107c85a90b35` quedó aprobada y reconocida sobre el commit `9fc6b76`, aislado en un worktree para excluir los cambios HTTP concurrentes. Los revisores anotaron sin bloquear el posible bloqueo global de intentos y el consumo de intentos cuando el hash está ocupado. Se conservan como límites las carreras de reemplazo del archivo por un proceso local con acceso al directorio y la falta de pruebas específicas de permisos/concurrencia.
 
-Los primeros intentos de verificación no arrancaron por un modelo antiguo. Se localizó la referencia en el perfil `Max` de Gentle Shell. `/reload` conserva ese perfil por diseño; el usuario adoptó `No-opencode` mediante Enter en `/gentle:profiles` y el verificador terminó correctamente. No se modificaron los archivos de configuración. **El servidor actual sigue sin autenticación ni HTTPS. T4 no está completo.**
+Los primeros intentos de verificación no arrancaron por un modelo antiguo. Se localizó la referencia en el perfil `Max` de Gentle Shell. `/reload` conserva ese perfil por diseño; el usuario adoptó `No-opencode` mediante Enter en `/gentle:profiles` y el verificador terminó correctamente. No se modificaron los archivos de configuración.
+
+### Middleware HTTP
+
+`createApp` acepta `auth` y `httpsOptions`. Si recibe auth sin TLS, rechaza el arranque. Solo los endpoints de pre-sesión y login son públicos dentro de la API. El resto exige la cookie `__Host-bitnode`, con Secure, HttpOnly, SameSite=Strict y Path=/, sin Max-Age ni Expires. Toda mutación exige Origin exacto y `x-csrf-token`, incluido DELETE. Logout invalida la sesión en SQLite y borra la cookie.
+
+El login requiere JSON y un CSRF de pre-sesión vinculado a una cookie separada. La pre-sesión dura diez minutos y admite hasta 128 entradas en memoria. Cada intento la consume, así que un fallo requiere pedir otra antes de reintentar. No hay excepción para localhost, User-Agent ni ausencia de Origin. Las rutas normalizadas de API llevan `Cache-Control: no-store`, incluidos alias en mayúsculas.
+
+El escritor no capturó RED del middleware inicial. El padre sí observó RED del defecto de caché en `/API/v1/auth/session`, por falta de no-store, y GREEN tras corregirlo. `npx tsx --test apps/server/test/auth-http.test.ts apps/server/test/lan.test.ts`: seis pruebas aprobadas. `npm test`: 31 aprobadas. `npm run typecheck` y `git diff --check`: exit 0. Se usaron certificados y SQLite temporales en loopback, sin Keychain, firewall ni datos reales. El verificador independiente repitió las seis pruebas y typecheck con exit 0, sin bloqueantes ni mutaciones del repositorio. Anotó como límites la expulsión de pre-sesiones al alcanzar el tope y el parseo de JSON antes de exigir sesión. RDD de HTTP pendiente.
+
+Revertir esta unidad elimina `auth-http.ts` y su prueba y retira las opciones y el montaje de auth en `app.ts`; no toca notas ni identidad. Las pruebas HTTPS ejercitan login, sesión, mutaciones y logout reales en loopback. No prueban confianza de CA en navegador ni acceso LAN físico.
+
+**`main.ts` aún no pasa auth ni TLS. El servidor de producción sigue sin autenticación ni HTTPS. T4 no está completo.**
