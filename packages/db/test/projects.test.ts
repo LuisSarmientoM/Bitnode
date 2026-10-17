@@ -31,7 +31,7 @@ function withDb(run: (db: ReturnType<typeof openNotes>) => void) {
   try { run(db); } finally { db.close(); }
 }
 
-test('migra user_version 4 a 5 conservando datos, persiste al reabrir y rechaza versiones futuras', () => {
+test('migra user_version 4 a 6 conservando datos, persiste al reabrir y rechaza versiones futuras', () => {
   const directory = mkdtempSync(join(tmpdir(), 'bitnode-projects-'));
   const path = join(directory, 'bitnode.sqlite');
   try {
@@ -48,8 +48,8 @@ test('migra user_version 4 a 5 conservando datos, persiste al reabrir y rechaza 
       assert.equal(db.clients.get('c1').tags[0]?.id, 't1');
     } finally { db.close(); }
     const check = new Database(path);
-    assert.equal(check.pragma('user_version', { simple: true }), 5);
-    check.pragma('user_version = 6');
+    assert.equal(check.pragma('user_version', { simple: true }), 6);
+    check.pragma('user_version = 7');
     check.close();
     assert.throws(() => openNotes(path), /más reciente/);
   } finally { rmSync(directory, { recursive: true, force: true }); }

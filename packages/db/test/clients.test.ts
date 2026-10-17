@@ -35,8 +35,8 @@ test('migra user_version 2 sin perder notas ni etiquetas, es monotónica y persi
       assert.equal(db.get('n1').title, 'Anterior');
     } finally { db.close(); }
     const check = new Database(path);
-    assert.equal(check.pragma('user_version', { simple: true }), 5);
-    check.pragma('user_version = 6');
+    assert.equal(check.pragma('user_version', { simple: true }), 6);
+    check.pragma('user_version = 7');
     check.close();
     assert.throws(() => openNotes(path), /más reciente/);
   } finally { rmSync(directory, { recursive: true, force: true }); }
