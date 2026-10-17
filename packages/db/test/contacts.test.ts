@@ -44,9 +44,9 @@ test('migra user_version 3 a 4 conservando notas, etiquetas y clientes, y persis
       assert.equal(db.get('n1').title, 'Anterior');
     } finally { db.close(); }
     const check = new Database(path);
-    assert.equal(check.pragma('user_version', { simple: true }), 4);
+    assert.equal(check.pragma('user_version', { simple: true }), 5);
     assert.equal(check.pragma('integrity_check', { simple: true }), 'ok');
-    check.pragma('user_version = 5');
+    check.pragma('user_version = 6');
     check.close();
     assert.throws(() => openNotes(path), /más reciente/);
   } finally { rmSync(directory, { recursive: true, force: true }); }

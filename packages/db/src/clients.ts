@@ -76,6 +76,10 @@ export function clientStore(sqlite: Database.Database, impacts: ScopeImpactProvi
     return sqlite.transaction(() => {
       const found = current(id, revision);
       if ((found.archivedAt !== null) === archived) return withTags(found);
+      // Archiving never closes projects implicitly: open ones must be completed or archived first.
+      if (archived && sqlite.prepare("SELECT 1 FROM projects WHERE client_id = ? AND state IN ('active', 'paused')").get(id)) {
+        throw new DomainError('HAS_ASSOCIATIONS', 'El cliente tiene proyectos activos o pausados. Complétalos o archívalos antes de archivar el cliente.');
+      }
       return save(id, 'archived_at = ?', [archived ? Date.now() : null]);
     }).immediate();
   };
@@ -165,7 +169,8 @@ export function clientStore(sqlite: Database.Database, impacts: ScopeImpactProvi
         current(id, revision);
         // Associations are re-queried inside the write; projects, notes and the rest join this list as their units land.
         if (sqlite.prepare('SELECT 1 FROM client_tags WHERE client_id = ?').get(id)
-          || sqlite.prepare('SELECT 1 FROM contact_clients WHERE client_id = ?').get(id)) {
+          || sqlite.prepare('SELECT 1 FROM contact_clients WHERE client_id = ?').get(id)
+          || sqlite.prepare('SELECT 1 FROM projects WHERE client_id = ?').get(id)) {
           throw new DomainError('HAS_ASSOCIATIONS', 'El cliente tiene asociaciones y no se puede borrar.');
         }
         sqlite.prepare('DELETE FROM clients WHERE id = ?').run(id);
