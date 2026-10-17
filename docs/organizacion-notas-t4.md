@@ -121,4 +121,14 @@ RED de cuatro E2E y del módulo de reparto ausente. GREEN de seis casos unitario
 
 Para revertir solo este ajuste, retirar `table-widths.ts` y sus pruebas, la medición/colgroup del widget y las reglas CSS de anchos y alineación. No retirar el render seguro de tablas de la unidad anterior. RDD final sigue pendiente, sin heredar la revisión independiente ni los receipts anteriores.
 
+### Paneles flotantes, color nativo y extracto limpio
+
+El usuario pidió tres ajustes. Los paneles de etiquetas, el del filtro y el del editor, se superponen al contenido en lugar de empujarlo hacia abajo. Se cierran con un clic fuera o con Escape; Escape no cierra el modal móvil si solo cerró un panel. El clic fuera usa `composedPath()`, fijado al despachar el evento, para que un botón que desaparece al pulsarlo, como «Quitar color», no cuente como clic fuera. Aplicar el filtro también cierra el panel, así los resultados quedan a la vista. El panel nunca supera el ancho de su contenedor, para que la lista no tenga scroll horizontal. En móvil la lista mide 300 px de alto: un panel más alto se desplaza dentro de ella.
+
+Se retiraron los seis colores predefinidos. El usuario eligió el selector de color nativo. El color sigue siendo opcional: sin tocarlo la etiqueta se crea sin color, y «Quitar color» vuelve a ese estado. El contrato `#RRGGBB` en mayúsculas no cambia. Al crear, `createTag` solo limpia el nombre y el color si no cambiaron mientras la petición estaba en curso; antes borraba un color elegido en ese intervalo.
+
+La lista mostraba los primeros 120 caracteres en Markdown crudo. Ahora `markdownText` recorre los tokens de marked y devuelve texto limpio: sin `#`, `**`, `|`, URLs ni etiquetas HTML, con las celdas de tabla separadas por espacios y un máximo de 160 caracteres. El texto entre etiquetas HTML se conserva, igual que en el editor. Solo analiza el inicio de la nota. El extracto se calcula una vez por página de lista.
+
+RED: el unitario de `markdownText` falló por módulo sin exportación, y tres E2E fallaron por extracto con sintaxis, barra de herramientas desplazada 117 px al abrir el panel y paleta en lugar de selector. El primer GREEN pasó el extracto; las dos pruebas de etiquetas revelaron el cierre al aplicar y la carrera del color, analizados con el trace. Para revertir, retirar `markdownText`, el cierre de paneles, el selector nativo y sus reglas CSS; restaurar la paleta y el `slice(0, 120)`.
+
 **Implementación y pruebas de T4 en loopback completas. Pendiente revisión nativa final y aceptación operativa con CA confiada en el Mac y otro dispositivo LAN. No se ha instalado confianza, abierto firewall ni migrado notas reales.**

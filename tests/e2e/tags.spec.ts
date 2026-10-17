@@ -5,10 +5,17 @@ test('crea etiquetas, guarda asignaciones y filtra Todas/Cualquiera en móvil', 
   await page.goto('/');
   await page.getByRole('button', { name: 'Nueva nota', exact: true }).click();
   await page.getByLabel('Título', { exact: true }).fill('Nota etiquetada');
+  const toolbar = page.locator('.editor-toolbar');
+  const before = await toolbar.boundingBox();
   await page.locator('.editor-tags summary').click();
+  await expect(page.locator('.editor-tags .tag-panel')).toBeVisible();
+  // The panel floats over the editor: the content below must not move.
+  expect((await toolbar.boundingBox())?.y).toBe(before?.y);
   await page.getByLabel('Nombre de etiqueta', { exact: true }).fill('Trabajo móvil');
   await expect(page.getByLabel('Color opcional', { exact: true })).toHaveCount(0);
-  await page.getByRole('button', { name: 'Verde', exact: true }).click();
+  for (const preset of ['Verde', 'Azul', 'Violeta', 'Ámbar', 'Rosa']) await expect(page.getByRole('button', { name: preset, exact: true })).toHaveCount(0);
+  await expect(page.getByLabel('Color de nueva etiqueta', { exact: true })).toHaveAttribute('type', 'color');
+  await page.getByLabel('Color de nueva etiqueta', { exact: true }).fill('#07b478');
   await page.getByRole('button', { name: 'Crear etiqueta', exact: true }).click();
   await expect(page.locator('.tag-options').getByRole('button', { name: 'Trabajo móvil', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await page.locator('.editor-tags summary').click();
@@ -21,12 +28,20 @@ test('crea etiquetas, guarda asignaciones y filtra Todas/Cualquiera en móvil', 
   const first = tags.find((tag: { name: string }) => tag.name === 'Trabajo móvil');
   const second = await (await request.post('/api/v1/tags', { data: { name: 'Personal móvil' } })).json();
   await request.post('/api/v1/notes', { data: { title: 'Otra móvil', tagIds: [second.id] } });
+  expect(first.color).toBe('#07B478');
   await page.reload();
+  const firstCard = page.locator('.note-card').first();
+  const cardBefore = await firstCard.boundingBox();
   await page.locator('.tag-controls summary').click();
+  await expect(page.locator('.tag-controls .tag-panel')).toBeVisible();
+  expect((await firstCard.boundingBox())?.y).toBe(cardBefore?.y);
   await page.locator('.tag-controls').getByRole('button', { name: 'Trabajo móvil', exact: true }).click();
   await page.locator('.tag-controls').getByRole('button', { name: 'Personal móvil', exact: true }).click();
   await page.getByRole('button', { name: 'Aplicar', exact: true }).click();
   await expect(page.locator('.note-card')).toHaveCount(0);
+  // Applying is an outside click: the floating panel closes so the results are visible.
+  await expect(page.locator('.tag-controls .tag-panel')).toBeHidden();
+  await page.locator('.tag-controls summary').click();
   await page.getByLabel('Coincidencia', { exact: true }).selectOption('any');
   await page.getByRole('button', { name: 'Aplicar', exact: true }).click();
   await expect(page.locator('.note-card')).toHaveCount(2);
@@ -49,7 +64,7 @@ test('etiquetas compactas en escritorio y Enter crea sin guardar la nota', async
   await expect(page.getByRole('button', { name: 'Quitar etiqueta Proyecto escritorio', exact: true })).toBeVisible();
   await page.locator('.editor-tags summary').click();
   await page.getByLabel('Nombre de etiqueta', { exact: true }).fill('Ideas de escritorio');
-  await page.getByRole('button', { name: 'Violeta', exact: true }).click();
+  await page.getByLabel('Color de nueva etiqueta', { exact: true }).fill('#a78bfa');
   await page.screenshot({ path: 'test-results/etiquetas-selector-desktop.png', fullPage: true });
   await page.getByLabel('Nombre de etiqueta', { exact: true }).press('Enter');
   await expect(page.getByRole('button', { name: 'Quitar etiqueta Ideas de escritorio', exact: true })).toBeVisible();
@@ -57,6 +72,22 @@ test('etiquetas compactas en escritorio y Enter crea sin guardar la nota', async
   expect((await (await request.get('/api/v1/notes/' + note.id)).json()).tags).toHaveLength(1);
   const created = (await (await request.get('/api/v1/tags')).json()).find((value: { name: string }) => value.name === 'Ideas de escritorio');
   expect(created.color).toBe('#A78BFA');
+  // Without touching the picker, or after clearing it, the tag has no color.
+  await page.getByLabel('Nombre de etiqueta', { exact: true }).fill('Sin color elegido');
+  await page.getByRole('button', { name: 'Crear etiqueta', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Quitar etiqueta Sin color elegido', exact: true })).toBeVisible();
+  await page.getByLabel('Color de nueva etiqueta', { exact: true }).fill('#60a5fa');
+  await page.getByRole('button', { name: 'Quitar color', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Quitar color', exact: true })).toHaveCount(0);
+  await page.getByLabel('Nombre de etiqueta', { exact: true }).fill('Color quitado');
+  await page.getByRole('button', { name: 'Crear etiqueta', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Quitar etiqueta Color quitado', exact: true })).toBeVisible();
+  const all = await (await request.get('/api/v1/tags')).json() as { name: string; color: string | null }[];
+  expect(all.find(value => value.name === 'Sin color elegido')?.color).toBeNull();
+  expect(all.find(value => value.name === 'Color quitado')?.color).toBeNull();
+  // A click outside closes the floating panel.
+  await page.getByLabel('Título', { exact: true }).click();
+  await expect(page.locator('.editor-tags .tag-panel')).toBeHidden();
   await page.getByRole('button', { name: 'Guardar nota', exact: true }).click();
   await expect(page.getByRole('status')).toContainText('Guardada');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

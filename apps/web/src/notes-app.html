@@ -66,7 +66,7 @@
         @for (note of items(); track note.id) {
           <button type="button" class="note-card" [class.selected]="selected()?.id === note.id" [attr.aria-pressed]="selected()?.id === note.id" (click)="openNote(note)" [disabled]="busy()">
             <div class="card-top"><strong>{{ note.title }}</strong></div>
-            @if (note.body) { <p>{{ note.body.slice(0, 120) }}</p> }
+            @if (excerpts().get(note.id); as excerpt) { <p>{{ excerpt }}</p> }
             @if (note.tags.length) { <div class="tag-chips">@for (tag of note.tags; track tag.id) { <span><i aria-hidden="true" [style.background-color]="tag.color"></i>{{ tag.name }}</span> }</div> }
             <div class="card-meta"><time>{{ note.updatedAt | date:'dd/MM/yyyy · HH:mm':'-0500' }}</time></div>
           </button>
@@ -110,10 +110,12 @@
                     <input id="tag-name" name="tagName" placeholder="Nueva etiqueta…" [ngModel]="tagName()" (ngModelChange)="tagName.set($event)" (keydown.enter)="$event.preventDefault(); createTag()" maxlength="100" [disabled]="busy()">
                     <button type="button" (click)="createTag()" [disabled]="busy() || !tagName().trim()" aria-label="Crear etiqueta">Crear</button>
                   </div>
-                  <div class="tag-colors" role="group" aria-label="Color de nueva etiqueta">
-                    @for (color of tagColors; track color.name) {
-                      <button type="button" [attr.aria-label]="color.name" [attr.aria-pressed]="tagColor() === color.value" [disabled]="busy()" (click)="tagColor.set(color.value)"><i aria-hidden="true" [style.background-color]="color.value || null">{{ color.value ? '' : '×' }}</i></button>
-                    }
+                  <div class="tag-color">
+                    <label for="tag-color">Color</label>
+                    <input id="tag-color" type="color" aria-label="Color de nueva etiqueta" [value]="tagColor() || '#000000'" (input)="tagColor.set($any($event.target).value)" [class.unset]="!tagColor()" [disabled]="busy()">
+                    @if (tagColor()) {
+                      <button type="button" (click)="tagColor.set('')" [disabled]="busy()">Quitar color</button>
+                    } @else { <span>Sin color</span> }
                   </div>
                   @if (tagsError()) { <p class="error" role="alert">{{ tagsError() }}</p> }
                 </div>

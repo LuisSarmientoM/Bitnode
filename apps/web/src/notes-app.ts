@@ -3,6 +3,7 @@ import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiError, apiRequest, notesRequest, setCsrf, type Note, type NotePage, type Tag } from './notes-api';
 import { LiveMarkdown } from './live-markdown';
+import { markdownText } from './markdown';
 
 @Component({
   selector: 'app-root',
@@ -30,11 +31,7 @@ export class NotesApp {
   readonly tagColor = signal('');
   readonly tagsError = signal('');
   readonly assignedTags = computed(() => this.tags().filter(tag => this.tagIds().includes(tag.id)));
-  readonly tagColors = [
-    { name: 'Sin color', value: '' }, { name: 'Verde', value: '#07b478' },
-    { name: 'Azul', value: '#60a5fa' }, { name: 'Violeta', value: '#a78bfa' },
-    { name: 'Ámbar', value: '#fbbf24' }, { name: 'Rosa', value: '#f472b6' },
-  ];
+  readonly excerpts = computed(() => new Map(this.items().map(note => [note.id, markdownText(note.body)])));
   readonly query = signal('');
   readonly sort = signal('updated');
   readonly appliedQuery = signal('');
@@ -119,6 +116,27 @@ export class NotesApp {
   @HostListener('window:resize')
   onResize() { this.mobile.set(window.matchMedia('(max-width: 760px)').matches); }
 
+  /** Tag panels float over the content, so close them on an outside click or Escape. */
+  private closeTagPanels(path: EventTarget[] = []): boolean {
+    let closed = false;
+    for (const panel of document.querySelectorAll<HTMLDetailsElement>('details.tag-controls[open], details.editor-tags[open]')) {
+      // composedPath() is fixed at dispatch, so buttons that re-render on click still count as inside.
+      if (path.includes(panel)) continue;
+      panel.open = false;
+      closed = true;
+    }
+    return closed;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) { this.closeTagPanels(event.composedPath()); }
+
+  @HostListener('document:keydown.escape', ['$event'])
+  onEscape(event: Event) {
+    // Prevent default so the mobile dialog stays open when Escape only closes a panel.
+    if (this.closeTagPanels()) event.preventDefault();
+  }
+
   closeEditor(event?: Event) {
     event?.preventDefault();
     if (this.busy() || !this.canDiscard()) return;
@@ -187,12 +205,15 @@ export class NotesApp {
     if (this.busy() || !this.tagName().trim()) return;
     this.busy.set(true);
     this.tagsError.set('');
+    const name = this.tagName();
+    const color = this.tagColor();
     try {
-      const tag = await apiRequest<Tag>('/tags', 'POST', { name: this.tagName(), ...(this.tagColor() ? { color: this.tagColor() } : {}) });
+      const tag = await apiRequest<Tag>('/tags', 'POST', { name, ...(color ? { color } : {}) });
       this.tags.update(tags => [...tags, tag]);
       this.toggleTag(tag.id, true);
-      this.tagName.set('');
-      this.tagColor.set('');
+      // Keep anything the user changed while the request was in flight.
+      if (this.tagName() === name) this.tagName.set('');
+      if (this.tagColor() === color) this.tagColor.set('');
     } catch (error) { this.tagsError.set(this.message(error)); }
     finally { this.busy.set(false); }
   }
