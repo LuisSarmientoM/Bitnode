@@ -1,0 +1,134 @@
+<main class="tasks-page">
+  <div class="page-heading">
+    <h1>Tareas</h1>
+    <button type="button" class="primary" (click)="s.openCreate()" [disabled]="s.busy()"><span aria-hidden="true">＋</span> Nueva tarea</button>
+  </div>
+
+  <div class="task-filters">
+    <label for="task-project-filter">Filtrar por proyecto</label>
+    <select id="task-project-filter" name="projectFilter" [ngModel]="s.projectFilter()" (ngModelChange)="s.setProjectFilter($event)" [disabled]="s.busy()">
+      <option value="">Todos los proyectos</option>
+      @for (project of s.filterProjects(); track project.id) { <option [value]="project.id">{{ project.name }}</option> }
+    </select>
+  </div>
+
+  @if (s.notice()) { <p class="notice" role="status">{{ s.notice() }}</p> }
+  @if (s.listError()) {
+    <div class="message error" role="alert">{{ s.listError() }}<button type="button" (click)="s.load()" [disabled]="s.busy()">Reintentar lista</button></div>
+  }
+
+  <div class="table-scroll" role="region" aria-label="Tabla de tareas" tabindex="0" [attr.aria-busy]="s.busy()">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Título</th>
+          <th scope="col">Proyecto</th>
+          <th scope="col">Prioridad</th>
+          <th scope="col">Planificación</th>
+          <th scope="col">Límite</th>
+          <th scope="col">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (task of s.items(); track task.id) {
+          <tr>
+            <th scope="row">{{ task.title }}@if (s.hasWarning(task)) { <small class="row-warning">La planificación es posterior al límite.</small> }</th>
+            <td>{{ task.context.projectName }}<small class="row-context">{{ task.context.clientName }}</small></td>
+            <td>{{ s.priorityLabel(task.priority) }}</td>
+            <td>{{ formatDate(task.planned) }}</td>
+            <td>{{ formatDate(task.due) }}</td>
+            <td><div class="actions">
+              <button type="button" (click)="s.openEdit(task)" [disabled]="s.busy()" [attr.aria-label]="'Editar ' + task.title">Editar</button>
+            </div></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    @if (!s.items().length && !s.busy() && !s.listError()) {
+      <p class="empty">{{ s.projectFilter() ? 'No hay tareas en este proyecto.' : 'Aún no hay tareas.' }}</p>
+    }
+    @if (s.busy() && !s.items().length) { <p class="empty">Cargando tareas…</p> }
+  </div>
+
+  @if (s.hasPages()) {
+    <nav class="pagination" aria-label="Páginas de tareas">
+      <button type="button" (click)="s.load(s.offset() - s.pageSize)" [disabled]="s.busy() || s.offset() === 0">Anterior</button>
+      <span>{{ s.offset() + 1 }}–{{ s.offset() + s.items().length }} de {{ s.total() }}</span>
+      <button type="button" (click)="s.load(s.offset() + s.pageSize)" [disabled]="s.busy() || !s.hasNext()">Siguiente</button>
+    </nav>
+  }
+
+  <dialog #taskDialog class="task-dialog" [attr.aria-label]="s.editing() ? 'Editar tarea' : 'Nueva tarea'" (cancel)="onCancel($event)">
+    @if (s.formOpen()) {
+      <form (ngSubmit)="s.save()" novalidate>
+        <h2>{{ s.editing() ? 'Editar tarea' : 'Nueva tarea' }}</h2>
+        @if (s.editing(); as task) {
+          <p class="breadcrumb">{{ task.context.projectName }} / {{ task.context.clientName }}</p>
+          <p class="readonly-field"><span>Estado</span> <strong>{{ s.stateLabel(task.state) }}</strong></p>
+          @if (s.hasWarning(task)) { <p class="warning" role="status">La planificación es posterior al límite.</p> }
+        } @else {
+          <label for="task-project">Proyecto</label>
+          <select id="task-project" name="projectId" required [ngModel]="s.projectId()" (ngModelChange)="s.projectId.set($event)" [disabled]="s.busy()">
+            <option value="" disabled>Selecciona…</option>
+            @for (project of s.openProjects(); track project.id) { <option [value]="project.id">{{ project.name }}</option> }
+          </select>
+        }
+        <label for="task-title">Título</label>
+        <input id="task-title" name="title" required maxlength="500" autocomplete="off" [ngModel]="s.title()" (ngModelChange)="s.title.set($event)" [disabled]="s.busy()">
+        <label for="task-description">Descripción</label>
+        <textarea id="task-description" name="description" rows="5" placeholder="Markdown" [ngModel]="s.description()" (ngModelChange)="s.description.set($event)" [disabled]="s.busy()"></textarea>
+        @if (s.editing()) {
+          <label for="task-priority">Prioridad</label>
+          <select id="task-priority" name="priority" [ngModel]="s.priority()" (ngModelChange)="s.priority.set($event)" [disabled]="s.busy()">
+            @for (option of priorities; track option[0]) { <option [value]="option[0]">{{ option[1] }}</option> }
+          </select>
+        }
+        @for (field of ['planned', 'due']; track field) {
+          @let draft = field === 'planned' ? s.planned() : s.due();
+          @let label = field === 'planned' ? 'Planificación' : 'Límite';
+          <div class="date-field">
+            <label [for]="'task-' + field">{{ label }}</label>
+            <select [id]="'task-' + field" [name]="field + 'Mode'" [ngModel]="draft.mode" (ngModelChange)="s.setDate($any(field), { mode: $event })" [disabled]="s.busy()">
+              <option value="">Sin fecha</option>
+              <option value="day">Día</option>
+              <option value="instant">Día y hora</option>
+            </select>
+            @if (draft.mode) {
+              <div class="date-inputs">
+                <label class="visually-hidden" [for]="'task-' + field + '-day'">{{ label }}: día</label>
+                <input type="date" [id]="'task-' + field + '-day'" [name]="field + 'Day'" [ngModel]="draft.day" (ngModelChange)="s.setDate($any(field), { day: $event })" [disabled]="s.busy()">
+                @if (draft.mode === 'instant') {
+                  <label class="visually-hidden" [for]="'task-' + field + '-time'">{{ label }}: hora</label>
+                  <input type="time" [id]="'task-' + field + '-time'" [name]="field + 'Time'" [ngModel]="draft.time" (ngModelChange)="s.setDate($any(field), { time: $event })" [disabled]="s.busy()">
+                }
+              </div>
+              @if (draft.mode === 'instant') { <span class="hint">Hora de Colombia (UTC−5).</span> }
+            }
+          </div>
+        }
+        <div class="references">
+          <span class="references-title">Referencias</span>
+          @for (ref of s.references(); track $index) {
+            <div class="reference-row">
+              <label class="visually-hidden" [for]="'task-ref-url-' + $index">URL de la referencia {{ $index + 1 }}</label>
+              <input type="url" [id]="'task-ref-url-' + $index" [name]="'refUrl' + $index" placeholder="https://" maxlength="4096" autocomplete="off" [ngModel]="ref.url" (ngModelChange)="s.setReference($index, { url: $event })" [disabled]="s.busy()">
+              <label class="visually-hidden" [for]="'task-ref-name-' + $index">Nombre de la referencia {{ $index + 1 }}</label>
+              <input [id]="'task-ref-name-' + $index" [name]="'refName' + $index" placeholder="Nombre (opcional)" maxlength="500" autocomplete="off" [ngModel]="ref.name" (ngModelChange)="s.setReference($index, { name: $event })" [disabled]="s.busy()">
+              <button type="button" (click)="s.removeReference($index)" [disabled]="s.busy()" [attr.aria-label]="'Quitar referencia ' + ($index + 1)">Quitar</button>
+            </div>
+          }
+          <button type="button" class="link" (click)="s.addReference()" [disabled]="s.busy()">＋ Añadir referencia</button>
+        </div>
+        @if (s.formError()) {
+          <div class="message error" role="alert">{{ s.formError() }}
+            @if (s.conflict()) { <button type="button" (click)="s.reloadSaved()" [disabled]="s.busy()">Cargar versión guardada</button> }
+          </div>
+        }
+        <footer>
+          <button type="button" (click)="s.cancel()" [disabled]="s.busy()">Cancelar</button>
+          <button type="submit" class="primary" [disabled]="s.busy()">{{ s.busy() ? 'Procesando…' : 'Guardar tarea' }}</button>
+        </footer>
+      </form>
+    }
+  </dialog>
+</main>

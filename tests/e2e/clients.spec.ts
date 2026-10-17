@@ -20,10 +20,10 @@ async function openClients(page: Page) {
   await expect(page.getByRole('heading', { name: 'Clientes', level: 1 })).toBeVisible();
 }
 
-test('la navegación ofrece Notas, Clientes, Proyectos y Contactos', async ({ page }) => {
+test('la navegación ofrece Notas, Clientes, Proyectos, Contactos y Tareas', async ({ page }) => {
   await page.goto('/');
   const nav = page.getByRole('navigation', { name: 'Navegación principal' });
-  await expect(nav.getByRole('button')).toHaveText([/Notas/, /Clientes/, /Proyectos/, /Contactos/]);
+  await expect(nav.getByRole('button')).toHaveText([/Notas/, /Clientes/, /Proyectos/, /Contactos/, /Tareas/]);
   await expect(nav.getByRole('button', { name: 'Notas' })).toHaveAttribute('aria-current', 'page');
   await nav.getByRole('button', { name: 'Clientes' }).click();
   await expect(nav.getByRole('button', { name: 'Clientes' })).toHaveAttribute('aria-current', 'page');

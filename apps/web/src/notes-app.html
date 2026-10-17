@@ -22,12 +22,14 @@
       <button type="button" class="nav-item" [attr.aria-current]="view() === 'clients' ? 'page' : null" (click)="showView('clients')"><span aria-hidden="true">◫</span> Clientes</button>
       <button type="button" class="nav-item" [attr.aria-current]="view() === 'projects' ? 'page' : null" (click)="showView('projects')"><span aria-hidden="true">▣</span> Proyectos</button>
       <button type="button" class="nav-item" [attr.aria-current]="view() === 'contacts' ? 'page' : null" (click)="showView('contacts')"><span aria-hidden="true">☰</span> Contactos</button>
+      <button type="button" class="nav-item" [attr.aria-current]="view() === 'tasks' ? 'page' : null" (click)="showView('tasks')"><span aria-hidden="true">☑</span> Tareas</button>
     </nav>
   </aside>
 
   @if (view() === 'clients') { <app-clients /> }
   @if (view() === 'projects') { <app-projects /> }
   @if (view() === 'contacts') { <app-contacts /> }
+  @if (view() === 'tasks') { <app-tasks /> }
   <main [hidden]="view() !== 'notes'">
     <div class="page-heading">
       <h1>Notas</h1>
