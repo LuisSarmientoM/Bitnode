@@ -8,7 +8,7 @@ Implementación autorizada en tres entregas verificables, sin publicación ni pu
 |---|---|---|
 | 1 | Búsqueda en título/contenido y orden de lista | Commit `909993e`; RDD aprobado y reconocido, 22 tests y 14 E2E aprobados. |
 | 2 | Etiquetas inmutables, asignaciones y filtros Todas/Cualquiera | Commit `10dfe33`; RDD reconocido, 25 tests y 15 E2E aprobados. |
-| 3 | T4: contraseña, sesiones, reset CLI, CSRF y HTTPS guiado | Credenciales `9fc6b76`, HTTP `92ffb42`, CA `afeac1f` y arranque `b0dde33`, con RDD reconocido. Login web y regresiones HTTPS aprobados; pendiente su revisión nativa. CA de dispositivos y LAN física no configuradas. |
+| 3 | T4: contraseña, sesiones, reset CLI, CSRF y HTTPS guiado | Credenciales `9fc6b76`, HTTP `92ffb42`, CA `afeac1f` y arranque `b0dde33`, con RDD reconocido. Login web `7addb10` y ajustes de UI hasta `d2aa461` aprobados, con RDD reconocido. CA de dispositivos y LAN física no configuradas. |
 
 ## Búsqueda y orden
 
@@ -137,4 +137,15 @@ En la vista de notas, `NotesApp` escucha `keydown` en el documento. Cmd+S o Ctrl
 
 RED: la prueba E2E falló porque Ctrl+S no guardaba la nota; el caso de la pantalla de acceso ya pasaba y queda como protección. La prueba cubre Ctrl+S desde Código fuente, Cmd+S desde el editor dinámico, ambos sin cambios (sin PATCH ni POST) y comprueba `defaultPrevented` en los cuatro casos. Para revertir, retirar `onSaveShortcut` y su prueba.
 
-**Implementación y pruebas de T4 en loopback completas. Pendiente revisión nativa final y aceptación operativa con CA confiada en el Mac y otro dispositivo LAN. No se ha instalado confianza, abierto firewall ni migrado notas reales.**
+### Revisión nativa final
+
+Tras reiniciar Pi, el host de revisión funcionó. `gentle-ai sync --agent pi`, autorizado por el usuario, actualizó los archivos gestionados que bloqueaban la revisión. El trabajo posterior a `b0dde33` se revisó en dos candidatos para no exceder el contexto del revisor:
+
+| Candidato | Alcance | Recibo |
+|---|---|---|
+| Login web | `b0dde33..7addb10`, 17 archivos, 246 líneas | `review-ed8a2bdf498ac188`, riesgo medio, aprobado y reconocido |
+| Ajustes de UI | `7addb10..d2aa461`, 19 archivos, 795 líneas | `review-5fd8069296a23c68`, riesgo medio, aprobado y reconocido |
+
+Ambos usaron las lentes risk, resilience y reliability, sin bloqueantes. Las observaciones no bloqueantes quedan como trabajo posterior. Entre ellas: la sesión no tiene cierre desde la web; el selector de color no permite elegir negro, porque `#000000` representa «sin color»; el cierre con Escape, el modo Código fuente y las entidades literales del extracto no tienen prueba propia; el corte del extracto puede caer a mitad de palabra; y las tablas se vuelven a analizar en cada transacción del editor. Este commit de documentación es posterior a ambos recibos y no está cubierto por ellos.
+
+**Implementación y pruebas de T4 en loopback completas, con revisión nativa aprobada. Pendiente aceptación operativa con CA confiada en el Mac y otro dispositivo LAN. No se ha instalado confianza, abierto firewall ni migrado notas reales.**
