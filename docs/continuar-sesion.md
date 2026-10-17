@@ -2,7 +2,7 @@
 
 **T5 está completado en web/API e integrado en `main` hasta `66efb38`**, por decisión del usuario. Clientes y Contactos incluyen búsqueda, filtros, archivo/reactivación, etiquetas, vínculos y cambio confirmado de ámbito con impacto en contactos. La navegación móvil usa un menú hamburguesa flotante y permanece estable durante las cargas de notas. La CLI de T5 quedó excluida. Evidencia y límites en [cierre de T5](clientes-contactos-t5.md).
 
-La siguiente unidad es **T6, Proyectos**. No está iniciada ni queda autorizada por esta actualización. Antes de implementar, concretar su contrato y revisar el diseño desktop/móvil. El [plan](plan-implementacion-local.md) mantiene las dependencias y condiciones de avance.
+**T6, Proyectos, está completado en web/API en la rama `feat/projects-t6`**, sin integrar en `main` ni publicar. Incluye cliente fijo, estados, fechas con aviso, bloqueos en Clientes, REST y página web. La CLI queda excluida. T7, Tareas, avanza en paralelo en `../bitnode-t7` (schema v6). Ver [registro de T6](proyectos-t6.md). Integrar en `main` o publicar requiere una decisión expresa del usuario.
 
 T4 y la organización de Notas se publicaron como `v0.3.0`; el merge de T5 no creó otra versión. Notas conserva búsqueda local, orden, etiquetas/filtros y tablas GFM editables. T4 aporta contraseña compartida, sesiones, reset CLI, CSRF, CA local guiada y HTTPS obligatorio. Ver [README](../README.md) y [organización y T4](organizacion-notas-t4.md).
 
@@ -21,7 +21,8 @@ El usuario autorizó versionar y subir el proyecto a `https://github.com/LuisSar
 | [Revisión del alcance](revision-alcance-local.md) | Producto confirmado y detalles menores aún propuestos. |
 | [Propuesta técnica](propuesta-tecnica-local.md) | Organización mínima aprobada; resumen de arquitectura y propuestas. |
 | [Diseño técnico detallado](diseno-tecnico-local.md) | Datos, reglas, contratos REST/CLI, Angular, seguridad, operación y matriz de pruebas. P1–P6 y P8–P12 resueltas; P7 pendiente de explicación/decisión. Sin aprobación global del diseño técnico. |
-| [Plan de implementación](plan-implementacion-local.md) | T4 y T5 completados en sus alcances registrados; T6 es la siguiente unidad. No autoriza código ni instalaciones. |
+| [Plan de implementación](plan-implementacion-local.md) | T4 y T5 completados; T6 completado en rama propia; T7 en paralelo. No autoriza código ni instalaciones. |
+| [Cierre de T6](proyectos-t6.md) | Proyectos web/API en rama propia, evidencia y dependencias con T7/T15. |
 | [Cierre de T5](clientes-contactos-t5.md) | Clientes y Contactos web/API integrados, evidencia por snapshot y limitaciones conservadas. |
 | [Diseño con Stitch](diseno-ui-stitch.md) | Base aprobada de escritorio oscuro compacto, verde y sidebar; composición final y tokens pendientes. |
 
@@ -44,7 +45,7 @@ Decisiones de diseño registradas: Colombia fija; borrar actividad de nota elimi
 
 ## Siguiente paso
 
-Preparar T6, Proyectos: cliente fijo, nombre único por cliente, estados y fechas. Un cliente archivado impide crear o reactivar proyectos; las fechas invertidas avisan sin bloquear. Revisar el diseño desktop/móvil y acordar el alcance antes de escribir código. Al incorporar Proyectos, añadir los bloqueos correspondientes en Clientes.
+Coordinar la integración de T6 (`feat/projects-t6`) y T7 (`../bitnode-t7`): T7 parte de T6 y añade tareas en schema v6 con los bloqueos de proyecto por tareas. Habrá conflictos menores en la navegación web. Integrar en `main` o publicar requiere una decisión expresa.
 
 La comprobación operativa de contraseña/CA y acceso LAN sigue siendo una tarea separada que requiere decisión expresa. No instalar confianza, cambiar Keychain, abrir firewall, migrar datos reales ni publicar por inferencia. El arranque falla si falta identidad o TLS; no hay alternativa HTTP sin contraseña. T1–T3 y T12 del plan completo no se dan por implementados globalmente.
 
@@ -58,4 +59,4 @@ La UI de la entrega anterior usa la paleta confirmada y la exportación `design/
 
 ## Prompt para retomar
 
-> Lee README.md, docs/clientes-contactos-t5.md y docs/plan-implementacion-local.md; consulta git/status y la autoridad RDD vigente. T5 web/API está completado e integrado en `main` hasta 66efb38, sin nueva versión ni aprobación nativa final de T5. CLI de T5 excluida. Evidencia: 113 pruebas de aplicación, typecheck correcto y última pasada E2E focalizada 5/5; la suite completa previa fue 77 aprobadas/3 omitidas, no del snapshot final. Sigue T6, Proyectos: revisar contrato y diseño desktop/móvil antes de implementar y pedir autorización concreta. Permanecen pendientes CA/LAN física, PWA real y módulos futuros. No reabras las 46 rondas, no heredes aprobaciones de T4 ni alteres Keychain/firewall/datos reales por inferencia. Usa ask_user_question para decisiones.
+> Lee README.md, docs/proyectos-t6.md y docs/plan-implementacion-local.md; consulta git/status, worktrees y la autoridad RDD vigente. T5 web/API está integrado en `main` hasta 66efb38. T6 Proyectos web/API está completado en `feat/projects-t6` (schema v5, 133 pruebas de aplicación, E2E 56 aprobadas/3 omitidas en Proyectos/Clientes/Contactos/Navegación), sin integrar ni revisión nativa. T7 Tareas avanza en `../bitnode-t7` sobre T6 (schema v6). CLI excluida. Siguiente: coordinar integración T6/T7 con autorización expresa. Permanecen pendientes CA/LAN física, PWA real y módulos futuros. No reabras las 46 rondas, no heredes aprobaciones de T4 ni alteres Keychain/firewall/datos reales por inferencia. Usa ask_user_question para decisiones.
