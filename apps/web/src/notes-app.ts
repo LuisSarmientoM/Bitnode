@@ -131,6 +131,15 @@ export class NotesApp {
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) { this.closeTagPanels(event.composedPath()); }
 
+  /** In the notes view, Cmd+S (macOS) or Ctrl+S (Windows/Linux) saves the note, never the page. */
+  @HostListener('document:keydown', ['$event'])
+  onSaveShortcut(event: KeyboardEvent) {
+    if (!this.authenticated() || event.altKey || !(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 's') return;
+    event.preventDefault();
+    // Without changes, or while busy, there is nothing to save; the page still is not saved.
+    if (this.canSave()) void this.save();
+  }
+
   @HostListener('document:keydown.escape', ['$event'])
   onEscape(event: Event) {
     // Prevent default so the mobile dialog stays open when Escape only closes a panel.

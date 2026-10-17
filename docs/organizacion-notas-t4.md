@@ -131,4 +131,10 @@ La lista mostraba los primeros 120 caracteres en Markdown crudo. Ahora `markdown
 
 RED: el unitario de `markdownText` falló por módulo sin exportación, y tres E2E fallaron por extracto con sintaxis, barra de herramientas desplazada 117 px al abrir el panel y paleta en lugar de selector. El primer GREEN pasó el extracto; las dos pruebas de etiquetas revelaron el cierre al aplicar y la carrera del color, analizados con el trace. Para revertir, retirar `markdownText`, el cierre de paneles, el selector nativo y sus reglas CSS; restaurar la paleta y el `slice(0, 120)`.
 
+### Atajo de guardado
+
+En la vista de notas, `NotesApp` escucha `keydown` en el documento. Cmd+S o Ctrl+S, sin Alt, siempre llama a `preventDefault()` para que el navegador no guarde la página. Si hay cambios guardables, llama al mismo `save()` que «Guardar nota»: mismos límites, control de revisión y conflicto. Sin cambios o con un guardado en curso no envía nada. En la pantalla de acceso no se intercepta. CodeMirror no asigna Mod-S, así que el atajo funciona igual en el editor dinámico, en Código fuente y en el título.
+
+RED: la prueba E2E falló porque Ctrl+S no guardaba la nota; el caso de la pantalla de acceso ya pasaba y queda como protección. La prueba cubre Ctrl+S desde Código fuente, Cmd+S desde el editor dinámico, ambos sin cambios (sin PATCH ni POST) y comprueba `defaultPrevented` en los cuatro casos. Para revertir, retirar `onSaveShortcut` y su prueba.
+
 **Implementación y pruebas de T4 en loopback completas. Pendiente revisión nativa final y aceptación operativa con CA confiada en el Mac y otro dispositivo LAN. No se ha instalado confianza, abierto firewall ni migrado notas reales.**
