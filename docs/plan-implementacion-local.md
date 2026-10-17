@@ -10,6 +10,8 @@ El usuario autorizó iniciar con Notas independientes de punta a punta, sin cons
 
 v0.3.0 también adelanta parte de T12 y T17 para Notas: etiquetas con filtros y búsqueda sin FTS5. Siguen sin completarse T1–T3 ni T12: faltan CLI general, mantenimiento, vínculos, archivo/papelera y otras reglas globales. **T6, Proyectos**, y **T7, Tareas básicas**, están completados en web/API y publicados en `main` hasta `4f8c1ae` (ver [registro de T6](proyectos-t6.md) y [registro de T7](tareas-t7.md)). La siguiente unidad del orden general es **T8, Jerarquía y transiciones**. T19, backup y restauración, sigue siendo una alternativa para proteger las notas reales.
 
+La revisión posterior de T6 aprobó y reconoció sus tres candidatos de código originales; T7 también tiene revisión aprobada y reconocida. Esto no constituye aprobación global del `main` actual. La comprobación integrada sobre `dfb2d17` más la expectativa de navegación corregida pasó con 153 pruebas de aplicación, typecheck y 93 E2E aprobadas, con 3 capturas opcionales omitidas. Rangos, evidencia y observaciones no bloqueantes en los registros de T6 y T7. El ajuste E2E acompaña esta entrega documental, sin cambios de producto ni versión nueva.
+
 ## Plan general previo
 
 Construir por unidades verificables, no implementar todo el alcance en un único cambio. Revisar la [propuesta técnica](propuesta-tecnica-local.md) y el [diseño técnico detallado](diseno-tecnico-local.md), con [matriz T1–T20](diseno-tecnico/verificacion.md) y preguntas finales por puerta. Diseñar la UI con el [brief de Stitch](diseno-ui-stitch.md). Este plan no autoriza por sí mismo instalar dependencias ni escribir código.

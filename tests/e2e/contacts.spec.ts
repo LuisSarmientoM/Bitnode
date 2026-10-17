@@ -74,12 +74,12 @@ function trackWrites(page: Page, method: string, suffix: string) {
   return bodies;
 }
 
-test('la navegación ofrece Notas, Clientes y Contactos y conserva el borrador de Notas', async ({ page, request }) => {
+test('la navegación ofrece Notas, Clientes, Proyectos, Contactos y Tareas y conserva el borrador de Notas', async ({ page, request }) => {
   const title = 'Borrador ' + rand();
   await request.post('/api/v1/notes', { data: { title: 'Nota base ' + rand(), body: 'x' } });
   await page.goto('/');
   const nav = page.getByRole('navigation', { name: 'Navegación principal' });
-  await expect(nav.getByRole('button')).toHaveText([/Notas/, /Clientes/, /Proyectos/, /Contactos/]);
+  await expect(nav.getByRole('button')).toHaveText([/Notas/, /Clientes/, /Proyectos/, /Contactos/, /Tareas/]);
   await page.getByLabel('Título', { exact: true }).fill(title);
   await nav.getByRole('button', { name: 'Contactos' }).click();
   await expect(nav.getByRole('button', { name: 'Contactos' })).toHaveAttribute('aria-current', 'page');

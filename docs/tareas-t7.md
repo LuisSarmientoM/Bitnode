@@ -1,6 +1,6 @@
 # T7 Tareas básicas: registro y evidencia
 
-**T7 completado en web/API e integrado en `main` hasta `3d34b58`**, sobre T6 (`132f18f`), mediante fast-forward. La CLI quedó excluida por decisión del usuario, igual que en T5. Se desarrolló en paralelo con T6 en un worktree separado, ya retirado. No se publicó ni se creó una nueva versión.
+**T7 completado en web/API e integrado en `main` hasta `3d34b58`**, sobre T6 (`132f18f`), mediante fast-forward. La CLI quedó excluida por decisión del usuario, igual que en T5. Se desarrolló en paralelo con T6 en un worktree separado, ya retirado. Se publicó en `origin/main` hasta `4f8c1ae`, sin crear una nueva versión.
 
 ## Alcance entregado
 
@@ -35,7 +35,11 @@
 | E2E `tasks.spec.ts`, `navigation.spec.ts`, `clients.spec.ts` | 45 aprobadas, 2 omitidas preexistentes, cero fallos, ejecutadas por el worker de la UI. Una pasada previa tuvo 6 fallos en Clientes mientras la sesión de T6 ocupaba el puerto 3107; se repitió con el puerto libre. |
 | RED observado | Core, SQLite, REST y guarda de proyectos fallaron antes de implementar, por las causas esperadas. La E2E nueva no pudo observar RED porque el puerto 3107 estaba ocupado. |
 
-No se ejecutó la suite E2E completa. No hay revisión nativa de T7. Se probó solo con bases temporales; no se migró ninguna base real.
+La tabla anterior conserva la evidencia previa a la integración final. Después se aprobó y reconoció la revisión nativa de T7, `review-9b9c9801b9481ea8`, sobre `132f18f..4f8c1ae`. Sus observaciones no bloqueantes fueron el desfase de Bogotá duplicado, los estados abiertos repetidos en la guarda de proyectos, el selector de proyectos limitado a 200 y la falta de prueba de paginación de tareas.
+
+La comprobación posterior sobre `dfb2d17` aprobó 153 pruebas de aplicación y typecheck. La E2E completa pasó con 93 aprobadas y 3 omitidas tras actualizar la expectativa de navegación de Contactos para incluir Tareas. Ese ajuste está incluido en esta entrega; el [registro de T6](proyectos-t6.md#comprobación-de-integración-en-main) conserva el fallo inicial y el resultado final. No se hereda la aprobación nativa a ese ajuste ni al acumulado de `main`.
+
+Las pruebas usaron bases y certificados temporales. La base real local se migró aparte a v6 al probar T7, con copia previa en `.data/bitnode.sqlite.backup-v5-before-t7`; no se modificó durante esta comprobación.
 
 ## Diferencias con el diseño y límites
 
