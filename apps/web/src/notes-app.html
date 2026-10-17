@@ -1,3 +1,17 @@
+@if (!authenticated()) {
+  <main class="login-panel">
+    <h1>Acceder a Bitnode</h1>
+    <p>Usa la contraseña compartida de este Mac.</p>
+    <form (ngSubmit)="login()">
+      <label for="password">Contraseña</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required maxlength="1024" [ngModel]="password()" (ngModelChange)="password.set($event)" [disabled]="authBusy()">
+      <button class="primary" type="submit" [disabled]="authBusy()">Entrar</button>
+    </form>
+    @if (authBusy()) { <p role="status">Comprobando acceso…</p> }
+    @if (authError()) { <p role="alert">{{ authError() }}</p> }
+    <p>Si olvidaste la contraseña, ejecuta <code>npm run auth:reset</code> en el Mac.</p>
+  </main>
+} @else {
 <a class="skip-link" href="#editor">Ir al editor</a>
 <div class="app-shell">
   <aside class="sidebar" aria-label="Navegación principal">
@@ -10,9 +24,39 @@
       <h1>Notas</h1>
       <button type="button" class="primary" (click)="newNote()" [disabled]="busy()"><span aria-hidden="true">＋</span> Nueva nota</button>
     </div>
+    @if (authError()) { <p role="alert">{{ authError() }}</p> }
     <div class="notes-workspace">
       <section class="note-list" aria-label="Lista de notas" [attr.aria-busy]="busy()">
-        <div class="list-heading"><span>{{ total() }} {{ total() === 1 ? 'nota' : 'notas' }}</span></div>
+        <form class="note-filters" (ngSubmit)="applyFilters()">
+          <label class="visually-hidden" for="note-search">Buscar notas</label>
+          <input id="note-search" name="query" type="search" placeholder="Buscar notas" maxlength="500" [ngModel]="query()" (ngModelChange)="query.set($event)" [disabled]="busy()">
+          <label class="visually-hidden" for="note-sort">Ordenar notas</label>
+          <select id="note-sort" name="sort" [ngModel]="query().trim() ? 'title' : sort()" (ngModelChange)="sort.set($event)" [disabled]="busy() || !!query().trim()">
+            <option value="updated">Última modificación</option>
+            <option value="title">Título</option>
+            <option value="created">Fecha de creación</option>
+          </select>
+          <button type="submit" [disabled]="busy()">Aplicar</button>
+          @if (tags().length) {
+            <details class="tag-controls"><summary>Etiquetas @if (filterTags().length) { <span class="selection-count">{{ filterTags().length }}</span> }</summary>
+              <div class="tag-panel">
+                <div class="tag-options" role="group" aria-label="Filtrar por etiquetas">
+                  @for (tag of tags(); track tag.id) {
+                    <button type="button" class="tag-chip" [attr.aria-pressed]="filterTags().includes(tag.id)" (click)="toggleTag(tag.id, !filterTags().includes(tag.id), true)" [disabled]="busy()"><i aria-hidden="true" [style.background-color]="tag.color"></i>{{ tag.name }}</button>
+                  }
+                </div>
+                @if (filterTags().length) {
+                  <div class="tag-match">
+                    <label class="visually-hidden" for="tag-match">Coincidencia</label>
+                    <select id="tag-match" name="tagMode" [ngModel]="tagMode()" (ngModelChange)="tagMode.set($event)" [disabled]="busy()"><option value="all">Todas</option><option value="any">Cualquiera</option></select>
+                    <button type="button" (click)="filterTags.set([])" [disabled]="busy()" aria-label="Limpiar filtro de etiquetas">Limpiar</button>
+                  </div>
+                }
+              </div>
+            </details>
+          }
+        </form>
+        <div class="list-heading" aria-live="polite"><span>{{ total() }} {{ total() === 1 ? 'nota' : 'notas' }}</span></div>
         @if (listError()) {
           <div class="list-message error" role="alert">{{ listError() }}<button type="button" (click)="loadPage(offset())" [disabled]="busy()">Reintentar lista</button></div>
         }
@@ -22,12 +66,13 @@
         @for (note of items(); track note.id) {
           <button type="button" class="note-card" [class.selected]="selected()?.id === note.id" [attr.aria-pressed]="selected()?.id === note.id" (click)="openNote(note)" [disabled]="busy()">
             <div class="card-top"><strong>{{ note.title }}</strong></div>
-            @if (note.body) { <p>{{ note.body.slice(0, 120) }}</p> }
+            @if (excerpts().get(note.id); as excerpt) { <p>{{ excerpt }}</p> }
+            @if (note.tags.length) { <div class="tag-chips">@for (tag of note.tags; track tag.id) { <span><i aria-hidden="true" [style.background-color]="tag.color"></i>{{ tag.name }}</span> }</div> }
             <div class="card-meta"><time>{{ note.updatedAt | date:'dd/MM/yyyy · HH:mm':'-0500' }}</time></div>
           </button>
         }
         @if (!busy() && !listError() && !items().length) {
-          <p class="empty-list">No hay notas.</p>
+          <p class="empty-list">{{ appliedQuery() || appliedTags().length ? 'No hay notas que coincidan.' : 'No hay notas.' }}</p>
         }
         @if (hasPages()) {
           <nav class="pagination" aria-label="Páginas de notas">
@@ -45,6 +90,37 @@
             <div class="editor-top"><span class="save-state" role="status" aria-live="polite" [class.unsaved]="dirty()"><span class="online-dot"></span>{{ status() }}</span></div>
             <label class="visually-hidden" for="note-title">Título</label>
             <input id="note-title" name="title" class="title-input" placeholder="Título" [ngModel]="title()" (ngModelChange)="title.set($event)" [disabled]="busy()">
+            <div class="note-tags">
+              <div class="assigned-tags" aria-label="Etiquetas de esta nota">
+                @for (tag of assignedTags(); track tag.id) {
+                  <button type="button" class="tag-chip" [attr.aria-label]="'Quitar etiqueta ' + tag.name" (click)="toggleTag(tag.id, false)" [disabled]="busy()"><i aria-hidden="true" [style.background-color]="tag.color"></i>{{ tag.name }}<span aria-hidden="true">×</span></button>
+                }
+              </div>
+              <details class="editor-tags"><summary>＋ Etiqueta</summary>
+                <div class="tag-panel">
+                  @if (tags().length) {
+                    <div class="tag-options" role="group" aria-label="Asignar etiquetas">
+                      @for (tag of tags(); track tag.id) {
+                        <button type="button" class="tag-chip" [attr.aria-pressed]="tagIds().includes(tag.id)" (click)="toggleTag(tag.id, !tagIds().includes(tag.id))" [disabled]="busy()"><i aria-hidden="true" [style.background-color]="tag.color"></i>{{ tag.name }}</button>
+                      }
+                    </div>
+                  }
+                  <div class="tag-create">
+                    <label class="visually-hidden" for="tag-name">Nombre de etiqueta</label>
+                    <input id="tag-name" name="tagName" placeholder="Nueva etiqueta…" [ngModel]="tagName()" (ngModelChange)="tagName.set($event)" (keydown.enter)="$event.preventDefault(); createTag()" maxlength="100" [disabled]="busy()">
+                    <button type="button" (click)="createTag()" [disabled]="busy() || !tagName().trim()" aria-label="Crear etiqueta">Crear</button>
+                  </div>
+                  <div class="tag-color">
+                    <label for="tag-color">Color</label>
+                    <input id="tag-color" type="color" aria-label="Color de nueva etiqueta" [value]="tagColor() || '#000000'" (input)="tagColor.set($any($event.target).value)" [class.unset]="!tagColor()" [disabled]="busy()">
+                    @if (tagColor()) {
+                      <button type="button" (click)="tagColor.set('')" [disabled]="busy()">Quitar color</button>
+                    } @else { <span>Sin color</span> }
+                  </div>
+                  @if (tagsError()) { <p class="error" role="alert">{{ tagsError() }}</p> }
+                </div>
+              </details>
+            </div>
             <div class="editor-toolbar">
               <div class="mode-switch" role="group" aria-label="Modo del editor"><button type="button" [class.active]="!source()" [attr.aria-pressed]="!source()" (click)="source.set(false)">Editar</button><button type="button" [class.active]="source()" [attr.aria-pressed]="source()" (click)="source.set(true)">Código fuente</button></div>
             </div>
@@ -77,3 +153,4 @@
     </div>
   </main>
 </div>
+}

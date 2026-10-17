@@ -1,6 +1,6 @@
 {
   "name": "bitnode",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "workspaces": [
     "apps/*",
@@ -14,6 +14,9 @@
     "dev": "npm run build:web && npm start",
     "start": "tsx apps/server/src/main.ts",
     "db:init": "tsx scripts/db-init.ts",
+    "auth:setup": "tsx apps/cli/src/auth.ts setup",
+    "auth:reset": "tsx apps/cli/src/auth.ts reset",
+    "tls:setup": "tsx apps/cli/src/tls.ts",
     "build": "npm run typecheck && npm run build:web",
     "build:web": "ng build web",
     "typecheck": "tsc --noEmit -p tsconfig.json",

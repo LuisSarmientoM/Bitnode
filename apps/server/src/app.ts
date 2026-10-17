@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import {
   ArgumentsHost, Body, Catch, Controller, Get, HttpException, Inject, Module,
-  Param, Patch, Post, Query, type ExceptionFilter,
+  Param, Patch, Post, Query, type ExceptionFilter, type NestApplicationOptions,
 } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import express, { type ErrorRequestHandler, type Request, type Response } from 'express';
@@ -9,7 +9,10 @@ import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { DomainError, pagination, type NotesRepository } from '../../../packages/core/src/notes.ts';
 
+import { authMiddleware } from './auth-http.ts';
+import type { AuthStore } from './auth-store.ts';
 import { parseLanHost } from './network.ts';
+import { noteQuery } from '../../../packages/core/src/note-query.ts';
 
 const REPOSITORY = Symbol('notes.repository');
 
@@ -18,9 +21,11 @@ class NotesController {
   constructor(@Inject(REPOSITORY) private readonly notes: NotesRepository) {}
 
   @Get()
-  list(@Query('offset') offset?: string, @Query('limit') limit?: string) {
+  list(@Query('offset') offset?: string, @Query('limit') limit?: string,
+    @Query('q') q?: string, @Query('sort') sort?: string,
+    @Query('tagIds') tagIds?: string, @Query('tagMode') tagMode?: string) {
     const page = pagination(offset, limit);
-    return this.notes.list(page.offset, page.limit);
+    return this.notes.list(page.offset, page.limit, noteQuery({ q, sort, tagIds, tagMode }));
   }
 
   @Get(':id')
@@ -31,6 +36,15 @@ class NotesController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() value: unknown) { return this.notes.update(id, value); }
+}
+
+@Controller('api/v1/tags')
+class TagsController {
+  constructor(@Inject(REPOSITORY) private readonly notes: NotesRepository) {}
+  @Get()
+  list() { return this.notes.listTags(); }
+  @Post()
+  create(@Body() value: unknown) { return this.notes.createTag(value); }
 }
 
 function databaseBusy(error: unknown): boolean {
@@ -45,7 +59,7 @@ class ApiErrors implements ExceptionFilter {
   catch(error: unknown, host: ArgumentsHost) {
     const response = host.switchToHttp().getResponse<Response>();
     if (error instanceof DomainError) {
-      const status = error.code === 'NOT_FOUND' ? 404 : error.code === 'REVISION_CONFLICT' ? 409 : 400;
+      const status = error.code === 'NOT_FOUND' ? 404 : ['REVISION_CONFLICT', 'TAG_EXISTS'].includes(error.code) ? 409 : 400;
       response.status(status).json({ error: { code: error.code, message: error.message } });
     } else if (databaseBusy(error)) {
       response.status(503).json({ error: { code: 'DATABASE_BUSY', message: 'La base de datos está ocupada. Tu borrador no se ha descartado.' } });
@@ -58,15 +72,17 @@ class ApiErrors implements ExceptionFilter {
   }
 }
 
-export async function createApp(repository: NotesRepository, webRoot = resolve('dist/web/browser'), options: { lanHost?: string } = {}) {
+export async function createApp(repository: NotesRepository, webRoot = resolve('dist/web/browser'), options: { lanHost?: string; auth?: AuthStore; httpsOptions?: NestApplicationOptions['httpsOptions'] } = {}) {
   const lanHost = parseLanHost(options.lanHost);
+  if (options.auth && !options.httpsOptions) throw new Error('La autenticación requiere HTTPS.');
+  const scheme = options.httpsOptions ? 'https' : 'http';
   @Module({
-    controllers: [NotesController],
+    controllers: [NotesController, TagsController],
     providers: [{ provide: REPOSITORY, useValue: repository }],
   })
   class AppModule {}
 
-  const app = await NestFactory.create(AppModule, { logger: false, bodyParser: false });
+  const app = await NestFactory.create(AppModule, { logger: false, bodyParser: false, httpsOptions: options.httpsOptions });
   app.use((request: Request, response: Response, next: () => void) => {
     response.set({
       'X-Content-Type-Options': 'nosniff',
@@ -77,7 +93,7 @@ export async function createApp(repository: NotesRepository, webRoot = resolve('
     const port = request.socket.localPort;
     const allowed = host === '127.0.0.1:' + port || host === 'localhost:' + port
       || (lanHost !== undefined && host === lanHost + ':' + port);
-    if (!allowed || (request.headers.origin !== undefined && request.headers.origin !== 'http://' + host)
+    if (!allowed || (request.headers.origin !== undefined && request.headers.origin !== scheme + '://' + host)
       || request.headers['sec-fetch-site'] === 'cross-site') {
       response.status(403).json({ error: { code: 'LOCAL_ONLY', message: 'Bitnode acepta solo solicitudes de su origen configurado.' } });
       return;
@@ -100,6 +116,7 @@ export async function createApp(repository: NotesRepository, webRoot = resolve('
     } else { next(error); }
   };
   app.use(bodyErrors);
+  if (options.auth) app.use(authMiddleware(options.auth, { scheme }));
   if (existsSync(resolve(webRoot, 'index.html'))) {
     app.use(express.static(webRoot, { index: 'index.html' }));
   }

@@ -24,6 +24,10 @@ test('API crea, lista, abre y edita; rechaza conflicto, datos inválidos y desco
     assert.equal((await (await fetch(url + '/api/v1/notes/' + note.id)).json()).id, note.id);
     const page = await (await fetch(url + '/api/v1/notes')).json();
     assert.equal(page.total, 1);
+    assert.equal((await (await fetch(url + '/api/v1/notes?q=desde%20api')).json()).total, 1);
+    assert.equal((await (await fetch(url + '/api/v1/notes?q=ausente')).json()).total, 0);
+    assert.equal((await fetch(url + '/api/v1/notes?sort=random')).status, 400);
+    assert.equal((await fetch(url + '/api/v1/notes?q=x&q=y')).status, 400);
     assert.equal((await send('/' + note.id, 'PATCH', { title: 'Editada', body: 'Markdown', expectedRevision: 1 })).status, 200);
     const stale = await send('/' + note.id, 'PATCH', { title: 'Vieja', expectedRevision: 1 });
     assert.equal(stale.status, 409);
@@ -34,6 +38,16 @@ test('API crea, lista, abre y edita; rechaza conflicto, datos inválidos y desco
     assert.equal((await fetch(url + '/api/v1/notes?limit=201')).status, 400);
     assert.equal((await fetch(url + '/api/v1/notes/missing')).status, 404);
     assert.equal((await fetch(url + '/api/v1/unknown')).status, 404);
+    const tagResponse = await fetch(url + '/api/v1/tags', { method: 'POST',
+      headers: { 'content-type': 'application/json', origin: url }, body: JSON.stringify({ name: 'API etiqueta' }) });
+    assert.equal(tagResponse.status, 201);
+    const tag = await tagResponse.json();
+    assert.equal((await (await fetch(url + '/api/v1/tags')).json()).length, 1);
+    assert.equal((await send('/' + note.id, 'PATCH', { tagIds: [tag.id], expectedRevision: 2 })).status, 200);
+    assert.equal((await (await fetch(url + '/api/v1/notes?tagIds=' + tag.id)).json()).total, 1);
+    assert.equal((await fetch(url + '/api/v1/notes?tagMode=bad')).status, 400);
+    assert.equal((await fetch(url + '/api/v1/tags/' + tag.id, { method: 'DELETE' })).status, 404);
+    assert.equal((await send('', 'POST', { title: 'Invalid', tagIds: null })).status, 400);
     const invalidJson = await fetch(url + '/api/v1/notes', {
       method: 'POST', headers: { 'content-type': 'application/json' }, body: '{',
     });

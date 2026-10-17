@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 for (const failure of ['404', '503', 'offline']) {
   test(`móvil muestra el fallo al abrir una nota: ${failure}`, async ({ page, request }) => {

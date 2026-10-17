@@ -5,6 +5,27 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { openNotes } from '../src/notes.ts';
 import Database from 'better-sqlite3';
+import { noteQuery } from '../../core/src/note-query.ts';
+
+test('busca antes de paginar, combina campos, distingue ñ y actualiza tras editar', () => {
+  const db = openNotes(':memory:');
+  try {
+    db.create({ title: 'Zorro árbol', body: 'Niño jugando' });
+    const first = db.create({ title: 'Árbol azul', body: 'Un niño' });
+    db.create({ title: 'Árbol nino', body: 'Sin tilde' });
+    const query = noteQuery({ q: 'ARB niñ' });
+    const page = db.list(0, 1, query);
+    assert.equal(page.total, 2);
+    assert.equal(page.items[0]?.id, first.id);
+    assert.equal(db.list(1, 1, query).items[0]?.title, 'Zorro árbol');
+    assert.equal(db.list(0, 50, noteQuery({ q: 'nino' })).total, 1);
+    assert.equal(db.list(0, 50, noteQuery({ q: 'bol' })).total, 0);
+    db.update(first.id, { body: 'Ya no coincide', expectedRevision: 1 });
+    assert.equal(db.list(0, 50, query).total, 1);
+    assert.equal(db.list(0, 50, noteQuery({ q: "' OR 1=1 --" })).total, 0);
+    assert.equal(db.list(0, 50, noteQuery({ sort: 'title' })).items[0]?.title, 'Árbol azul');
+  } finally { db.close(); }
+});
 
 test('SQLite conserva notas y títulos generados al reabrir', () => {
   const directory = mkdtempSync(join(tmpdir(), 'bitnode-db-'));
@@ -50,9 +71,9 @@ test('rechaza bases de una versión futura sin modificar sus tablas', () => {
   const path = join(directory, 'notes.sqlite');
   const future = new Database(path);
   try {
-    future.exec('PRAGMA user_version = 2; CREATE TABLE future_data (value TEXT);');
+    future.exec('PRAGMA user_version = 3; CREATE TABLE future_data (value TEXT);');
     assert.throws(() => openNotes(path), /versión más reciente/);
-    assert.equal(future.pragma('user_version', { simple: true }), 2);
+    assert.equal(future.pragma('user_version', { simple: true }), 3);
     assert.ok(future.prepare("SELECT name FROM sqlite_master WHERE name = 'future_data'").get());
   } finally {
     future.close();

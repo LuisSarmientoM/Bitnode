@@ -18,6 +18,8 @@
   "include": [
     "packages/**/*.ts",
     "apps/server/**/*.ts",
+    "apps/cli/**/*.ts",
+    "apps/web/test/**/*.ts",
     "tests/**/*.ts",
     "scripts/**/*.ts",
     "playwright.config.ts"

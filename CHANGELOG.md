@@ -1,5 +1,21 @@
 # Historial de versiones
 
+## 0.3.0
+
+Organización de Notas y acceso seguro personal (T4).
+
+- Búsqueda en título y contenido por todos los términos, con prefijos y acentos equivalentes, y orden por modificación, título o creación.
+- Etiquetas con color opcional, asignadas como chips y filtrables con Todas/Cualquiera. Paneles flotantes y selector de color del sistema.
+- Contraseña compartida con `npm run auth:setup` y `npm run auth:reset`, sesiones con cookies `__Host`, CSRF y Origin exacto.
+- CA local guiada con `npm run tls:setup`, sin instalar confianza automáticamente. El servidor solo arranca con HTTPS y contraseña configurados, también en loopback.
+- Login web. Una sesión invalidada pide entrar de nuevo y conserva el borrador.
+- Editor: foco del título solo en notas nuevas, scroll interno, tablas GFM editables con columnas acotadas y Cmd+S/Ctrl+S para guardar la nota.
+- La lista muestra un extracto en texto limpio, sin símbolos Markdown.
+
+**Antes de actualizar:** detén el servidor y copia la base, con sus archivos WAL/SHM. La migración a schema2 conserva las notas, pero la versión anterior no puede abrir la base migrada. Después ejecuta `npm run tls:setup` y `npm run auth:setup`; sin ellos el servidor no arranca.
+
+Verificado con 41 pruebas unitarias/de integración, comprobación de tipos, build Angular y 30 recorridos Chromium sobre el runtime HTTPS real con certificados temporales. Revisión nativa aprobada por tramos; los recibos están en [organización y T4](docs/organizacion-notas-t4.md#revisión-nativa-final). No se ha comprobado la confianza de la CA en dispositivos reales, el acceso desde otro equipo de la LAN ni una PWA instalada. No hay botón de cerrar sesión en la web.
+
 ## 0.2.0
 
 - Editor Markdown dinámico por defecto: la línea con foco muestra su sintaxis y las demás conservan el formato compatible. Código fuente sigue disponible; se retira Vista previa.

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 test('deshabilita el editor mientras abre otra nota y después admite cambios', async ({ page, request }) => {
   const first = await (await request.post('/api/v1/notes', { data: { title: 'Abrir con demora', body: 'Primera' } })).json();
