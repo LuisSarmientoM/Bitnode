@@ -4,7 +4,9 @@
 
 El usuario autorizó iniciar con Notas independientes de punta a punta, sin construir antes clientes/proyectos/tareas. Se implementó una base acotada Angular/NestJS/SQLite con crear/listar/abrir/editar Markdown. Ver [base de Notas](base-notas.md) y [README](../README.md). El orden general de abajo se conserva para el producto completo, no como bloqueo retroactivo de esta entrega.
 
-Esto no completa T1–T4 ni T12: faltan CLI, mantenimiento, acceso autenticado, vínculos, etiquetas, archivo/papelera y otras reglas globales. La interfaz de Notas v0.2.0 tiene aceptación visual del usuario. La siguiente unidad recomendada es T4, acceso seguro; su implementación requiere autorización.
+**T4 está completado en v0.3.0**: contraseña compartida, sesiones, reset CLI, CSRF, CA local guiada, arranque obligatorio con HTTPS y contraseña, y login web. Está probado en loopback con certificados temporales y tiene revisión nativa aprobada. Falta solo la comprobación operativa en dispositivos reales: confiar en la CA y acceder desde otro equipo de la LAN. Ver [organización y T4](organizacion-notas-t4.md).
+
+v0.3.0 también adelanta parte de T12 y T17 para Notas: etiquetas con filtros y búsqueda sin FTS5. Siguen sin completarse T1–T3 ni T12: faltan CLI general, mantenimiento, vínculos, archivo/papelera y otras reglas globales. La siguiente unidad del orden general es T5, clientes y contactos; T19, backup y restauración, es una alternativa para proteger las notas reales. Cualquiera de las dos requiere autorización.
 
 ## Plan general previo
 
@@ -29,7 +31,7 @@ Cada fila delimita una capacidad; si aún tiene demasiado riesgo o revisión, se
 | T1. Base ejecutable | Workspace, Angular vacío servido por NestJS, CLI mínima, configuración y scripts. | Arranque macOS, build, CLI sin servidor, recursos locales. Requiere autorización de implementación. |
 | T2. Base persistente | Driver, migración inicial, FKs/WAL, fábrica compartida, bloqueos de mantenimiento. | FTS5 disponible, migración exclusiva, dos procesos acceden sin corrupción, busy acotado. Depende T1. |
 | T3. Tipos y reglas comunes | Reloj/zona, normalización, dinero exacto, errores y revisiones. | Ñ/n distintos, acentos equivalentes, límites monetarios sin flotantes, fechas inválidas y Colombia fija cubiertas. Depende T2. |
-| T4. Acceso local seguro | Bootstrap CLI, contraseña, sesiones, reset, CSRF y HTTPS guiado. | localhost/LAN autenticados, intento sin sesión rechazado, reset invalida, ningún fallback HTTP LAN. Depende T2. |
+| T4. Acceso local seguro — **completado (v0.3.0)** | Bootstrap CLI, contraseña, sesiones, reset, CSRF y HTTPS guiado. | localhost/LAN autenticados, intento sin sesión rechazado, reset invalida, ningún fallback HTTP LAN. Depende T2. Pendiente solo la comprobación LAN en dispositivos reales. |
 | T5. Clientes y contactos | Campos, scopes, archivo, vínculos y etiquetas básicas. | Scope explícito, unicidad de clientes, nombres de contactos duplicados permitidos, sin borrado individual de contactos. Depende T3. |
 | T6. Proyectos | Cliente fijo, estados, fechas, unicidad por cliente. | Cliente archivado bloquea creación/reactivación; fechas invertidas avisan, no bloquean. Depende T5. |
 | T7. Tareas básicas | Crear/editar/listar, prioridad, referencias y fechas separadas. | Toda tarea nueva, proyecto obligatorio; destino cerrado rechazado; planificación posterior al límite avisa. Depende T6. |
