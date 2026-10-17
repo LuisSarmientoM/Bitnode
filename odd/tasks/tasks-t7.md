@@ -18,11 +18,11 @@ Sources: docs/plan-implementacion-local.md (T7 row), docs/diseno-tecnico/{datos,
 
 ## Tasks
 
-- [x] T1 (S2,S4-S8) core validation + v6 schema + store, projects v5 stub until T6 lands. Route: inline. Commit: 2deec84 (127/127 tests, typecheck ok)
-- [x] T2 (S1-S3,S9) REST /api/v1/tasks controller + server tests. Route: inline (worker mvcs0gom-1-tgbt failed with no changes). Commit: see log L5 (131/131 tests, typecheck ok)
+- [x] T1 (S2,S4-S8) core validation + v6 schema + store, projects v5 stub until T6 lands. Route: inline. Commit: 0cc3911 (rebased; 127/127 tests, typecheck ok)
+- [x] T2 (S1-S3,S9) REST /api/v1/tasks controller + server tests. Route: inline (worker mvcs0gom-1-tgbt failed with no changes). Commit: 26c3f6d (131/131 tests, typecheck ok)
 - [x] T3 (S10) rebase onto T6 (a04415a); project complete/archive/delete guard. Route: inline. Commit: 1e48d30 (153/153 tests, typecheck ok)
 - [x] T4 (S11) web tasks page + E2E. Route: gentle-ai-worker mvcs9nz9-2-v0gs. Commit: 57e1220 (E2E 45 pass/2 skip)
-- [x] T5 docs: docs/tareas-t7.md and plan row. Route: inline. Commit: final docs commit
+- [x] T5 docs: docs/tareas-t7.md and plan row. Route: inline. Commit: b619fb0
 
 ## Log
 
