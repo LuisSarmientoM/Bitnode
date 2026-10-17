@@ -1,4 +1,4 @@
-# Bitnode v0.2.0
+# Bitnode v0.3.0
 
 Base local de Notas con Angular, NestJS y SQLite. Permite crear, listar, abrir y editar notas Markdown con edición dinámica y guardado explícito. En móvil las notas se abren en un modal. Los demás módulos del producto siguen en diseño.
 
