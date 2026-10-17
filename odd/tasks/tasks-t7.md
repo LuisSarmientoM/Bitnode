@@ -19,7 +19,7 @@ Sources: docs/plan-implementacion-local.md (T7 row), docs/diseno-tecnico/{datos,
 ## Tasks
 
 - [x] T1 (S2,S4-S8) core validation + v6 schema + store, projects v5 stub until T6 lands. Route: inline. Commit: 2deec84 (127/127 tests, typecheck ok)
-- [ ] T2 (S1-S3,S9) REST /api/v1/tasks controller + server tests. Route: gentle-ai-worker (context backstop). Commit: -
+- [x] T2 (S1-S3,S9) REST /api/v1/tasks controller + server tests. Route: inline (worker mvcs0gom-1-tgbt failed with no changes). Commit: see log L5 (131/131 tests, typecheck ok)
 - [ ] T3 (S10) rebase onto T6 schema; project complete/archive/delete guard. Route: inline. Blocked on T6 commit. Commit: -
 - [ ] T4 (S11) web tasks page + E2E. Route: inline. Needs T6 projects API. Commit: -
 - [ ] T5 docs: register T7 evidence/limits, README, plan row. Route: inline. Commit: -

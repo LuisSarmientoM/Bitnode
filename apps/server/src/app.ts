@@ -10,12 +10,14 @@ import { resolve } from 'node:path';
 import type { ClientsRepository } from '../../../packages/core/src/clients.ts';
 import type { ContactsRepository } from '../../../packages/core/src/contacts.ts';
 import type { ProjectsRepository } from '../../../packages/core/src/projects.ts';
+import type { TasksRepository } from '../../../packages/core/src/tasks.ts';
 import { DomainError, pagination, type NotesRepository } from '../../../packages/core/src/notes.ts';
 
 import { authMiddleware } from './auth-http.ts';
 import { CLIENTS_REPOSITORY, ClientsController } from './clients-controller.ts';
 import { CONTACTS_REPOSITORY, ContactsController } from './contacts-controller.ts';
 import { PROJECTS_REPOSITORY, ProjectsController } from './projects-controller.ts';
+import { TASKS_REPOSITORY, TasksController } from './tasks-controller.ts';
 import type { AuthStore } from './auth-store.ts';
 import { parseLanHost } from './network.ts';
 import { noteQuery } from '../../../packages/core/src/note-query.ts';
@@ -78,17 +80,18 @@ class ApiErrors implements ExceptionFilter {
   }
 }
 
-export async function createApp(repository: NotesRepository & { clients: ClientsRepository; contacts: ContactsRepository; projects: ProjectsRepository }, webRoot = resolve('dist/web/browser'), options: { lanHost?: string; auth?: AuthStore; httpsOptions?: NestApplicationOptions['httpsOptions'] } = {}) {
+export async function createApp(repository: NotesRepository & { clients: ClientsRepository; contacts: ContactsRepository; projects: ProjectsRepository; tasks: TasksRepository }, webRoot = resolve('dist/web/browser'), options: { lanHost?: string; auth?: AuthStore; httpsOptions?: NestApplicationOptions['httpsOptions'] } = {}) {
   const lanHost = parseLanHost(options.lanHost);
   if (options.auth && !options.httpsOptions) throw new Error('La autenticación requiere HTTPS.');
   const scheme = options.httpsOptions ? 'https' : 'http';
   @Module({
-    controllers: [NotesController, TagsController, ClientsController, ContactsController, ProjectsController],
+    controllers: [NotesController, TagsController, ClientsController, ContactsController, ProjectsController, TasksController],
     providers: [
       { provide: REPOSITORY, useValue: repository },
       { provide: CLIENTS_REPOSITORY, useValue: repository.clients },
       { provide: CONTACTS_REPOSITORY, useValue: repository.contacts },
       { provide: PROJECTS_REPOSITORY, useValue: repository.projects },
+      { provide: TASKS_REPOSITORY, useValue: repository.tasks },
     ],
   })
   class AppModule {}
