@@ -16,10 +16,11 @@
 <div class="app-shell">
   <aside class="sidebar">
     <a class="brand" href="/" (click)="$event.preventDefault()"><span class="brand-mark">b</span> Bitnode</a>
-    <nav class="module-nav" aria-label="Navegación principal">
-      <button type="button" class="nav-item" [attr.aria-current]="view() === 'notes' ? 'page' : null" (click)="showView('notes')" [disabled]="busy()"><span aria-hidden="true">▤</span> Notas@if (dirty()) { <span class="nav-dirty" aria-hidden="true">●</span><span class="visually-hidden"> (cambios sin guardar)</span> }</button>
-      <button type="button" class="nav-item" [attr.aria-current]="view() === 'clients' ? 'page' : null" (click)="showView('clients')" [disabled]="busy()"><span aria-hidden="true">◫</span> Clientes</button>
-      <button type="button" class="nav-item" [attr.aria-current]="view() === 'contacts' ? 'page' : null" (click)="showView('contacts')" [disabled]="busy()"><span aria-hidden="true">☰</span> Contactos</button>
+    <button #menuToggle type="button" class="menu-toggle" aria-label="Menú principal" aria-controls="module-navigation" [attr.aria-expanded]="menuOpen()" (click)="menuOpen.set(!menuOpen())"><span aria-hidden="true">☰</span></button>
+    <nav id="module-navigation" class="module-nav" [class.menu-open]="menuOpen()" aria-label="Navegación principal">
+      <button type="button" class="nav-item" [attr.aria-current]="view() === 'notes' ? 'page' : null" (click)="showView('notes')"><span aria-hidden="true">▤</span> Notas@if (dirty()) { <span class="nav-dirty" aria-hidden="true">●</span><span class="visually-hidden"> (cambios sin guardar)</span> }</button>
+      <button type="button" class="nav-item" [attr.aria-current]="view() === 'clients' ? 'page' : null" (click)="showView('clients')"><span aria-hidden="true">◫</span> Clientes</button>
+      <button type="button" class="nav-item" [attr.aria-current]="view() === 'contacts' ? 'page' : null" (click)="showView('contacts')"><span aria-hidden="true">☰</span> Contactos</button>
     </nav>
   </aside>
 

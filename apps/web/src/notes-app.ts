@@ -19,7 +19,14 @@ import { ContactsPage } from './contacts-page';
     .nav-item[aria-current='page'] { border-color: #244c3d; background: #192c23; color: #ceefdf; }
     .nav-item > span:first-child { color: #07b478; }
     .nav-dirty { margin-left: auto; color: #ff9676; font-size: 10px; }
-    @media (max-width: 760px) { .module-nav { flex-direction: row; gap: 4px; } .nav-item { width: auto; flex: 1 1 0; min-width: 0; justify-content: center; gap: 6px; padding: 7px 6px; font-size: 12px; } }
+    .menu-toggle { display: none; }
+    @media (max-width: 760px) {
+      .menu-toggle { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; font-size: 22px; }
+      .sidebar { position: relative; }
+      .module-nav { display: none; position: absolute; top: calc(100% + 8px); right: 16px; z-index: 30; width: min(260px, calc(100vw - 32px)); padding: 8px; background: #151819; border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 12px 32px #0008; }
+      .module-nav.menu-open { display: flex; }
+      .nav-item { min-height: 44px; }
+    }
   `,
 })
 export class NotesApp {
@@ -64,6 +71,8 @@ export class NotesApp {
   readonly editorKey = signal(0);
   readonly mobile = signal(window.matchMedia('(max-width: 760px)').matches);
   readonly modalOpen = signal(false);
+  readonly menuOpen = signal(false);
+  private readonly menuToggle = viewChild<ElementRef<HTMLButtonElement>>('menuToggle');
   private readonly dialog = viewChild<ElementRef<HTMLDialogElement>>('editorDialog');
   readonly dirty = computed(() => this.editing() && (
     this.title() !== (this.selected()?.title ?? '') || this.body() !== (this.selected()?.body ?? '')
@@ -80,8 +89,9 @@ export class NotesApp {
       const dialog = this.dialog()?.nativeElement;
       if (!dialog) return;
       if (this.mobile()) {
-        if (this.modalOpen() && !dialog.matches(':modal')) { dialog.close(); dialog.showModal(); }
-        else if (!this.modalOpen()) dialog.close();
+        if (this.modalOpen() && this.view() === 'notes') {
+          if (!dialog.matches(':modal')) { dialog.close(); dialog.showModal(); }
+        } else dialog.close();
       } else {
         if (dialog.matches(':modal')) dialog.close();
         dialog.open = true;
@@ -127,7 +137,15 @@ export class NotesApp {
   }
 
   @HostListener('window:resize')
-  onResize() { this.mobile.set(window.matchMedia('(max-width: 760px)').matches); }
+  onResize() {
+    this.mobile.set(window.matchMedia('(max-width: 760px)').matches);
+    if (!this.mobile()) this.menuOpen.set(false);
+  }
+
+  private closeMenu(restoreFocus = false) {
+    this.menuOpen.set(false);
+    if (restoreFocus) this.menuToggle()?.nativeElement.focus();
+  }
 
   /** Tag panels float over the content, so close them on an outside click or Escape. */
   private closeTagPanels(path: EventTarget[] = []): boolean {
@@ -142,10 +160,14 @@ export class NotesApp {
   }
 
   @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent) { this.closeTagPanels(event.composedPath()); }
+  onDocumentClick(event: MouseEvent) {
+    this.closeTagPanels(event.composedPath());
+    if (this.menuOpen() && !event.composedPath().some(target => target instanceof HTMLElement && target.classList.contains('sidebar'))) this.closeMenu();
+  }
 
   showView(view: 'notes' | 'clients' | 'contacts') {
-    if (this.view() === view || this.busy()) return;
+    if (this.menuOpen()) this.closeMenu(true);
+    if (this.view() === view) return;
     this.view.set(view);
   }
 
@@ -161,7 +183,10 @@ export class NotesApp {
   @HostListener('document:keydown.escape', ['$event'])
   onEscape(event: Event) {
     // Prevent default so the mobile dialog stays open when Escape only closes a panel.
-    if (this.closeTagPanels()) event.preventDefault();
+    if (this.menuOpen()) {
+      this.closeMenu(true);
+      event.preventDefault();
+    } else if (this.closeTagPanels()) event.preventDefault();
   }
 
   closeEditor(event?: Event) {

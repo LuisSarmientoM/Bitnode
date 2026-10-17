@@ -48,6 +48,9 @@ const searchbox = (page: Page) => page.getByRole('searchbox', { name: 'Buscar co
 
 async function openContacts(page: Page) {
   await page.goto('/');
+  const menu = page.getByRole('button', { name: 'Menú principal', exact: true, includeHidden: true });
+  await expect(menu).toBeAttached();
+  if (await menu.isVisible()) await menu.click();
   await page.getByRole('button', { name: 'Contactos', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Contactos', level: 1 })).toBeVisible();
 }
@@ -403,11 +406,14 @@ test('en móvil la página no desborda y la tabla se desplaza dentro de su regi�
   await page.setViewportSize({ width: 390, height: 800 });
   await findOnly(page, token);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.getByRole('button', { name: 'Menú principal', exact: true }).click();
   const nav = page.getByRole('navigation', { name: 'Navegación principal' });
   for (const label of ['Notas', 'Clientes', 'Contactos']) {
     const box = await nav.getByRole('button', { name: label }).boundingBox();
     expect(box!.x + box!.width).toBeLessThanOrEqual(390);
   }
+  await page.keyboard.press('Escape');
+  await expect(nav).toBeHidden();
   const region = page.getByRole('region', { name: 'Tabla de contactos' });
   expect(await region.evaluate(el => el.scrollWidth > el.clientWidth)).toBe(true);
   await page.getByRole('button', { name: 'Nuevo contacto' }).click();

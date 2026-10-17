@@ -13,6 +13,9 @@ const row = (page: Page, name: string) => page.getByRole('row').filter({ hasText
 
 async function openClients(page: Page) {
   await page.goto('/');
+  const menu = page.getByRole('button', { name: 'Menú principal', exact: true, includeHidden: true });
+  await expect(menu).toBeAttached();
+  if (await menu.isVisible()) await menu.click();
   await page.getByRole('button', { name: 'Clientes', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Clientes', level: 1 })).toBeVisible();
 }
