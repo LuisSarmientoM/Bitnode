@@ -10,7 +10,7 @@ export const PROJECTS_REPOSITORY = Symbol('projects.repository');
 
 const CONFLICT_REASONS: Record<string, string> = {
   REVISION_CONFLICT: 'REVISION_MISMATCH', DUPLICATE_NAME: 'DUPLICATE_NAME',
-  HAS_ASSOCIATIONS: 'HAS_ASSOCIATIONS', CLIENT_ARCHIVED: 'CLIENT_ARCHIVED',
+  HAS_ASSOCIATIONS: 'HAS_ASSOCIATIONS', CLIENT_ARCHIVED: 'CLIENT_ARCHIVED', HAS_OPEN_TASKS: 'HAS_OPEN_TASKS',
 };
 
 /** Project-only mapping, like clients: domain conflicts become CONFLICT with a reason. */

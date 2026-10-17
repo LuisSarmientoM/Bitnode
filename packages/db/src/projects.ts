@@ -144,9 +144,13 @@ export function projectStore(sqlite: Database.Database): ProjectsRepository {
       return sqlite.transaction(() => {
         const found = current(id, revision);
         if (found.state === state) return toProject(found);
-        // Reactivation never reactivates the client implicitly. Closing does not yet check open tasks or direct timers:
-        // those rules land with their own units (tasks T7, time T15), inside this same transaction.
+        // Reactivation never reactivates the client implicitly. Closing requires no open tasks; the direct-timer rule
+        // lands with its own unit (time T15), inside this same transaction.
         if (OPEN_STATES.includes(state) && !OPEN_STATES.includes(found.state) && found.clientArchivedAt !== null) throw clientArchived();
+        if (!OPEN_STATES.includes(state) && sqlite.prepare(`SELECT 1 FROM tasks WHERE project_id = ?
+          AND state IN ('new', 'in_progress', 'blocked', 'in_review')`).get(id)) {
+          throw new DomainError('HAS_OPEN_TASKS', 'El proyecto tiene tareas abiertas. Ciérralas antes de completarlo o archivarlo.');
+        }
         sqlite.prepare('UPDATE projects SET state = ? WHERE id = ?').run(state, id);
         return touch(id);
       }).immediate();
@@ -170,8 +174,9 @@ export function projectStore(sqlite: Database.Database): ProjectsRepository {
       const revision = projectRevision(value);
       sqlite.transaction(() => {
         current(id, revision);
-        // Associations are re-queried inside the write; tasks, time, notes, events and finances join this list as their units land.
-        if (sqlite.prepare('SELECT 1 FROM project_tags WHERE project_id = ?').get(id)) {
+        // Associations are re-queried inside the write; time, notes, events and finances join this list as their units land.
+        if (sqlite.prepare('SELECT 1 FROM project_tags WHERE project_id = ?').get(id)
+          || sqlite.prepare('SELECT 1 FROM tasks WHERE project_id = ?').get(id)) {
           throw new DomainError('HAS_ASSOCIATIONS', 'El proyecto tiene asociaciones y no se puede borrar.');
         }
         sqlite.prepare('DELETE FROM projects WHERE id = ?').run(id);

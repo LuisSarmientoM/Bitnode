@@ -124,3 +124,16 @@ test('API de tareas lista por proyecto con total y rechaza parámetros desconoci
     await error(await h.send('?limit=0'), 400, 'VALIDATION_ERROR');
   } finally { await h.close(); }
 });
+
+test('API de proyectos responde 409 HAS_OPEN_TASKS al completar un proyecto con tareas abiertas', async () => {
+  const h = await harness();
+  try {
+    const portal = h.project('Portal');
+    await h.create({ projectId: portal, title: 'Abierta' });
+    const response = await fetch(`${h.url}/api/v1/projects/${portal}/change-state`, {
+      method: 'POST', headers: { 'content-type': 'application/json', origin: h.url },
+      body: JSON.stringify({ state: 'completed', expectedRevision: 1 }),
+    });
+    await error(response, 409, 'CONFLICT', 'HAS_OPEN_TASKS');
+  } finally { await h.close(); }
+});

@@ -168,3 +168,20 @@ test('lista por proyecto, recientes primero y paginada', () => withDb((db, proje
   assert.equal(db.tasks.list(0, 50).total, 4);
   assert.equal(db.tasks.list(0, 50, { projectId: 'missing' }).total, 0);
 }));
+
+test('proyecto con tareas abiertas no se completa ni archiva y con tareas no se borra; pausar sigue permitido', () => withDb((db, project) => {
+  const portal = project('Portal');
+  db.tasks.create({ projectId: portal, title: 'Abierta' });
+  for (const state of ['completed', 'archived']) {
+    assert.throws(() => db.projects.changeState(portal, { state, expectedRevision: 1 }), { code: 'HAS_OPEN_TASKS' });
+  }
+  assert.equal(db.projects.get(portal).state, 'active');
+  assert.equal(db.projects.get(portal).revision, 1);
+  assert.equal(db.projects.changeState(portal, { state: 'paused', expectedRevision: 1 }).state, 'paused');
+  assert.throws(() => db.projects.remove(portal, { expectedRevision: 2 }), { code: 'HAS_ASSOCIATIONS' });
+  assert.equal(db.projects.get(portal).state, 'paused');
+  const empty = project('Vacío');
+  assert.equal(db.projects.changeState(empty, { state: 'completed', expectedRevision: 1 }).state, 'completed');
+  db.projects.remove(empty, { expectedRevision: 2 });
+  assert.throws(() => db.projects.get(empty), { code: 'NOT_FOUND' });
+}));
