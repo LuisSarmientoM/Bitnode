@@ -1,0 +1,13 @@
+/* Layout and dialogs come from clients-page.css; only project-specific pieces live here. */
+.state-filter { padding: 6px 10px; font-size: 12px; color: var(--text); background: #1a1c1e; border: 1px solid var(--outline); border-radius: 6px; }
+.state-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; border: 1px solid var(--outline); white-space: nowrap; }
+.state-badge[data-state="active"] { border-color: var(--primary); color: #a6eacb; }
+.state-badge[data-state="paused"] { border-color: #8a6d2f; color: #f1d79b; }
+.state-badge[data-state="archived"] { border-color: #745145; }
+.day { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.warning-mark { color: #f1d79b; }
+.day-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.day-fields > div { display: grid; gap: 6px; min-width: 0; }
+table { min-width: 640px; }
+/* Absolute descendants (visually hidden warning text) must be clipped by the scroll region, not widen the page. */
+.table-scroll { position: relative; }

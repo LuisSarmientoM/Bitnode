@@ -83,6 +83,9 @@ export class ClientsStore {
         const raw = effect.details?.['count'];
         const count = typeof raw === 'number' && Number.isInteger(raw) && raw >= 0 ? raw : effect.targets.length;
         lines.push(count === 1 ? '1 contacto vinculado cambiará su ámbito.' : `${count} contactos vinculados cambiarán su ámbito.`);
+      } else if (effect.code === 'CHANGE_PROJECT_SCOPES') {
+        const count = effect.targets.length;
+        lines.push(count === 1 ? '1 proyecto del cliente cambiará su ámbito.' : `${count} proyectos del cliente cambiarán su ámbito.`);
       } else generic = true;
     }
     if (generic) lines.push('Este cambio también afecta a otros elementos relacionados con el cliente.');

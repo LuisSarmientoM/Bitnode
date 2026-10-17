@@ -79,7 +79,7 @@ test('la navegación ofrece Notas, Clientes y Contactos y conserva el borrador d
   await request.post('/api/v1/notes', { data: { title: 'Nota base ' + rand(), body: 'x' } });
   await page.goto('/');
   const nav = page.getByRole('navigation', { name: 'Navegación principal' });
-  await expect(nav.getByRole('button')).toHaveText([/Notas/, /Clientes/, /Contactos/]);
+  await expect(nav.getByRole('button')).toHaveText([/Notas/, /Clientes/, /Proyectos/, /Contactos/]);
   await page.getByLabel('Título', { exact: true }).fill(title);
   await nav.getByRole('button', { name: 'Contactos' }).click();
   await expect(nav.getByRole('button', { name: 'Contactos' })).toHaveAttribute('aria-current', 'page');

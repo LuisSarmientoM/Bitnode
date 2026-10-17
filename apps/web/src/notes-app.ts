@@ -5,12 +5,13 @@ import { ApiError, apiRequest, notesRequest, setCsrf, type Note, type NotePage, 
 import { LiveMarkdown } from './live-markdown';
 import { markdownText } from './markdown';
 import { ClientsPage } from './clients-page';
+import { ProjectsPage } from './projects-page';
 import { ContactsPage } from './contacts-page';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [FormsModule, DatePipe, LiveMarkdown, ClientsPage, ContactsPage],
+  imports: [FormsModule, DatePipe, LiveMarkdown, ClientsPage, ProjectsPage, ContactsPage],
   templateUrl: './notes-app.html',
   styles: `
     main[hidden] { display: none; }
@@ -36,7 +37,7 @@ export class NotesApp {
   readonly password = signal('');
   private notesReady = false;
   /** Notes stay mounted (hidden) in other views so an unsaved draft is never destroyed. */
-  readonly view = signal<'notes' | 'clients' | 'contacts'>('notes');
+  readonly view = signal<'notes' | 'clients' | 'projects' | 'contacts'>('notes');
   readonly items = signal<Note[]>([]);
   readonly total = signal(0);
   readonly offset = signal(0);
@@ -165,7 +166,7 @@ export class NotesApp {
     if (this.menuOpen() && !event.composedPath().some(target => target instanceof HTMLElement && target.classList.contains('sidebar'))) this.closeMenu();
   }
 
-  showView(view: 'notes' | 'clients' | 'contacts') {
+  showView(view: 'notes' | 'clients' | 'projects' | 'contacts') {
     if (this.menuOpen()) this.closeMenu(true);
     if (this.view() === view) return;
     this.view.set(view);

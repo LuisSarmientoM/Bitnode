@@ -1,0 +1,170 @@
+<main class="clients-page projects-page">
+  <div class="page-heading">
+    <h1>Proyectos</h1>
+    <button type="button" class="primary" (click)="s.openCreate()" [disabled]="s.busy()"><span aria-hidden="true">＋</span> Nuevo proyecto</button>
+  </div>
+
+  <div class="client-filters">
+    <form class="search" role="search" (ngSubmit)="s.applySearch()">
+      <label class="visually-hidden" for="project-search">Buscar proyectos</label>
+      <input id="project-search" name="query" type="search" placeholder="Buscar por proyecto o cliente…" maxlength="500" autocomplete="off" [ngModel]="s.query()" (ngModelChange)="s.query.set($event)" [disabled]="s.busy()">
+      <button type="submit" [disabled]="s.busy()">Aplicar</button>
+    </form>
+    <label class="visually-hidden" for="project-state-filter">Filtrar por estado</label>
+    <select id="project-state-filter" class="state-filter" [ngModel]="s.stateFilter()" (ngModelChange)="s.setStateFilter($event)">
+      <option value="">Todos los estados</option>
+      @for (state of s.states; track state) { <option [value]="state">{{ s.label(state) }}</option> }
+    </select>
+    <label class="archived-toggle"><input type="checkbox" [checked]="s.includeArchived()" (change)="s.setIncludeArchived($any($event.target).checked)"> Mostrar archivados</label>
+  </div>
+
+  @if (s.notice()) { <p class="notice" role="status">{{ s.notice() }}</p> }
+  @if (s.listError()) {
+    <div class="message error" role="alert">{{ s.listError() }}<button type="button" (click)="s.load()" [disabled]="s.busy()">Reintentar lista</button></div>
+  }
+
+  <div class="table-scroll" role="region" aria-label="Tabla de proyectos" tabindex="0" [attr.aria-busy]="s.busy()">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Nombre del proyecto</th>
+          <th scope="col">Cliente</th>
+          <th scope="col">Estado</th>
+          <th scope="col">Inicio</th>
+          <th scope="col">Fin</th>
+          <th scope="col">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (project of s.items(); track project.id) {
+          <tr [class.archived]="project.state === 'archived'">
+            <th scope="row">{{ project.name }}@if (project.tags.length) { <small class="row-tags">Etiquetas: {{ tagNames(project) }}</small> }</th>
+            <td>{{ project.client.fullName }}</td>
+            <td><span class="state-badge" [attr.data-state]="project.state">{{ s.label(project.state) }}</span></td>
+            <td class="day">{{ project.plannedStartDay ?? '—' }}</td>
+            <td class="day">{{ project.plannedEndDay ?? '—' }}@if (project.warnings.length) { <span class="warning-mark" [attr.title]="project.warnings[0].message" aria-hidden="true"> ⚠</span><span class="visually-hidden"> {{ project.warnings[0].message }}</span> }</td>
+            <td><div class="actions">
+              <button type="button" (click)="s.openEdit(project)" [disabled]="s.busy()" [attr.aria-label]="'Editar ' + project.name">Editar</button>
+              <span class="row-menu">
+                <button type="button" class="menu-trigger" [attr.aria-label]="'Más acciones de ' + project.name" aria-haspopup="true" [attr.aria-expanded]="s.menuFor() === project.id" (click)="s.toggleMenu(project, $event)" [disabled]="s.busy()"><span aria-hidden="true">⋮</span></button>
+                @if (s.menuFor() === project.id) {
+                  <div class="menu-list" [style.top.px]="s.menuPos().top" [style.left.px]="s.menuPos().left">
+                    <button type="button" (click)="s.openPanel('state', project)">Cambiar estado</button>
+                    <button type="button" (click)="s.openPanel('tags', project)">Etiquetas</button>
+                    <button type="button" class="danger" (click)="s.openPanel('delete', project)">Eliminar</button>
+                  </div>
+                }
+              </span>
+            </div></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    @if (!s.items().length && !s.busy() && !s.listError()) {
+      <p class="empty">{{ s.appliedQuery() ? 'No hay proyectos que coincidan con la búsqueda.' : s.stateFilter() || s.includeArchived() ? 'No hay proyectos con estos filtros.' : 'Aún no hay proyectos.' }}</p>
+    }
+    @if (s.busy() && !s.items().length) { <p class="empty">Cargando proyectos…</p> }
+  </div>
+
+  @if (s.hasPages()) {
+    <nav class="pagination" aria-label="Páginas de proyectos">
+      <button type="button" (click)="s.load(s.offset() - s.pageSize)" [disabled]="s.busy() || s.offset() === 0">Anterior</button>
+      <span>{{ s.offset() + 1 }}–{{ s.offset() + s.items().length }}</span>
+      <button type="button" (click)="s.load(s.offset() + s.pageSize)" [disabled]="s.busy() || !s.hasNext()">Siguiente</button>
+    </nav>
+  }
+
+  <dialog #projectDialog class="client-dialog" [attr.aria-label]="s.editing() ? 'Editar proyecto' : 'Nuevo proyecto'" (cancel)="onCancel($event)">
+    @if (s.formOpen()) {
+      <form (ngSubmit)="s.save()" novalidate>
+        <h2>{{ s.editing() ? 'Editar proyecto' : 'Nuevo proyecto' }}</h2>
+        @if (s.editing(); as project) {
+          <p class="readonly-field"><span>Cliente</span> <strong>{{ project.client.fullName }}</strong></p>
+          <p class="hint">El cliente de un proyecto no se puede cambiar.</p>
+        } @else {
+          <label for="project-client">Cliente</label>
+          <select id="project-client" name="clientId" required data-autofocus [ngModel]="s.clientId()" (ngModelChange)="s.clientId.set($event)" [disabled]="s.busy()">
+            <option value="" disabled>Selecciona…</option>
+            @for (client of s.clients(); track client.id) { <option [value]="client.id">{{ client.fullName }}</option> }
+          </select>
+          @if (!s.clients().length) { <p class="hint">No hay clientes activos. Crea o reactiva un cliente en Clientes.</p> }
+        }
+        <label for="project-name">Nombre</label>
+        <input id="project-name" name="name" required maxlength="500" autocomplete="off" [attr.data-autofocus]="s.editing() ? '' : null" [ngModel]="s.name()" (ngModelChange)="s.name.set($event)" [disabled]="s.busy()">
+        <label for="project-description">Descripción</label>
+        <textarea id="project-description" name="description" rows="5" placeholder="Markdown" [ngModel]="s.description()" (ngModelChange)="s.description.set($event)" [disabled]="s.busy()"></textarea>
+        <div class="day-fields">
+          <div>
+            <label for="project-start">Inicio planificado</label>
+            <input id="project-start" name="plannedStartDay" type="date" [ngModel]="s.plannedStartDay()" (ngModelChange)="s.plannedStartDay.set($event)" [disabled]="s.busy()">
+          </div>
+          <div>
+            <label for="project-end">Fin planificado</label>
+            <input id="project-end" name="plannedEndDay" type="date" [ngModel]="s.plannedEndDay()" (ngModelChange)="s.plannedEndDay.set($event)" [disabled]="s.busy()">
+          </div>
+        </div>
+        @if (s.formError()) {
+          <div class="message error" role="alert">{{ s.formError() }}
+            @if (s.conflict()) { <button type="button" (click)="s.reloadSaved()" [disabled]="s.busy()">Cargar versión guardada</button> }
+          </div>
+        }
+        <footer>
+          <button type="button" (click)="s.cancel()" [disabled]="s.busy()">Cancelar</button>
+          <button type="submit" class="primary" [disabled]="s.busy()">{{ s.busy() ? 'Procesando…' : 'Guardar proyecto' }}</button>
+        </footer>
+      </form>
+    }
+  </dialog>
+
+  <dialog #panelDialog class="client-dialog panel-dialog" [attr.aria-label]="s.panel() === 'state' ? 'Cambiar estado' : s.panel() === 'tags' ? 'Etiquetas del proyecto' : 'Eliminar proyecto'" (cancel)="onPanelCancel($event)">
+    @if (s.panel(); as panel) {
+      @if (s.panelProject(); as project) {
+        <div class="panel-body">
+          @switch (panel) {
+            @case ('state') {
+              <h2>Cambiar estado</h2>
+              <p class="panel-client">{{ project.name }} · estado actual: {{ s.label(project.state) }}</p>
+              <label for="state-target">Nuevo estado</label>
+              <select id="state-target" name="stateTarget" [ngModel]="s.stateTarget()" (ngModelChange)="s.stateTarget.set($event)" [disabled]="s.busy()">
+                <option value="" disabled>Selecciona…</option>
+                @for (state of s.states; track state) {
+                  <option [value]="state" [disabled]="state === project.state">{{ s.label(state) }}{{ state === project.state ? ' (actual)' : '' }}</option>
+                }
+              </select>
+              <p class="hint">Las fechas planificadas se conservan al cambiar de estado.</p>
+            }
+            @case ('tags') {
+              <h2>Etiquetas del proyecto</h2>
+              <p class="panel-client">{{ project.name }}</p>
+              @if (s.allTags().length) {
+                <div class="tag-list" role="group" aria-label="Etiquetas disponibles">
+                  @for (tag of s.allTags(); track tag.id) {
+                    <label class="tag-option"><input type="checkbox" [checked]="s.tagSelection().includes(tag.id)" (change)="s.toggleTag(tag.id, $any($event.target).checked)" [disabled]="s.busy()"> <i aria-hidden="true" [style.background-color]="tag.color"></i>{{ tag.name }}</label>
+                  }
+                </div>
+              } @else { <p class="hint">Aún no hay etiquetas. Créalas desde Notas o Clientes.</p> }
+            }
+            @case ('delete') {
+              <h2>Eliminar proyecto</h2>
+              <p>¿Eliminar «{{ project.name }}»? La eliminación es definitiva y no se puede deshacer.</p>
+              <p class="hint">Solo se pueden eliminar proyectos sin asociaciones. Si tiene etiquetas u otros vínculos, quítalos antes.</p>
+            }
+          }
+          @if (s.panelError()) {
+            <div class="message error" role="alert">{{ s.panelError() }}
+              @if (s.panelConflict()) { <button type="button" (click)="s.reloadPanelProject()" [disabled]="s.busy()">Cargar versión vigente</button> }
+            </div>
+          }
+          <footer>
+            <button type="button" (click)="s.closePanel()" [disabled]="s.busy()" data-autofocus>Cancelar</button>
+            @switch (panel) {
+              @case ('state') { <button type="button" class="primary" (click)="s.saveState()" [disabled]="s.busy() || !s.stateTarget()">{{ s.busy() ? 'Procesando…' : 'Guardar estado' }}</button> }
+              @case ('tags') { <button type="button" class="primary" (click)="s.saveTags()" [disabled]="s.busy() || !s.tagsDirty()">{{ s.busy() ? 'Procesando…' : 'Guardar etiquetas' }}</button> }
+              @case ('delete') { <button type="button" class="danger-primary" (click)="s.deleteProject()" [disabled]="s.busy()">{{ s.busy() ? 'Procesando…' : 'Eliminar definitivamente' }}</button> }
+            }
+          </footer>
+        </div>
+      }
+    }
+  </dialog>
+</main>
