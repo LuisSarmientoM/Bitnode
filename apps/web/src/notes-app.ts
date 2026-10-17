@@ -4,12 +4,22 @@ import { FormsModule } from '@angular/forms';
 import { ApiError, apiRequest, notesRequest, setCsrf, type Note, type NotePage, type Tag } from './notes-api';
 import { LiveMarkdown } from './live-markdown';
 import { markdownText } from './markdown';
+import { ClientsPage } from './clients-page';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [FormsModule, DatePipe, LiveMarkdown],
+  imports: [FormsModule, DatePipe, LiveMarkdown, ClientsPage],
   templateUrl: './notes-app.html',
+  styles: `
+    main[hidden] { display: none; }
+    .module-nav { display: flex; flex-direction: column; gap: 6px; }
+    .nav-item { display: flex; align-items: center; gap: 11px; width: 100%; text-align: left; border: 1px solid transparent; background: transparent; padding: 10px 11px; border-radius: 6px; font-size: 13px; color: #e2e4e2; }
+    .nav-item[aria-current='page'] { border-color: #244c3d; background: #192c23; color: #ceefdf; }
+    .nav-item > span:first-child { color: #07b478; }
+    .nav-dirty { margin-left: auto; color: #ff9676; font-size: 10px; }
+    @media (max-width: 760px) { .module-nav { flex-direction: row; } .nav-item { padding: 7px 12px; font-size: 12px; } }
+  `,
 })
 export class NotesApp {
   readonly authenticated = signal(false);
@@ -17,6 +27,8 @@ export class NotesApp {
   readonly authError = signal('');
   readonly password = signal('');
   private notesReady = false;
+  /** Notes stay mounted (hidden) in other views so an unsaved draft is never destroyed. */
+  readonly view = signal<'notes' | 'clients'>('notes');
   readonly items = signal<Note[]>([]);
   readonly total = signal(0);
   readonly offset = signal(0);
@@ -131,10 +143,15 @@ export class NotesApp {
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) { this.closeTagPanels(event.composedPath()); }
 
+  showView(view: 'notes' | 'clients') {
+    if (this.view() === view || this.busy()) return;
+    this.view.set(view);
+  }
+
   /** In the notes view, Cmd+S (macOS) or Ctrl+S (Windows/Linux) saves the note, never the page. */
   @HostListener('document:keydown', ['$event'])
   onSaveShortcut(event: KeyboardEvent) {
-    if (!this.authenticated() || event.altKey || !(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 's') return;
+    if (!this.authenticated() || this.view() !== 'notes' || event.altKey || !(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 's') return;
     event.preventDefault();
     // Without changes, or while busy, there is nothing to save; the page still is not saved.
     if (this.canSave()) void this.save();
