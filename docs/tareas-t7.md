@@ -1,6 +1,6 @@
 # T7 Tareas básicas: registro y evidencia
 
-**T7 implementado en web/API en la rama `feat/tasks-t7`**, sin integrar en `main`. La CLI quedó excluida por decisión del usuario, igual que en T5. Se desarrolló en paralelo con T6 (Proyectos), en el worktree `../bitnode-t7`, y está rebasado sobre `feat/projects-t6` (`a04415a`). Requiere integrar T6 primero.
+**T7 completado en web/API e integrado en `main` hasta `3d34b58`**, sobre T6 (`132f18f`), mediante fast-forward. La CLI quedó excluida por decisión del usuario, igual que en T5. Se desarrolló en paralelo con T6 en un worktree separado, ya retirado. No se publicó ni se creó una nueva versión.
 
 ## Alcance entregado
 
@@ -44,4 +44,4 @@ No se ejecutó la suite E2E completa. No hay revisión nativa de T7. Se probó s
 - El aviso del límite refleja el estado guardado; no se recalcula mientras se escribe.
 - El filtro de proyectos usa los proyectos no archivados que devuelve `GET /api/v1/projects?limit=200`.
 - Fuera de T7: cambios de estado, subtareas, Hoy, tiempo, traslado, borrado y etiquetas de tareas (T8–T17).
-- Conflictos previsibles al integrar con T6: `packages/db/src/notes.ts`, `packages/db/src/projects.ts`, `apps/server/src/{app,projects-controller}.ts`, `apps/web/src/notes-app.*` y los tests de versión de esquema.
+- La integración con T6 se resolvió en el rebase: navegación con Proyectos y Tareas, test de navegación y fila del plan.
