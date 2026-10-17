@@ -1,6 +1,31 @@
-# T5 Clientes y contactos: registro de avance
+# T5 Clientes y contactos: cierre y evidencia
 
-Registro de la unidad [T5](plan-implementacion-local.md). Rama `feat/clients-contacts-t5`. **T5 no está completa.** Autorizado: web/API, Clientes antes de Contactos.
+**T5 completado en el alcance web/API autorizado**, integrado en `main` mediante fast-forward hasta `66efb38`. La rama `feat/clients-contacts-t5` también está publicada. La CLI quedó excluida por decisión del usuario; no se declara completado el producto general ni una nueva versión.
+
+## Estado al cierre
+
+- Clientes: creación, edición, búsqueda, filtros, archivo/reactivación, etiquetas y borrado sin asociaciones. Cambio de ámbito con vista previa, aceptación explícita e impacto en Contactos.
+- Contactos: creación, edición, búsqueda, filtros, archivo/reactivación, vínculos con clientes y etiquetas. Ámbitos derivados de los vínculos; nombres duplicados permitidos y sin borrado individual.
+- Navegación: menú hamburguesa flotante en móvil, cierre por selección, Escape o clic fuera, sin desplazar el contenido. Los botones no parpadean ni se bloquean al cargar notas. Una apertura pendiente no muestra un modal oculto al cambiar de módulo.
+
+La siguiente unidad es **T6, Proyectos**, según el [plan](plan-implementacion-local.md). Los bloqueos que dependen de módulos futuros y las advertencias de este registro siguen vigentes.
+
+## Verificación del cierre
+
+| Comprobación | Resultado y alcance |
+|---|---|
+| `npm test` | 113 aprobadas, cero fallos, exit 0. |
+| `npm run typecheck` y `git diff --check` | Exit 0 antes de publicar. |
+| Suite E2E completa anterior al último ajuste flotante | 77 aprobadas, 3 omitidas, exit 0. No se atribuye este resultado al snapshot final. |
+| Pasada de navegación, Clientes y Contactos con menú flotante | 49 aprobadas, 3 omitidas y 1 fallo por intentar pulsar Nuevo contacto con el menú abierto. Se corrigió la secuencia de la prueba. |
+| Última pasada focalizada sobre el código final | 5 aprobadas, cero fallos, exit 0: menú flotante sin desplazamiento, teclado/resize, navegación durante carga, modal pendiente, paginación y geometría móvil de Contactos. |
+| Revisión visual | Captura `test-results/navigation-mobile-floating.png` revisada. |
+
+Las pasadas intermedias también detectaron selectores que excluían la hamburguesa oculta en escritorio y una espera de resize insuficiente. Se corrigieron las pruebas y se verificaron los cinco casos finales; no se ejecutó otra suite E2E completa después. El runner E2E compiló Angular. La revisión nativa no tiene aprobación final registrada para T5; no se hereda la de T4 ni se equipara el merge con una aprobación nativa.
+
+## Historial por cortes
+
+Las secciones siguientes conservan decisiones y resultados de cada snapshot. Sus frases sobre trabajo pendiente, commits locales o ausencia de Contactos describen ese momento, no el estado actual. El estado vigente es el cierre anterior.
 
 ## Corte 1: dominio y persistencia de Clientes
 
@@ -26,14 +51,11 @@ Sin HTTP, UI ni CLI. Probado solo con SQLite temporal/en memoria; no se migró n
 - La migración corre en la misma transacción `immediate` que las anteriores; si falla no cambia `user_version`. Una base con versión mayor a 3 se rechaza.
 - Errores: `VALIDATION_ERROR`, `NOT_FOUND`, `REVISION_CONFLICT`, `DUPLICATE_NAME`, `HAS_ASSOCIATIONS`. REST debe mapear los tres últimos a `CONFLICT` con `reason` (`REVISION_MISMATCH`, `DUPLICATE_NAME`, `HAS_ASSOCIATIONS`).
 
-## Pendiente de T5
+## Dependencias fuera del cierre de T5
 
-- Cerrar los casos límite y la revisión integrada de la UI de cambio de ámbito, etiquetas y borrado, ya implementada.
-- Bloqueo de archivo por proyectos activos/pausados y de borrado por proyectos, notas, eventos y finanzas (dependen de T6, T12, T14 y T15).
-- La búsqueda local de Clientes está integrada en web/API. La búsqueda global y FTS5 de T17 quedan fuera.
-- Contactos, vínculos contacto-cliente y etiquetas de contactos.
-- Completar la verificación final de Clientes y su revisión nativa. No se ha iniciado Contactos.
-- La CLI queda excluida de T5 por decisión del usuario; no es pendiente.
+- Bloqueo de archivo por proyectos activos/pausados y de borrado por proyectos, notas, eventos y finanzas: se incorporan con T6, T12, T14 y T15. El bloqueo de borrado por contactos vinculados ya está implementado.
+- La búsqueda local de Clientes y Contactos está integrada en web/API. La búsqueda global y FTS5 de T17 quedan fuera.
+- La CLI queda excluida de T5 por decisión del usuario; no es pendiente de esta entrega.
 
 ## Evidencia
 
@@ -118,13 +140,13 @@ La UI tiene acciones separadas para cambiar ámbito, asignar etiquetas y elimina
 - El padre leyó la validación del preview y el ajuste vertical del menú y revisó `/tmp/bitnode-t5-shots6/clients-mobile-menu-bottom.png`; las tres acciones quedan visibles dentro del viewport.
 - El archivo temporal `tests/e2e/zz-debug.spec.ts`, creado fuera de las superficies del writer, se eliminó tras leer y verificar su contenido exacto. No contiene trabajo de producto ni entra en los commits.
 
-## Comprobaciones finales y entrega
+## Comprobaciones al cierre de Clientes, antes de Contactos
 
 Sobre el snapshot posterior al endurecimiento, el padre ejecutó `npm test`: 79 pruebas aprobadas, cero fallos, exit 0. También ejecutó `npm run build`: tipos y build Angular aprobados, exit 0. Son comprobaciones del nuevo código, no reintentos automáticos de un comando fallido.
 
 El writer reportó la regresión E2E completa: 59 aprobadas y una omitida, exit 0. La omitida es el guion opcional de capturas, que requiere `CLIENTS_SHOTS_DIR`.
 
-La revisión nativa sigue pendiente. El usuario autorizó organizar commits locales por cortes revisables, con pruebas junto al código, sin push ni publicación, y continuar mientras descansa. El diff acumulado supera 2600 líneas; no se congelará como una única revisión corta. No se declara Clientes ni T5 completados. Contactos no se ha iniciado.
+En ese corte, la revisión nativa seguía pendiente. El usuario había autorizado organizar commits locales por cortes revisables, con pruebas junto al código, sin push ni publicación, y continuar mientras descansaba. El diff acumulado superaba 2600 líneas. Todavía no se declaraba T5 completado ni se había iniciado Contactos. Los cortes posteriores y el estado al cierre sustituyen ese estado.
 
 ### Corte local y bloqueo de inicio nativo
 
@@ -136,14 +158,14 @@ La selección retenida por inspect corresponde al árbol de trabajo, mientras el
 
 ### Commits locales de Clientes
 
-Cada commit incluye el código y sus pruebas. Ninguno se ha publicado.
+Cada commit incluye el código y sus pruebas. En ese momento ninguno se había publicado; ahora todos forman parte de `main`.
 
 | Commit | Contenido | Líneas | Validación |
 |---|---|---|---|
 | `e91470e` | Core: validación, claves, búsqueda y preview de ámbito | 347 | Pruebas core dentro de `npm test` 79/79 |
 | `83ffe17` | SQLite v3, repositorio, migración y pruebas | 511 | Pruebas db dentro de `npm test` 79/79 |
 | `9998206` | REST de Clientes y pruebas | 317 | Suite servidor 23/23 y `npm test` 79/79 |
-| siguiente | UI, E2E y este registro | ~1700 | Build exit 0 y E2E 59 aprobadas, 1 omitida |
+| `39e316a` | UI, E2E y este registro | ~1700 | Build exit 0 y E2E 59 aprobadas, 1 omitida |
 
 Los commits intermedios no se ejecutaron por separado en un checkout aislado. Cada uno depende solo de los anteriores: core no usa db; db no usa server ni web; server no usa web. Las pruebas finales se ejecutaron sobre el mismo contenido de esos archivos.
 

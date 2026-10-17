@@ -6,7 +6,9 @@ El usuario autorizó iniciar con Notas independientes de punta a punta, sin cons
 
 **T4 está completado en v0.3.0**: contraseña compartida, sesiones, reset CLI, CSRF, CA local guiada, arranque obligatorio con HTTPS y contraseña, y login web. Está probado en loopback con certificados temporales y tiene revisión nativa aprobada. Falta solo la comprobación operativa en dispositivos reales: confiar en la CA y acceder desde otro equipo de la LAN. Ver [organización y T4](organizacion-notas-t4.md).
 
-v0.3.0 también adelanta parte de T12 y T17 para Notas: etiquetas con filtros y búsqueda sin FTS5. Siguen sin completarse T1–T3 ni T12: faltan CLI general, mantenimiento, vínculos, archivo/papelera y otras reglas globales. La siguiente unidad del orden general es T5, clientes y contactos; T19, backup y restauración, es una alternativa para proteger las notas reales. Cualquiera de las dos requiere autorización.
+**T5 está completado en el alcance web/API autorizado** e integrado en `main` hasta `66efb38`: Clientes y Contactos con ámbitos, archivo/reactivación, vínculos, etiquetas, búsqueda y cambio confirmado de ámbito. Incluye menú móvil flotante y navegación estable durante cargas. La CLI de T5 quedó excluida por decisión del usuario. Evidencia y límites en [registro de T5](clientes-contactos-t5.md).
+
+v0.3.0 también adelanta parte de T12 y T17 para Notas: etiquetas con filtros y búsqueda sin FTS5. Siguen sin completarse T1–T3 ni T12: faltan CLI general, mantenimiento, vínculos, archivo/papelera y otras reglas globales. La siguiente unidad del orden general es **T6, Proyectos**. T19, backup y restauración, sigue siendo una alternativa para proteger las notas reales. Ninguna de las dos se inicia por esta actualización documental.
 
 ## Plan general previo
 
@@ -32,7 +34,7 @@ Cada fila delimita una capacidad; si aún tiene demasiado riesgo o revisión, se
 | T2. Base persistente | Driver, migración inicial, FKs/WAL, fábrica compartida, bloqueos de mantenimiento. | FTS5 disponible, migración exclusiva, dos procesos acceden sin corrupción, busy acotado. Depende T1. |
 | T3. Tipos y reglas comunes | Reloj/zona, normalización, dinero exacto, errores y revisiones. | Ñ/n distintos, acentos equivalentes, límites monetarios sin flotantes, fechas inválidas y Colombia fija cubiertas. Depende T2. |
 | T4. Acceso local seguro — **completado (v0.3.0)** | Bootstrap CLI, contraseña, sesiones, reset, CSRF y HTTPS guiado. | localhost/LAN autenticados, intento sin sesión rechazado, reset invalida, ningún fallback HTTP LAN. Depende T2. Pendiente solo la comprobación LAN en dispositivos reales. |
-| T5. Clientes y contactos | Campos, scopes, archivo, vínculos y etiquetas básicas. | Scope explícito, unicidad de clientes, nombres de contactos duplicados permitidos, sin borrado individual de contactos. Depende T3. |
+| T5. Clientes y contactos: **completado en web/API** | Campos, scopes, archivo, vínculos y etiquetas básicas. CLI excluida por decisión del usuario. | Integrado en `main` hasta `66efb38`. Scope explícito, unicidad de clientes, contactos duplicados permitidos, sin borrado individual de contactos. Bloqueos por módulos futuros se incorporan con T6/T12/T14/T15. Ver [evidencia y límites](clientes-contactos-t5.md). |
 | T6. Proyectos | Cliente fijo, estados, fechas, unicidad por cliente. | Cliente archivado bloquea creación/reactivación; fechas invertidas avisan, no bloquean. Depende T5. |
 | T7. Tareas básicas | Crear/editar/listar, prioridad, referencias y fechas separadas. | Toda tarea nueva, proyecto obligatorio; destino cerrado rechazado; planificación posterior al límite avisa. Depende T6. |
 | T8. Jerarquía y transiciones | Subtareas, ciclos, cierre/cancelación y reapertura confirmada. | Misma rama/proyecto, no ciclos; completar con hijas abiertas falla; reabrir ancestros y proyecto exige consentimiento. Depende T7. |

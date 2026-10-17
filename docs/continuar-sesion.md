@@ -1,8 +1,14 @@
 # Continuar Bitnode
 
-Esta entrega se publicó como `v0.3.0` por decisión del usuario, fusionando `feat/notes-organization-t4` en `main`. Notas incorpora búsqueda local, orden y etiquetas/filtros. T4 agrega una contraseña compartida, sesiones, reset CLI, CSRF, CA local guiada, arranque HTTPS obligatorio y login web. Instrucciones en [README](../README.md) y evidencia en [organización y T4](organizacion-notas-t4.md).
+**T5 está completado en web/API e integrado en `main` hasta `66efb38`**, por decisión del usuario. Clientes y Contactos incluyen búsqueda, filtros, archivo/reactivación, etiquetas, vínculos y cambio confirmado de ámbito con impacto en contactos. La navegación móvil usa un menú hamburguesa flotante y permanece estable durante las cargas de notas. La CLI de T5 quedó excluida. Evidencia y límites en [cierre de T5](clientes-contactos-t5.md).
 
-La suite actual aprobó 41 pruebas y 30 E2E con build Angular. Los ajustes posteriores simplificaron etiquetas, retiraron logout visible, corrigieron foco en notas existentes y scroll interno, y añadieron tablas GFM editables sin modificar el Markdown. Sus columnas reparten el ancho por cantidad, con mínimo por cabecera o palabra más larga y máximo de 320 px. TLS y navegador usaron certificados temporales, sin instalar confianza ni tocar datos reales. El gesto táctil móvil fue sintético, no una PWA instalada real. La comprobación operativa de confianza de la CA en el Mac y acceso desde otro dispositivo LAN sigue pendiente. Sin carpetas, archivo, papelera, vínculos, otros módulos ni CLI general. Los diseños externos se conservan sin cambios. No confundir esta implementación con el alcance completo de las 46 rondas.
+La siguiente unidad es **T6, Proyectos**. No está iniciada ni queda autorizada por esta actualización. Antes de implementar, concretar su contrato y revisar el diseño desktop/móvil. El [plan](plan-implementacion-local.md) mantiene las dependencias y condiciones de avance.
+
+T4 y la organización de Notas se publicaron como `v0.3.0`; el merge de T5 no creó otra versión. Notas conserva búsqueda local, orden, etiquetas/filtros y tablas GFM editables. T4 aporta contraseña compartida, sesiones, reset CLI, CSRF, CA local guiada y HTTPS obligatorio. Ver [README](../README.md) y [organización y T4](organizacion-notas-t4.md).
+
+Última evidencia: 113 pruebas de aplicación aprobadas y typecheck correcto. La suite E2E completa anterior al último ajuste flotante dio 77 aprobadas y 3 omitidas; después hubo una pasada de módulos con 49 aprobadas, 3 omitidas y un fallo de secuencia del test, corregido. La última pasada focalizada dio 5/5 sobre el código final. No se afirma una suite completa final ni una aprobación nativa de T5. El [registro](clientes-contactos-t5.md#verificación-del-cierre) distingue los snapshots.
+
+Siguen pendientes la confianza de la CA y el acceso desde otro dispositivo LAN, PWA instalada real, CLI general, proyectos/tareas y las capacidades globales de archivo, papelera y vínculos de Notas. Las pruebas usaron certificados y datos temporales, sin instalar confianza ni migrar datos reales. No confundir esta entrega con el alcance completo de las 46 rondas.
 
 ## Publicación inicial
 
@@ -15,7 +21,8 @@ El usuario autorizó versionar y subir el proyecto a `https://github.com/LuisSar
 | [Revisión del alcance](revision-alcance-local.md) | Producto confirmado y detalles menores aún propuestos. |
 | [Propuesta técnica](propuesta-tecnica-local.md) | Organización mínima aprobada; resumen de arquitectura y propuestas. |
 | [Diseño técnico detallado](diseno-tecnico-local.md) | Datos, reglas, contratos REST/CLI, Angular, seguridad, operación y matriz de pruebas. P1–P6 y P8–P12 resueltas; P7 pendiente de explicación/decisión. Sin aprobación global del diseño técnico. |
-| [Plan de implementación](plan-implementacion-local.md) | Unidades y aceptación propuestas; no autoriza código ni instalaciones. |
+| [Plan de implementación](plan-implementacion-local.md) | T4 y T5 completados en sus alcances registrados; T6 es la siguiente unidad. No autoriza código ni instalaciones. |
+| [Cierre de T5](clientes-contactos-t5.md) | Clientes y Contactos web/API integrados, evidencia por snapshot y limitaciones conservadas. |
 | [Diseño con Stitch](diseno-ui-stitch.md) | Base aprobada de escritorio oscuro compacto, verde y sidebar; composición final y tokens pendientes. |
 
 El [historial de las 46 rondas](archivo/alcance-local.md) se conserva archivado. Consultarlo para resolver dudas del alcance, no releerlo como paso obligatorio en cada sesión. Los acuerdos posteriores sustituyen los anteriores cuando así se indica.
@@ -31,13 +38,17 @@ El [historial de las 46 rondas](archivo/alcance-local.md) se conserva archivado.
 
 ## Decisiones recientes
 
-Aprobados: Inbox editable antes de crear destino y conservación atómica ante fallo; validaciones básicas de texto/email/URL y teléfono como texto; base visual oscura compacta verde con navegación lateral. URLs duplicadas permitidas. Organización mínima aprobada: apps/web, server, cli y packages/core, db. Contracts/testing solo se extraen cuando la reutilización lo justifique. Posteriormente se autorizaron Notas independientes y las unidades de organización y T4, sin otros módulos.
+Aprobados: Inbox editable antes de crear destino y conservación atómica ante fallo; validaciones básicas de texto/email/URL y teléfono como texto; base visual oscura compacta verde con navegación lateral. URLs duplicadas permitidas. Organización mínima aprobada: apps/web, server, cli y packages/core, db. Contracts/testing solo se extraen cuando la reutilización lo justifique. Posteriormente se autorizaron Notas independientes, organización, T4 y T5 web/API. T5 se publicó e integró en `main` a petición expresa del usuario.
 
-Decisiones de diseño registradas: Colombia fija; borrar actividad de nota eliminada definitivamente; plazos completos; URLs repetidas permitidas; restauración solo vínculos existentes; tramo cero sin entrada; búsqueda alfabética; Inbox página propia/global solo agregar; timer Nueva→En curso; restore conserva contraseña actual/invalida sesiones y cierra timers. Son acuerdos de producto. La autorización actual cubre Notas, organización y T4 en esta rama, sin publicación.
+Decisiones de diseño registradas: Colombia fija; borrar actividad de nota eliminada definitivamente; plazos completos; URLs repetidas permitidas; restauración solo vínculos existentes; tramo cero sin entrada; búsqueda alfabética; Inbox página propia/global solo agregar; timer Nueva→En curso; restore conserva contraseña actual/invalida sesiones y cierra timers. Son acuerdos de producto. La entrega autorizada de T5 ya está publicada. T6 y los módulos siguientes necesitan su propia autorización; no se amplía el alcance por haber completado T5.
 
 ## Siguiente paso
 
-La revisión nativa del login (`review-ed8a2bdf498ac188`) y de los ajustes de UI hasta `d2aa461` (`review-5fd8069296a23c68`) está aprobada y reconocida; sus observaciones no bloqueantes se listan en [organización y T4](organizacion-notas-t4.md#revisión-nativa-final). Cambios posteriores necesitan su propia revisión. Con decisión expresa del usuario, configurar contraseña/CA reales y comprobar confianza y acceso desde otro dispositivo LAN. No instalar confianza, cambiar Keychain, abrir firewall, migrar notas reales ni publicar por inferencia. El arranque ahora falla si falta identidad o TLS; ya no hay alternativa HTTP sin contraseña. T1–T4 y T12 del plan completo no se dan por implementadas globalmente.
+Preparar T6, Proyectos: cliente fijo, nombre único por cliente, estados y fechas. Un cliente archivado impide crear o reactivar proyectos; las fechas invertidas avisan sin bloquear. Revisar el diseño desktop/móvil y acordar el alcance antes de escribir código. Al incorporar Proyectos, añadir los bloqueos correspondientes en Clientes.
+
+La comprobación operativa de contraseña/CA y acceso LAN sigue siendo una tarea separada que requiere decisión expresa. No instalar confianza, cambiar Keychain, abrir firewall, migrar datos reales ni publicar por inferencia. El arranque falla si falta identidad o TLS; no hay alternativa HTTP sin contraseña. T1–T3 y T12 del plan completo no se dan por implementados globalmente.
+
+La revisión nativa del login (`review-ed8a2bdf498ac188`) y de la UI hasta `d2aa461` (`review-5fd8069296a23c68`) está aprobada y reconocida; sus observaciones se listan en [organización y T4](organizacion-notas-t4.md#revisión-nativa-final). Esa aprobación no cubre T5 ni cambios posteriores.
 
 P7 sigue pendiente antes de Hoy/Tareas, pero no bloquea Notas independientes. No reabrir P1–P6 ni P8–P12 ni aprobar P7 por silencio.
 
@@ -47,4 +58,4 @@ La UI de la entrega anterior usa la paleta confirmada y la exportación `design/
 
 ## Prompt para retomar
 
-> Lee README.md y docs/organizacion-notas-t4.md y consulta git/status y la autoridad RDD vigente. `main` contiene v0.3.0: organización de Notas y acceso HTTPS con contraseña. 41 pruebas y 30 E2E/build Angular aprobados; RDD aprobado y reconocido hasta d2aa461 en dos candidatos (login y UI). Los cambios posteriores necesitan su propia revisión. Falta la validación operativa de confianza CA, LAN física y PWA instalada real. Nuevos push, cambios en Keychain/firewall o datos reales requieren autorización concreta. Conserva diseños y alcance; no reabras las 46 rondas ni añadas módulos. Usa ask_user_question para decisiones.
+> Lee README.md, docs/clientes-contactos-t5.md y docs/plan-implementacion-local.md; consulta git/status y la autoridad RDD vigente. T5 web/API está completado e integrado en `main` hasta 66efb38, sin nueva versión ni aprobación nativa final de T5. CLI de T5 excluida. Evidencia: 113 pruebas de aplicación, typecheck correcto y última pasada E2E focalizada 5/5; la suite completa previa fue 77 aprobadas/3 omitidas, no del snapshot final. Sigue T6, Proyectos: revisar contrato y diseño desktop/móvil antes de implementar y pedir autorización concreta. Permanecen pendientes CA/LAN física, PWA real y módulos futuros. No reabras las 46 rondas, no heredes aprobaciones de T4 ni alteres Keychain/firewall/datos reales por inferencia. Usa ask_user_question para decisiones.
