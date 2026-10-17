@@ -18,8 +18,8 @@ Sources: docs/plan-implementacion-local.md (T7 row), docs/diseno-tecnico/{datos,
 
 ## Tasks
 
-- [ ] T1 (S2,S4-S8) core validation + v6 schema + store, projects v5 stub until T6 lands. Route: inline. Commit: -
-- [ ] T2 (S1-S3,S9) REST /api/v1/tasks controller + server tests. Route: inline. Commit: -
+- [x] T1 (S2,S4-S8) core validation + v6 schema + store, projects v5 stub until T6 lands. Route: inline. Commit: 2deec84 (127/127 tests, typecheck ok)
+- [ ] T2 (S1-S3,S9) REST /api/v1/tasks controller + server tests. Route: gentle-ai-worker (context backstop). Commit: -
 - [ ] T3 (S10) rebase onto T6 schema; project complete/archive/delete guard. Route: inline. Blocked on T6 commit. Commit: -
 - [ ] T4 (S11) web tasks page + E2E. Route: inline. Needs T6 projects API. Commit: -
 - [ ] T5 docs: register T7 evidence/limits, README, plan row. Route: inline. Commit: -
@@ -29,3 +29,4 @@ Sources: docs/plan-implementacion-local.md (T7 row), docs/diseno-tecnico/{datos,
 - L1 (user): "Arranca T7, estarás trabajando en paralelo con T6"
 - L2 (user answers): worktree propio; contrato mínimo de projects acordado con stub y rebase; Web/API sin CLI; aprobar propuestas de fechas/URLs/límites.
 - L3 (user): "Hablate con T6 para coordinar". orchestrator messaging unavailable; coordination via Engram topic bitnode/t7-tasks-coordination (obs 5784), T6 decisions in bitnode/t6-projects-scope (obs 5782).
+- L4 (evidence): T6 test file in main checkout uses db.projects.create({clientId,name}), changeState({state,expectedRevision}), codes CLIENT_ARCHIVED/DUPLICATE_NAME; columns match the stub. Existing migration tests updated to latest version 6 / future 7; expect a trivial conflict with T6 (5/6) on rebase.
