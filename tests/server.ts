@@ -12,7 +12,7 @@ async function main() {
   await setupTls(defaultTlsDirectory(path));
   const auth = openAuth(path + '.auth.sqlite');
   try { await auth.setPassword('browser test password'); } finally { auth.close(); }
-  const runtime = await openRuntime({ BITNODE_DB: path, PORT: '3107' });
+  const runtime = await openRuntime({ BITNODE_DB: path, PORT: process.env.BITNODE_E2E_PORT ?? '3107' });
   await runtime.app.listen(runtime.port, runtime.listenHost);
   let closing = false;
   const stop = async () => {

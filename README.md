@@ -69,7 +69,7 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-Las pruebas de integración usan SQLite real. Las de navegador arrancan el mismo runtime protegido en HTTPS, puerto 3107, con base, identidad y CA temporales, sin tocar tus notas. Chromium omite la comprobación de confianza solo para esa CA temporal; las pruebas TLS/runtime verifican la cadena con una CA explícita. Esto no demuestra confianza del sistema ni acceso desde otro dispositivo. Generan capturas de escritorio y móvil en `test-results/`, que se excluye de Git.
+Las pruebas de integración usan SQLite real. Las de navegador arrancan el mismo runtime protegido en HTTPS, puerto 3107 (configurable con `BITNODE_E2E_PORT` para correr dos worktrees en paralelo), con base, identidad y CA temporales, sin tocar tus notas. Chromium omite la comprobación de confianza solo para esa CA temporal; las pruebas TLS/runtime verifican la cadena con una CA explícita. Esto no demuestra confianza del sistema ni acceso desde otro dispositivo. Generan capturas de escritorio y móvil en `test-results/`, que se excluye de Git.
 
 ## Organización
 
