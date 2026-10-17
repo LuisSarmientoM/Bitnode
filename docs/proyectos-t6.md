@@ -1,6 +1,6 @@
 # T6 Proyectos: cierre y evidencia
 
-**T6 completado en el alcance web/API autorizado**, en la rama `feat/projects-t6`. La CLI queda excluida, igual que en T5, por decisión del usuario. Esta rama no se ha integrado en `main` ni ha generado una versión nueva.
+**T6 completado en el alcance web/API autorizado** y publicado en `main` (`132f18f`). La CLI queda excluida, igual que en T5, por decisión del usuario. No generó una versión nueva. T7 se integró encima (`4f8c1ae`) y añadió los bloqueos de proyectos por tareas; ver [registro de T7](tareas-t7.md).
 
 ## Estado al cierre
 
@@ -31,4 +31,4 @@ La primera pasada E2E detectó 196 px de desbordamiento móvil. El texto oculto 
 
 ## Coordinación con T7
 
-T7 se desarrolla en paralelo en `../bitnode-t7`. El puerto E2E es configurable con `BITNODE_E2E_PORT` para que las dos sesiones no compitan por el 3107. Al integrar habrá conflictos menores en `notes-app.html/ts` y en la prueba de navegación de `clients.spec.ts`.
+T7 se desarrolló en paralelo en un worktree separado, ya retirado. El puerto E2E es configurable con `BITNODE_E2E_PORT` para que dos sesiones no compitan por el 3107. Los conflictos de integración en `notes-app.html/ts` y en la prueba de navegación de `clients.spec.ts` se resolvieron al rebasar T7.

@@ -8,7 +8,7 @@ El usuario autorizó iniciar con Notas independientes de punta a punta, sin cons
 
 **T5 está completado en el alcance web/API autorizado** e integrado en `main` hasta `66efb38`: Clientes y Contactos con ámbitos, archivo/reactivación, vínculos, etiquetas, búsqueda y cambio confirmado de ámbito. Incluye menú móvil flotante y navegación estable durante cargas. La CLI de T5 quedó excluida por decisión del usuario. Evidencia y límites en [registro de T5](clientes-contactos-t5.md).
 
-v0.3.0 también adelanta parte de T12 y T17 para Notas: etiquetas con filtros y búsqueda sin FTS5. Siguen sin completarse T1–T3 ni T12: faltan CLI general, mantenimiento, vínculos, archivo/papelera y otras reglas globales. **T6, Proyectos**, está completado en web/API en la rama `feat/projects-t6`, sin integrar en `main` (ver [registro de T6](proyectos-t6.md)). T7, Tareas básicas, avanza en paralelo sobre esa base. T19, backup y restauración, sigue siendo una alternativa para proteger las notas reales.
+v0.3.0 también adelanta parte de T12 y T17 para Notas: etiquetas con filtros y búsqueda sin FTS5. Siguen sin completarse T1–T3 ni T12: faltan CLI general, mantenimiento, vínculos, archivo/papelera y otras reglas globales. **T6, Proyectos**, y **T7, Tareas básicas**, están completados en web/API y publicados en `main` hasta `4f8c1ae` (ver [registro de T6](proyectos-t6.md) y [registro de T7](tareas-t7.md)). La siguiente unidad del orden general es **T8, Jerarquía y transiciones**. T19, backup y restauración, sigue siendo una alternativa para proteger las notas reales.
 
 ## Plan general previo
 

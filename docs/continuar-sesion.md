@@ -2,13 +2,13 @@
 
 **T5 está completado en web/API e integrado en `main` hasta `66efb38`**, por decisión del usuario. Clientes y Contactos incluyen búsqueda, filtros, archivo/reactivación, etiquetas, vínculos y cambio confirmado de ámbito con impacto en contactos. La navegación móvil usa un menú hamburguesa flotante y permanece estable durante las cargas de notas. La CLI de T5 quedó excluida. Evidencia y límites en [cierre de T5](clientes-contactos-t5.md).
 
-**T6, Proyectos, está completado en web/API en la rama `feat/projects-t6`**, sin integrar en `main` ni publicar. Incluye cliente fijo, estados, fechas con aviso, bloqueos en Clientes, REST y página web. La CLI queda excluida. T7, Tareas, avanza en paralelo en `../bitnode-t7` (schema v6). Ver [registro de T6](proyectos-t6.md). Integrar en `main` o publicar requiere una decisión expresa del usuario.
+**T6, Proyectos, y T7, Tareas básicas, están completados en web/API y publicados en `main` hasta `4f8c1ae`**, por decisión del usuario y sin versión nueva. T6 aporta cliente fijo, estados, fechas con aviso, bloqueos en Clientes, REST y página web (schema v5). T7 aporta crear/editar/listar tareas con proyecto activo o pausado obligatorio, prioridad, referencias, planificación y límite separados con aviso no bloqueante, bloqueo de cerrar o borrar proyectos con tareas y página web (schema v6). La CLI quedó excluida en ambos. Ver [registro de T6](proyectos-t6.md) y [registro de T7](tareas-t7.md).
 
 T4 y la organización de Notas se publicaron como `v0.3.0`; el merge de T5 no creó otra versión. Notas conserva búsqueda local, orden, etiquetas/filtros y tablas GFM editables. T4 aporta contraseña compartida, sesiones, reset CLI, CSRF, CA local guiada y HTTPS obligatorio. Ver [README](../README.md) y [organización y T4](organizacion-notas-t4.md).
 
-Última evidencia: 113 pruebas de aplicación aprobadas y typecheck correcto. La suite E2E completa anterior al último ajuste flotante dio 77 aprobadas y 3 omitidas; después hubo una pasada de módulos con 49 aprobadas, 3 omitidas y un fallo de secuencia del test, corregido. La última pasada focalizada dio 5/5 sobre el código final. No se afirma una suite completa final ni una aprobación nativa de T5. El [registro](clientes-contactos-t5.md#verificación-del-cierre) distingue los snapshots.
+Última evidencia: 153 pruebas de aplicación aprobadas y typecheck correcto sobre `4f8c1ae`. E2E de Tareas, Navegación y Clientes: 45 aprobadas y 2 omitidas, antes del rebase final sobre T6. No se ejecutó la suite E2E completa sobre T6+T7. La revisión nativa de T7 (`review-9b9c9801b9481ea8`, de `132f18f` a `4f8c1ae`) está aprobada y reconocida, con cuatro observaciones no bloqueantes listadas abajo. T6 no tiene revisión nativa propia: el candidato T6+T7 excedió el presupuesto de contexto y T6 se publicó antes para acotar el de T7. T5 tampoco tiene aprobación nativa; su [registro](clientes-contactos-t5.md#verificación-del-cierre) distingue los snapshots.
 
-Siguen pendientes la confianza de la CA y el acceso desde otro dispositivo LAN, PWA instalada real, CLI general, proyectos/tareas y las capacidades globales de archivo, papelera y vínculos de Notas. Las pruebas usaron certificados y datos temporales, sin instalar confianza ni migrar datos reales. No confundir esta entrega con el alcance completo de las 46 rondas.
+Siguen pendientes la confianza de la CA y el acceso desde otro dispositivo LAN, PWA instalada real, CLI general, jerarquía/estados/tiempo de tareas (T8+) y las capacidades globales de archivo, papelera y vínculos de Notas. Las pruebas usaron certificados y datos temporales, sin instalar confianza. La base real local se migró a schema v6 al probar T7, con copia previa en `.data/bitnode.sqlite.backup-v5-before-t7`. No confundir esta entrega con el alcance completo de las 46 rondas.
 
 ## Publicación inicial
 
@@ -21,8 +21,9 @@ El usuario autorizó versionar y subir el proyecto a `https://github.com/LuisSar
 | [Revisión del alcance](revision-alcance-local.md) | Producto confirmado y detalles menores aún propuestos. |
 | [Propuesta técnica](propuesta-tecnica-local.md) | Organización mínima aprobada; resumen de arquitectura y propuestas. |
 | [Diseño técnico detallado](diseno-tecnico-local.md) | Datos, reglas, contratos REST/CLI, Angular, seguridad, operación y matriz de pruebas. P1–P6 y P8–P12 resueltas; P7 pendiente de explicación/decisión. Sin aprobación global del diseño técnico. |
-| [Plan de implementación](plan-implementacion-local.md) | T4 y T5 completados; T6 completado en rama propia; T7 en paralelo. No autoriza código ni instalaciones. |
-| [Cierre de T6](proyectos-t6.md) | Proyectos web/API en rama propia, evidencia y dependencias con T7/T15. |
+| [Plan de implementación](plan-implementacion-local.md) | T4 a T7 completados en sus alcances registrados; T8 es la siguiente unidad. No autoriza código ni instalaciones. |
+| [Registro de T7](tareas-t7.md) | Tareas básicas web/API publicadas, evidencia, diferencias con el diseño y límites. |
+| [Cierre de T6](proyectos-t6.md) | Proyectos web/API publicados, evidencia y dependencias con T15. |
 | [Cierre de T5](clientes-contactos-t5.md) | Clientes y Contactos web/API integrados, evidencia por snapshot y limitaciones conservadas. |
 | [Diseño con Stitch](diseno-ui-stitch.md) | Base aprobada de escritorio oscuro compacto, verde y sidebar; composición final y tokens pendientes. |
 
@@ -39,13 +40,15 @@ El [historial de las 46 rondas](archivo/alcance-local.md) se conserva archivado.
 
 ## Decisiones recientes
 
-Aprobados: Inbox editable antes de crear destino y conservación atómica ante fallo; validaciones básicas de texto/email/URL y teléfono como texto; base visual oscura compacta verde con navegación lateral. URLs duplicadas permitidas. Organización mínima aprobada: apps/web, server, cli y packages/core, db. Contracts/testing solo se extraen cuando la reutilización lo justifique. Posteriormente se autorizaron Notas independientes, organización, T4 y T5 web/API. T5 se publicó e integró en `main` a petición expresa del usuario.
+Aprobados: Inbox editable antes de crear destino y conservación atómica ante fallo; validaciones básicas de texto/email/URL y teléfono como texto; base visual oscura compacta verde con navegación lateral. URLs duplicadas permitidas. Organización mínima aprobada: apps/web, server, cli y packages/core, db. Contracts/testing solo se extraen cuando la reutilización lo justifique. Posteriormente se autorizaron Notas independientes, organización, T4 y T5 web/API. T5, T6 y T7 se publicaron e integraron en `main` a petición expresa del usuario.
 
-Decisiones de diseño registradas: Colombia fija; borrar actividad de nota eliminada definitivamente; plazos completos; URLs repetidas permitidas; restauración solo vínculos existentes; tramo cero sin entrada; búsqueda alfabética; Inbox página propia/global solo agregar; timer Nueva→En curso; restore conserva contraseña actual/invalida sesiones y cierra timers. Son acuerdos de producto. La entrega autorizada de T5 ya está publicada. T6 y los módulos siguientes necesitan su propia autorización; no se amplía el alcance por haber completado T5.
+Decisiones de diseño registradas: Colombia fija; borrar actividad de nota eliminada definitivamente; plazos completos; URLs repetidas permitidas; restauración solo vínculos existentes; tramo cero sin entrada; búsqueda alfabética; Inbox página propia/global solo agregar; timer Nueva→En curso; restore conserva contraseña actual/invalida sesiones y cierra timers. Son acuerdos de producto. Las entregas autorizadas de T5 a T7 ya están publicadas. T8 y los módulos siguientes necesitan su propia autorización; no se amplía el alcance por haber completado T7.
 
 ## Siguiente paso
 
-Coordinar la integración de T6 (`feat/projects-t6`) y T7 (`../bitnode-t7`): T7 parte de T6 y añade tareas en schema v6 con los bloqueos de proyecto por tareas. Habrá conflictos menores en la navegación web. Integrar en `main` o publicar requiere una decisión expresa.
+Preparar T8, Jerarquía y transiciones: subtareas, ciclos, cierre/cancelación y reapertura confirmada. La tabla `tasks` ya incluye `parent_id` y la FK compuesta diferida, así que T8 no necesita reconstruirla. Acordar alcance y diseño antes de escribir código.
+
+Observaciones no bloqueantes de la revisión nativa de T7, para trabajo posterior: desfase de Bogotá duplicado en `apps/web/src/tasks-page.ts:38`; estados abiertos de tarea repetidos en `packages/db/src/projects.ts:150-151` en lugar de `OPEN_TASK_STATES`; selector de proyectos de Tareas limitado a 200 sin paginar; paginación de la lista de tareas sin prueba. También falta correr la suite E2E completa sobre T6+T7.
 
 La comprobación operativa de contraseña/CA y acceso LAN sigue siendo una tarea separada que requiere decisión expresa. No instalar confianza, cambiar Keychain, abrir firewall, migrar datos reales ni publicar por inferencia. El arranque falla si falta identidad o TLS; no hay alternativa HTTP sin contraseña. T1–T3 y T12 del plan completo no se dan por implementados globalmente.
 
@@ -59,4 +62,4 @@ La UI de la entrega anterior usa la paleta confirmada y la exportación `design/
 
 ## Prompt para retomar
 
-> Lee README.md, docs/proyectos-t6.md y docs/plan-implementacion-local.md; consulta git/status, worktrees y la autoridad RDD vigente. T5 web/API está integrado en `main` hasta 66efb38. T6 Proyectos web/API está completado en `feat/projects-t6` (schema v5, 133 pruebas de aplicación, E2E 56 aprobadas/3 omitidas en Proyectos/Clientes/Contactos/Navegación), sin integrar ni revisión nativa. T7 Tareas avanza en `../bitnode-t7` sobre T6 (schema v6). CLI excluida. Siguiente: coordinar integración T6/T7 con autorización expresa. Permanecen pendientes CA/LAN física, PWA real y módulos futuros. No reabras las 46 rondas, no heredes aprobaciones de T4 ni alteres Keychain/firewall/datos reales por inferencia. Usa ask_user_question para decisiones.
+> Lee README.md, docs/tareas-t7.md y docs/plan-implementacion-local.md; consulta git/status y la autoridad RDD vigente. T5, T6 y T7 web/API están publicados en `main` hasta 4f8c1ae (schema v6, 153 pruebas de aplicación, typecheck correcto). T7 tiene revisión nativa aprobada (review-9b9c9801b9481ea8); T6 no. CLI excluida. Falta la suite E2E completa sobre T6+T7. Siguiente: T8 Jerarquía y transiciones, acordar contrato y diseño antes de implementar y pedir autorización concreta. Permanecen pendientes CA/LAN física, PWA real y módulos futuros. No reabras las 46 rondas, no heredes aprobaciones de T4 ni alteres Keychain/firewall/datos reales por inferencia. Usa ask_user_question para decisiones.
