@@ -5,11 +5,13 @@ import { matchesNote, normalizeText, noteQuery } from '../../core/src/note-query
 import { randomUUID } from 'node:crypto';
 import { notes } from './schema.ts';
 import { clientStore, migrateClients } from './clients.ts';
+import { contactScopeImpact, contactStore, migrateContacts } from './contacts.ts';
 import { migrateTags, tagStore } from './tags.ts';
 import { DomainError, inputObject, noteInput, revisionInput, type NotesRepository } from '../../core/src/notes.ts';
 import type { ClientsRepository } from '../../core/src/clients.ts';
+import type { ContactsRepository } from '../../core/src/contacts.ts';
 
-export function openNotes(path: string): NotesRepository & { clients: ClientsRepository } {
+export function openNotes(path: string): NotesRepository & { clients: ClientsRepository; contacts: ContactsRepository } {
   const sqlite = new Database(path);
   try {
     sqlite.pragma('busy_timeout = 3000');
@@ -17,7 +19,7 @@ export function openNotes(path: string): NotesRepository & { clients: ClientsRep
     sqlite.pragma('foreign_keys = ON');
     sqlite.transaction(() => {
       const version = sqlite.pragma('user_version', { simple: true }) as number;
-      if (version > 3) throw new Error('La base usa una versión más reciente de Bitnode.');
+      if (version > 4) throw new Error('La base usa una versión más reciente de Bitnode.');
       if (version === 0) {
         sqlite.exec(`CREATE TABLE notes (
           id TEXT PRIMARY KEY NOT NULL,
@@ -32,6 +34,7 @@ export function openNotes(path: string): NotesRepository & { clients: ClientsRep
       }
       if (version < 2) migrateTags(sqlite);
       if (version < 3) migrateClients(sqlite);
+      if (version < 4) migrateContacts(sqlite);
     }).immediate();
   } catch (error) {
     sqlite.close();
@@ -42,7 +45,8 @@ export function openNotes(path: string): NotesRepository & { clients: ClientsRep
     Number(matchesNote(title, body, terms.split(' '))));
   const db = drizzle(sqlite);
   const tags = tagStore(sqlite);
-  const clients = clientStore(sqlite);
+  const clients = clientStore(sqlite, [contactScopeImpact(sqlite)]);
+  const contacts = contactStore(sqlite);
   const get = (id: string) => {
     const note = db.select().from(notes).where(eq(notes.id, id)).get();
     if (!note) throw new DomainError('NOT_FOUND', 'No se encontró la nota.');
@@ -51,6 +55,7 @@ export function openNotes(path: string): NotesRepository & { clients: ClientsRep
   return {
     get: id => sqlite.transaction(() => get(id))(),
     clients,
+    contacts,
     listTags: tags.list,
     createTag: tags.create,
     list(offset, limit, query = noteQuery({})) {

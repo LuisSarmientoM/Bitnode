@@ -163,8 +163,9 @@ export function clientStore(sqlite: Database.Database, impacts: ScopeImpactProvi
       const revision = clientRevision(value);
       sqlite.transaction(() => {
         current(id, revision);
-        // Associations are re-queried inside the write; only tags exist until later units add their tables.
-        if (sqlite.prepare('SELECT 1 FROM client_tags WHERE client_id = ?').get(id)) {
+        // Associations are re-queried inside the write; projects, notes and the rest join this list as their units land.
+        if (sqlite.prepare('SELECT 1 FROM client_tags WHERE client_id = ?').get(id)
+          || sqlite.prepare('SELECT 1 FROM contact_clients WHERE client_id = ?').get(id)) {
           throw new DomainError('HAS_ASSOCIATIONS', 'El cliente tiene asociaciones y no se puede borrar.');
         }
         sqlite.prepare('DELETE FROM clients WHERE id = ?').run(id);
