@@ -147,6 +147,37 @@ Cada commit incluye el código y sus pruebas. Ninguno se ha publicado.
 
 Los commits intermedios no se ejecutaron por separado en un checkout aislado. Cada uno depende solo de los anteriores: core no usa db; db no usa server ni web; server no usa web. Las pruebas finales se ejecutaron sobre el mismo contenido de esos archivos.
 
+## Corte 7: backend de Contactos
+
+Core, SQLite v4 y REST `/api/v1/contacts`. Integra Contactos con Clientes.
+
+- Contacto: nombre obligatorio sin unicidad; un email opcional con validación sintáctica; un teléfono opcional como texto; observaciones. Sin borrado individual: no existe ruta DELETE. Archivo y reactivación con revisión.
+- Vínculos con clientes: `PUT /contacts/:id/clients` reemplaza el conjunto con revisión. Admite clientes archivados elegidos explícitamente, sin reactivarlos. Etiquetas: `PUT /contacts/:id/tags`. El mismo conjunto no incrementa revisión.
+- Ámbitos derivados de los vínculos actuales, incluidos clientes archivados. Un contacto libre solo aparece en Todos; uno con clientes de ambos ámbitos aparece en los dos filtros.
+- Lista con ámbito, archivados, búsqueda por nombre y observaciones, y etiquetas Todas/Cualquiera, aplicados en SQL antes de total y paginación con parámetros enlazados.
+- Borrar un cliente con contactos vinculados devuelve `HAS_ASSOCIATIONS`. El preview de cambio de ámbito incluye `CHANGE_CONTACT_SCOPES` con los contactos cuyo conjunto de ámbitos cambiaría.
+- Migración v4 en la misma transacción inmediata. Prueba desde una base v3 con notas, etiquetas y clientes, y rollback de DDL parcial que conserva `user_version` 3.
+- Límites propuestos, no aprobados: email 254 caracteres ASCII, teléfono 50, hasta 500 clientes por reemplazo.
+- Writer: RED en core, db, versiones y REST; GREEN 8, 16 y 10 focales; `npm test` 113/113 y `tsc` exit 0.
+- Verificador independiente por la migración, revisión estática: sin bloqueantes.
+- Padre: `tsx --test packages/core/test/*.test.ts packages/db/test/*.test.ts apps/server/test/*.test.ts`, 103 pasan, cero fallos, exit 0.
+- Commits locales: `99f274d` core y SQLite v4 con pruebas (918 líneas, la mayor parte pruebas); `76b4ccd` REST con pruebas (302 líneas). Sin push.
+- Advertencias: el digest del preview depende del impacto, no de cada vínculo; un cambio de vínculos que no altera el impacto no invalida la aceptación. El fixture v3 usa las funciones de migración actuales. Un cambio de ámbito con más de 1000 contactos afectados no se puede aceptar por el límite de destinos por efecto.
+
+## Corte 8: interfaz de Contactos
+
+Página `ContactsPage` en la navegación Notas, Clientes y Contactos. Notas sigue montado al cambiar de módulo.
+
+- Tabla con nombre, correo, teléfono, clientes vinculados y ámbito derivado en texto (Trabajo, Personal, ambos o Libre). Acciones visibles por fila: Editar, Archivar o Reactivar, Clientes y Etiquetas. No hay acción de borrar.
+- Búsqueda aplicada con botón, filtro de ámbito, archivados, etiquetas Todas/Cualquiera y paginación real.
+- Formulario con lectura vigente al editar, conservación del borrador ante conflicto o red y confirmación al descartar.
+- Vínculos con clientes en un diálogo propio con guardado explícito; los archivados se muestran solo con "Mostrar clientes archivados" y los ya vinculados permanecen visibles y marcados. El cuadro "Buscar cliente" filtra la lista ya cargada del diálogo, no la base.
+- Clientes: el preview de cambio de ámbito muestra cuántos contactos vinculados cambiarán su ámbito; el aviso de borrado menciona contactos.
+- Writer: RED parcial, 7 fallos y 1 pasada en 8 pruebas filtradas; el resto de pruebas nuevas no se ejecutó contra la UI ausente. Regresión E2E completa: 76 aprobadas y 3 omitidas (capturas opcionales), exit 0.
+- El padre revisó capturas de lista en escritorio y formulario en móvil en `/tmp/t5-contacts-shots.Apjyz7/`.
+- Comprobaciones finales del padre sobre el árbol completo: `npm test` 113/113 exit 0; `npm run build` (tipos y Angular) exit 0; `npx playwright test` 76 aprobadas y 3 omitidas (capturas opcionales), exit 0.
+- Pendiente sin confirmar: tras cerrar con Escape, un segundo clic en "Nuevo contacto" en la misma prueba se reintentó aunque el diálogo abrió. El writer separó la prueba y no encontró la causa; podría ser una doble apertura real. Sin validación de email en cliente: decide el servidor.
+
 El corte de UI supera el presupuesto habitual de 400 líneas. Dividirlo exigiría reconstruir versiones intermedias de `clients-page.ts` y de la E2E que nunca existieron ni se probaron, y los dos cortes posibles seguirían por encima de 400 líneas. Queda como excepción de tamaño pendiente de decisión del usuario para la revisión nativa.
 
 ## Advisories restantes

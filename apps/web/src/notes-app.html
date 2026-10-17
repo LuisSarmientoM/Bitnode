@@ -19,10 +19,12 @@
     <nav class="module-nav" aria-label="Navegación principal">
       <button type="button" class="nav-item" [attr.aria-current]="view() === 'notes' ? 'page' : null" (click)="showView('notes')" [disabled]="busy()"><span aria-hidden="true">▤</span> Notas@if (dirty()) { <span class="nav-dirty" aria-hidden="true">●</span><span class="visually-hidden"> (cambios sin guardar)</span> }</button>
       <button type="button" class="nav-item" [attr.aria-current]="view() === 'clients' ? 'page' : null" (click)="showView('clients')" [disabled]="busy()"><span aria-hidden="true">◫</span> Clientes</button>
+      <button type="button" class="nav-item" [attr.aria-current]="view() === 'contacts' ? 'page' : null" (click)="showView('contacts')" [disabled]="busy()"><span aria-hidden="true">☰</span> Contactos</button>
     </nav>
   </aside>
 
   @if (view() === 'clients') { <app-clients /> }
+  @if (view() === 'contacts') { <app-contacts /> }
   <main [hidden]="view() !== 'notes'">
     <div class="page-heading">
       <h1>Notas</h1>

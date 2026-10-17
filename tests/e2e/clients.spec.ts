@@ -17,10 +17,10 @@ async function openClients(page: Page) {
   await expect(page.getByRole('heading', { name: 'Clientes', level: 1 })).toBeVisible();
 }
 
-test('la navegación ofrece solo Clientes y Notas', async ({ page }) => {
+test('la navegación ofrece Notas, Clientes y Contactos', async ({ page }) => {
   await page.goto('/');
   const nav = page.getByRole('navigation', { name: 'Navegación principal' });
-  await expect(nav.getByRole('button')).toHaveText([/Notas/, /Clientes/]);
+  await expect(nav.getByRole('button')).toHaveText([/Notas/, /Clientes/, /Contactos/]);
   await expect(nav.getByRole('button', { name: 'Notas' })).toHaveAttribute('aria-current', 'page');
   await nav.getByRole('button', { name: 'Clientes' }).click();
   await expect(nav.getByRole('button', { name: 'Clientes' })).toHaveAttribute('aria-current', 'page');
@@ -306,6 +306,61 @@ test('cambiar ámbito: revisar y cancelar no escribe nada', async ({ page, reque
   expect(await api(request, client.id)).toMatchObject({ scope: 'work', revision: client.revision });
   await expect(row(page, name)).toContainText('Trabajo');
   await expect(page.getByRole('button', { name: 'Más acciones de ' + name, exact: true })).toBeFocused();
+});
+
+async function seedLinkedContacts(request: APIRequestContext, clientId: string, names: string[]) {
+  for (const name of names) {
+    const created = await (await request.post('/api/v1/contacts', { data: { name } })).json() as { id: string; revision: number };
+    const linked = await request.put(`/api/v1/contacts/${created.id}/clients`, { data: { expectedRevision: created.revision, clientIds: [clientId] } });
+    expect(linked.status()).toBe(200);
+  }
+}
+
+test('cambiar ámbito: la vista previa indica cuántos contactos vinculados cambiarán de ámbito', async ({ page, request }) => {
+  const token = 'zzci' + rand();
+  const name = `${token} con contactos`;
+  const client = await seed(request, name, 'work');
+  await seedLinkedContacts(request, client.id, [`${token} uno`, `${token} dos`]);
+  await findOnly(page, token);
+  await openAction(page, name, 'Cambiar ámbito');
+  const dialog = page.getByRole('dialog', { name: 'Cambiar ámbito' });
+  await dialog.getByLabel('Nuevo ámbito').selectOption('personal');
+  await dialog.getByRole('button', { name: 'Revisar cambio' }).click();
+  await expect(dialog).toContainText('2 contactos vinculados cambiarán su ámbito.');
+  await expect(dialog).not.toContainText('también afecta a otros elementos');
+  await dialog.getByRole('button', { name: 'Confirmar cambio' }).click();
+  await expect(dialog).toBeHidden();
+  expect(await api(request, client.id)).toMatchObject({ scope: 'personal' });
+});
+
+test('cambiar ámbito: un solo contacto vinculado usa singular', async ({ page, request }) => {
+  const token = 'zzci' + rand();
+  const name = `${token} un contacto`;
+  const client = await seed(request, name, 'work');
+  await seedLinkedContacts(request, client.id, [`${token} solo`]);
+  await findOnly(page, token);
+  await openAction(page, name, 'Cambiar ámbito');
+  const dialog = page.getByRole('dialog', { name: 'Cambiar ámbito' });
+  await dialog.getByLabel('Nuevo ámbito').selectOption('personal');
+  await dialog.getByRole('button', { name: 'Revisar cambio' }).click();
+  await expect(dialog).toContainText('1 contacto vinculado cambiará su ámbito.');
+});
+
+test('eliminar: un cliente con contactos vinculados queda bloqueado y el mensaje sigue visible', async ({ page, request }) => {
+  const token = 'zzdc' + rand();
+  const name = `${token} con contacto`;
+  const client = await seed(request, name, 'work');
+  await seedLinkedContacts(request, client.id, [`${token} vinculado`]);
+  await findOnly(page, token);
+  await openAction(page, name, 'Eliminar');
+  const dialog = page.getByRole('dialog', { name: 'Eliminar cliente' });
+  await dialog.getByRole('button', { name: 'Eliminar definitivamente' }).click();
+  await expect(dialog.getByRole('alert')).toContainText('asociaciones');
+  await expect(dialog).toBeVisible();
+  await expect(page.getByText('Cliente eliminado.')).toHaveCount(0);
+  expect((await request.get('/api/v1/clients/' + client.id)).status()).toBe(200);
+  await dialog.getByRole('button', { name: 'Cancelar' }).click();
+  await expect(row(page, name)).toBeVisible();
 });
 
 test('cambiar ámbito: confirmar aplica el cambio y el filtro lo refleja', async ({ page, request }) => {
@@ -704,5 +759,27 @@ test('capturas de revisión visual', async ({ page, request }) => {
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();
     expect(await overflow()).toBe(true);
+  }
+});
+
+// Optional visual review of the contact impact line: CLIENTS_SHOTS_DIR=/tmp/dir npx playwright test tests/e2e/clients.spec.ts -g "capturas del impacto"
+test('capturas del impacto en contactos', async ({ page, request }) => {
+  const dir = process.env.CLIENTS_SHOTS_DIR;
+  test.skip(!dir, 'Solo con CLIENTS_SHOTS_DIR');
+  const token = 'zzsi' + rand();
+  const name = `${token} Andina Estudio Digital`;
+  const client = await seed(request, name, 'work', `${token} Andina`);
+  await seedLinkedContacts(request, client.id, [`${token} Ana Torres`, `${token} Bruno Díaz`]);
+  for (const [label, width, height] of [['desktop', 1440, 900], ['mobile', 390, 844]] as const) {
+    await page.setViewportSize({ width, height });
+    await findOnly(page, token);
+    await openAction(page, name, 'Cambiar ámbito');
+    const dialog = page.getByRole('dialog', { name: 'Cambiar ámbito' });
+    await dialog.getByLabel('Nuevo ámbito').selectOption('personal');
+    await dialog.getByRole('button', { name: 'Revisar cambio' }).click();
+    await expect(dialog).toContainText('2 contactos vinculados cambiarán su ámbito.');
+    await page.screenshot({ path: `${dir}/clients-${label}-scope-contact-impact.png` });
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
   }
 });

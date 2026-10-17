@@ -1,0 +1,177 @@
+<main class="contacts-page">
+  <div class="page-heading">
+    <h1>Contactos</h1>
+    <button type="button" class="primary" (click)="s.openCreate()" [disabled]="s.busy()"><span aria-hidden="true">＋</span> Nuevo contacto</button>
+  </div>
+
+  <div class="contact-filters">
+    <form class="search" role="search" (ngSubmit)="s.applySearch()">
+      <label class="visually-hidden" for="contact-search">Buscar contactos</label>
+      <input id="contact-search" name="query" type="search" placeholder="Buscar contactos…" maxlength="500" autocomplete="off" [ngModel]="s.query()" (ngModelChange)="s.query.set($event)" [disabled]="s.busy()">
+      @if (s.allTags().length) {
+        <details class="tag-filter"><summary>Etiquetas @if (s.filterTags().length) { <span class="selection-count">{{ s.filterTags().length }}</span> }</summary>
+          <div class="tag-filter-panel">
+            <div class="tag-list" role="group" aria-label="Filtrar por etiquetas">
+              @for (tag of s.allTags(); track tag.id) {
+                <label class="tag-option"><input type="checkbox" [checked]="s.filterTags().includes(tag.id)" (change)="s.toggleFilterTag(tag.id, $any($event.target).checked)" [disabled]="s.busy()"> <i aria-hidden="true" [style.background-color]="tag.color"></i>{{ tag.name }}</label>
+              }
+            </div>
+            <div class="tag-match">
+              <label for="contact-tag-mode">Coincidencia de etiquetas</label>
+              <select id="contact-tag-mode" name="tagMode" [ngModel]="s.filterMode()" (ngModelChange)="s.filterMode.set($event)" [disabled]="s.busy()">
+                <option value="all">Todas</option>
+                <option value="any">Cualquiera</option>
+              </select>
+              <button type="button" (click)="s.filterTags.set([])" [disabled]="s.busy() || !s.filterTags().length">Limpiar</button>
+            </div>
+          </div>
+        </details>
+      }
+      <button type="submit" [disabled]="s.busy()">Aplicar</button>
+    </form>
+    <div class="scope-filter" role="group" aria-label="Filtrar por ámbito">
+      <button type="button" [attr.aria-pressed]="s.scopeFilter() === ''" (click)="s.setScopeFilter('')">Todos</button>
+      <button type="button" [attr.aria-pressed]="s.scopeFilter() === 'work'" (click)="s.setScopeFilter('work')">Trabajo</button>
+      <button type="button" [attr.aria-pressed]="s.scopeFilter() === 'personal'" (click)="s.setScopeFilter('personal')">Personal</button>
+    </div>
+    <label class="archived-toggle"><input type="checkbox" [checked]="s.includeArchived()" (change)="s.setIncludeArchived($any($event.target).checked)"> Mostrar archivados</label>
+  </div>
+
+  @if (s.notice()) { <p class="notice" role="status">{{ s.notice() }}</p> }
+  @if (s.actionError()) { <div class="message error" role="alert">{{ s.actionError() }}</div> }
+  @if (s.listError()) {
+    <div class="message error" role="alert">{{ s.listError() }}<button type="button" (click)="s.load()" [disabled]="s.busy()">Reintentar lista</button></div>
+  }
+
+  <div class="table-scroll" role="region" aria-label="Tabla de contactos" tabindex="0" [attr.aria-busy]="s.busy()">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Nombre</th>
+          <th scope="col">Correo</th>
+          <th scope="col">Teléfono</th>
+          <th scope="col">Clientes</th>
+          <th scope="col">Ámbito</th>
+          @if (s.includeArchived()) { <th scope="col">Estado</th> }
+          <th scope="col">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (contact of s.items(); track contact.id) {
+          <tr [class.archived]="contact.archivedAt !== null">
+            <th scope="row">{{ contact.name }}@if (contact.tags.length) { <small class="row-tags">Etiquetas: {{ tagNames(contact) }}</small> }</th>
+            <td class="nowrap">{{ contact.email ?? '—' }}</td>
+            <td class="nowrap">{{ contact.phone ?? '—' }}</td>
+            <td>@for (client of contact.clients; track client.id; let last = $last) { {{ s.clientName(client) }}{{ last ? '' : ',' }} } @empty { — }</td>
+            <td>{{ s.scopeText(contact) }}</td>
+            @if (s.includeArchived()) { <td>@if (contact.archivedAt !== null) { <span class="archived-badge">Archivado</span> } @else { Activo }</td> }
+            <td><div class="actions">
+              <button type="button" (click)="s.openEdit(contact)" [disabled]="s.busy()" [attr.aria-label]="'Editar ' + contact.name">Editar</button>
+              @if (contact.archivedAt === null) {
+                <button type="button" (click)="s.setArchived(contact, true)" [disabled]="s.busy()" [attr.aria-label]="'Archivar ' + contact.name">Archivar</button>
+              } @else {
+                <button type="button" (click)="s.setArchived(contact, false)" [disabled]="s.busy()" [attr.aria-label]="'Reactivar ' + contact.name">Reactivar</button>
+              }
+              <button type="button" (click)="s.openPanel('clients', contact)" [disabled]="s.busy()" [attr.data-trigger]="'clients-' + contact.id" [attr.aria-label]="'Clientes de ' + contact.name">Clientes</button>
+              <button type="button" (click)="s.openPanel('tags', contact)" [disabled]="s.busy()" [attr.data-trigger]="'tags-' + contact.id" [attr.aria-label]="'Etiquetas de ' + contact.name">Etiquetas</button>
+            </div></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    @if (!s.items().length && !s.busy() && !s.listError()) {
+      <p class="empty">{{ s.appliedQuery() ? 'No hay contactos que coincidan con la búsqueda.' : s.scopeFilter() || s.includeArchived() || s.appliedTags().length ? 'No hay contactos con estos filtros.' : 'Aún no hay contactos.' }}</p>
+    }
+    @if (s.busy() && !s.items().length) { <p class="empty">Cargando contactos…</p> }
+  </div>
+
+  @if (s.hasPages()) {
+    <nav class="pagination" aria-label="Páginas de contactos">
+      <button type="button" (click)="s.load(s.offset() - s.pageSize)" [disabled]="s.busy() || s.offset() === 0">Anterior</button>
+      <span>{{ s.offset() + 1 }}–{{ s.offset() + s.items().length }}</span>
+      <button type="button" (click)="s.load(s.offset() + s.pageSize)" [disabled]="s.busy() || !s.hasNext()">Siguiente</button>
+    </nav>
+  }
+
+  <dialog #contactDialog class="contact-dialog" [attr.aria-label]="s.editing() ? 'Editar contacto' : 'Nuevo contacto'" (cancel)="onCancel($event)">
+    @if (s.formOpen()) {
+      <form (ngSubmit)="s.save()" novalidate>
+        <h2>{{ s.editing() ? 'Editar contacto' : 'Nuevo contacto' }}</h2>
+        <label for="contact-name">Nombre</label>
+        <input id="contact-name" name="name" required maxlength="500" autofocus autocomplete="off" [ngModel]="s.name()" (ngModelChange)="s.name.set($event)" [disabled]="s.busy()">
+        <label for="contact-email">Correo electrónico</label>
+        <input id="contact-email" name="email" type="text" inputmode="email" maxlength="254" autocomplete="off" [ngModel]="s.email()" (ngModelChange)="s.email.set($event)" [disabled]="s.busy()">
+        <label for="contact-phone">Teléfono</label>
+        <input id="contact-phone" name="phone" type="text" inputmode="tel" maxlength="50" autocomplete="off" [ngModel]="s.phone()" (ngModelChange)="s.phone.set($event)" [disabled]="s.busy()">
+        <label for="contact-observations">Observaciones</label>
+        <textarea id="contact-observations" name="observations" rows="4" [ngModel]="s.observations()" (ngModelChange)="s.observations.set($event)" [disabled]="s.busy()"></textarea>
+        <p class="hint">Los clientes y las etiquetas se gestionan desde la lista, con sus propias acciones.</p>
+        @if (s.formError()) {
+          <div class="message error" role="alert">{{ s.formError() }}
+            @if (s.conflict()) { <button type="button" (click)="s.reloadSaved()" [disabled]="s.busy()">Cargar versión guardada</button> }
+          </div>
+        }
+        <footer>
+          <button type="button" (click)="s.cancel()" [disabled]="s.busy()">Cancelar</button>
+          <button type="submit" class="primary" [disabled]="s.busy()">{{ s.busy() ? 'Procesando…' : 'Guardar contacto' }}</button>
+        </footer>
+      </form>
+    }
+  </dialog>
+
+  <dialog #panelDialog class="contact-dialog panel-dialog" [attr.aria-label]="s.panel() === 'clients' ? 'Clientes del contacto' : 'Etiquetas del contacto'" (cancel)="onPanelCancel($event)">
+    @if (s.panel(); as panel) {
+      @if (s.panelContact(); as contact) {
+        <div class="panel-body">
+          @if (panel === 'clients') {
+            <h2>Clientes del contacto</h2>
+            <p class="panel-contact">{{ contact.name }}</p>
+            <label for="client-filter">Buscar cliente</label>
+            <input id="client-filter" name="clientSearch" type="search" maxlength="500" autocomplete="off" [ngModel]="s.clientSearch()" (ngModelChange)="s.clientSearch.set($event)" [disabled]="s.busy()">
+            <label class="archived-toggle"><input type="checkbox" [checked]="s.showArchivedClients()" (change)="s.showArchivedClients.set($any($event.target).checked)"> Mostrar clientes archivados</label>
+            @if (s.visibleClients().length) {
+              <div class="tag-list" role="group" aria-label="Clientes disponibles">
+                @for (client of s.visibleClients(); track client.id) {
+                  <label class="tag-option"><input type="checkbox" [checked]="s.clientSelection().includes(client.id)" (change)="s.toggleClient(client.id, $any($event.target).checked)" [disabled]="s.busy()"> {{ s.clientName(client, false) }}<small>{{ client.scope === 'work' ? 'Trabajo' : 'Personal' }}</small></label>
+                }
+              </div>
+            } @else { <p class="hint">No hay clientes para mostrar.</p> }
+            <p class="hint">Guardar no reactiva clientes archivados. Un contacto sin clientes queda libre.</p>
+          } @else {
+            <h2>Etiquetas del contacto</h2>
+            <p class="panel-contact">{{ contact.name }}</p>
+            @if (s.allTags().length) {
+              <div class="tag-list" role="group" aria-label="Etiquetas disponibles">
+                @for (tag of s.allTags(); track tag.id) {
+                  <label class="tag-option"><input type="checkbox" [checked]="s.tagSelection().includes(tag.id)" (change)="s.toggleTag(tag.id, $any($event.target).checked)" [disabled]="s.busy()"> <i aria-hidden="true" [style.background-color]="tag.color"></i>{{ tag.name }}</label>
+                }
+              </div>
+            } @else { <p class="hint">Aún no hay etiquetas. Crea la primera.</p> }
+            <div class="new-tag">
+              <label for="new-tag-name">Nueva etiqueta</label>
+              <div class="new-tag-row">
+                <input id="new-tag-name" name="newTagName" maxlength="100" autocomplete="off" [ngModel]="s.newTagName()" (ngModelChange)="s.newTagName.set($event)" (keydown.enter)="$event.preventDefault(); s.createTag()" [disabled]="s.busy()">
+                <input type="color" aria-label="Color de la nueva etiqueta" [value]="s.newTagColor() || '#000000'" (input)="s.newTagColor.set($any($event.target).value)" [class.unset]="!s.newTagColor()" [disabled]="s.busy()">
+                <button type="button" (click)="s.createTag()" [disabled]="s.busy() || !s.newTagName().trim()" aria-label="Crear etiqueta">Crear</button>
+              </div>
+              @if (s.newTagColor()) { <button type="button" class="link" (click)="s.newTagColor.set('')">Quitar color</button> } @else { <span class="hint">Sin color</span> }
+            </div>
+          }
+          @if (s.panelError()) {
+            <div class="message error" role="alert">{{ s.panelError() }}
+              @if (s.panelConflict()) { <button type="button" (click)="s.reloadPanelContact()" [disabled]="s.busy()">Cargar versión vigente</button> }
+            </div>
+          }
+          <footer>
+            <button type="button" (click)="s.closePanel()" [disabled]="s.busy()" data-autofocus>Cancelar</button>
+            @if (panel === 'clients') {
+              <button type="button" class="primary" (click)="s.saveClients()" [disabled]="s.busy() || !s.clientsDirty()">{{ s.busy() ? 'Procesando…' : 'Guardar clientes' }}</button>
+            } @else {
+              <button type="button" class="primary" (click)="s.saveTags()" [disabled]="s.busy() || !s.tagsDirty()">{{ s.busy() ? 'Procesando…' : 'Guardar etiquetas' }}</button>
+            }
+          </footer>
+        </div>
+      }
+    }
+  </dialog>
+</main>

@@ -79,6 +79,10 @@ export class ClientsStore {
     for (const effect of preview.effects) {
       if (effect.code === 'CHANGE_CLIENT_SCOPE') {
         lines.push(`«${client.fullName}» pasará de ${this.label(this.scopeDetail(effect.details?.['fromScope'], client.scope))} a ${this.label(this.scopeDetail(effect.details?.['toScope'], this.scopeTarget() || client.scope))}.`);
+      } else if (effect.code === 'CHANGE_CONTACT_SCOPES') {
+        const raw = effect.details?.['count'];
+        const count = typeof raw === 'number' && Number.isInteger(raw) && raw >= 0 ? raw : effect.targets.length;
+        lines.push(count === 1 ? '1 contacto vinculado cambiará su ámbito.' : `${count} contactos vinculados cambiarán su ámbito.`);
       } else generic = true;
     }
     if (generic) lines.push('Este cambio también afecta a otros elementos relacionados con el cliente.');

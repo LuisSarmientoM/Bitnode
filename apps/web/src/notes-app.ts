@@ -5,11 +5,12 @@ import { ApiError, apiRequest, notesRequest, setCsrf, type Note, type NotePage, 
 import { LiveMarkdown } from './live-markdown';
 import { markdownText } from './markdown';
 import { ClientsPage } from './clients-page';
+import { ContactsPage } from './contacts-page';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [FormsModule, DatePipe, LiveMarkdown, ClientsPage],
+  imports: [FormsModule, DatePipe, LiveMarkdown, ClientsPage, ContactsPage],
   templateUrl: './notes-app.html',
   styles: `
     main[hidden] { display: none; }
@@ -18,7 +19,7 @@ import { ClientsPage } from './clients-page';
     .nav-item[aria-current='page'] { border-color: #244c3d; background: #192c23; color: #ceefdf; }
     .nav-item > span:first-child { color: #07b478; }
     .nav-dirty { margin-left: auto; color: #ff9676; font-size: 10px; }
-    @media (max-width: 760px) { .module-nav { flex-direction: row; } .nav-item { padding: 7px 12px; font-size: 12px; } }
+    @media (max-width: 760px) { .module-nav { flex-direction: row; gap: 4px; } .nav-item { width: auto; flex: 1 1 0; min-width: 0; justify-content: center; gap: 6px; padding: 7px 6px; font-size: 12px; } }
   `,
 })
 export class NotesApp {
@@ -28,7 +29,7 @@ export class NotesApp {
   readonly password = signal('');
   private notesReady = false;
   /** Notes stay mounted (hidden) in other views so an unsaved draft is never destroyed. */
-  readonly view = signal<'notes' | 'clients'>('notes');
+  readonly view = signal<'notes' | 'clients' | 'contacts'>('notes');
   readonly items = signal<Note[]>([]);
   readonly total = signal(0);
   readonly offset = signal(0);
@@ -143,7 +144,7 @@ export class NotesApp {
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) { this.closeTagPanels(event.composedPath()); }
 
-  showView(view: 'notes' | 'clients') {
+  showView(view: 'notes' | 'clients' | 'contacts') {
     if (this.view() === view || this.busy()) return;
     this.view.set(view);
   }
