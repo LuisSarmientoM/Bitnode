@@ -81,11 +81,15 @@ Comando enfocado, timeout 30 segundos, fixtures aisladas:
 
 RED: código 1, 28 pasan y 7 fallan por rutas/métodos/migración ausentes, campo undefined y versión 6 en lugar de 7. GREEN: código 0, 35 pasan y 0 fallan. Reloj controlado, no-op, descendencia multinivel en los cuatro estados abiertos, cancelled→done, ancestros/proyecto cerrados, rollback tras UPDATE y rollback transaccional del ALTER cubiertos. Verificación del padre sobre esta unidad junto con la UI de reparentado sin confirmar: `npm run typecheck` correcto, `npm test` con 168 pruebas aprobadas y cero fallos, y 13 E2E de Tareas aprobados. No se ejecutó base real ni pruebas multiproceso. Abrir la base local real con esta versión la migraría a v7; no se hizo.
 
+Revisión `review-4cad1f83d4db7387`, sobre `3456380..952efa6`, aprobada con cuatro lentes y reconocida, sin correcciones. Verificación independiente por tratarse de una migración: PASS en conservación de filas, rollback a v6, rechazo de v8, rechazo de v7 por el binario anterior, reglas de change-state y rutas existentes sin cambios. La prueba de rollback se hace sobre la migración aislada, no dentro de `openNotes`.
+
 ## Web de cambiar y quitar padre
 
 "Cambiar padre" abre un diálogo con el selector "Nuevo padre" y la opción "Sin padre". Los candidatos se cargan recorriendo todas las páginas del proyecto, sin el tope de 200 de la lista, y excluyen la tarea y sus descendientes. Esa lectura no es una instantánea transaccional; el backend vuelve a validar ciclos, proyecto y revisiones al guardar. "Sin padre" usa detach. Las revisiones de la tarea y del padre se toman al abrir y no se refrescan al enviar; ante conflicto o error de red se conserva la selección.
 
 E2E: RED real, código 1 por ausencia del botón Cambiar padre. La primera pasada GREEN falló (12 aprobadas, 1 fallida) porque la preparación cerraba un proyecto con tareas abiertas, algo que `HAS_OPEN_TASKS` impide. La prueba ahora completa las tareas reales con change-state antes de cerrar el proyecto. Resultado final: 13 E2E de Tareas aprobados, con más de 200 candidatos paginados, viewport móvil, conservación de proyecto/estado/descendientes, separación en proyecto cerrado y revisión obsoleta.
+
+Revisión `review-11d38cce0d7d63e9`, sobre `952efa6..4a2be30`, aprobada con tres lentes y reconocida. Sin correcciones; observaciones no bloqueantes de legibilidad y fiabilidad de pruebas.
 
 ## Cancelar y reabrir con efectos aceptados, cuarta unidad backend
 
@@ -106,8 +110,10 @@ Comando enfocado, timeout 30 segundos, fixtures aisladas:
 - RED: código 1, 35 pasan y 12 fallan (parsers, preview y métodos inexistentes).
 - GREEN: código 0, 47 pasan y 0 fallan, 2,77 s. Cubre digest estable ante orden y sensible a revisión, objetivo y operación; aceptación correcta; PREVIEW_CHANGED tras crear hija, reabrir una cerrada, cambiar una revisión de descendiente o de ancestro y cambiar el proyecto; rollback con trigger de fixture; cerrados intactos; `lastCompletedAt` conservado al cancelar y limpiado al reabrir; cliente archivado; reactivación con revisión +1; y HTTP 200/409/404.
 - Verificación del padre: `npm run typecheck` correcto, `npm test` con 180 pruebas aprobadas y cero fallos (con `pipefail`), y 13 E2E de Tareas aprobados. Sin base real ni concurrencia multiproceso.
+- Revisión `review-8bc67c599bd773da`, sobre `4a2be30..8f7586e`, aprobada con cuatro lentes y reconocida, sin correcciones. Verificación independiente por concurrencia y por cambiar el estado de proyectos: PASS en recálculo dentro de IMMEDIATE, digest, cancelación, reapertura, compatibilidad con la reactivación de T6, rutas existentes y forma HTTP igual a Clientes.
+- Límite conocido: la aceptación admite como máximo 1000 targets (`MAX_TARGETS`). Una rama con más de 1000 descendientes abiertos no podría cancelarse desde la API; queda como trabajo posterior, junto con las observaciones de baja severidad: una aceptación sin efectos pendientes se ignora en silencio, `contratos.md` describe `datasetGeneration` y `{type,id,revision}` mientras la implementación usa `details.revisions`, y cancelar una tarea completada en un proyecto cerrado no exige reactivarlo.
 - Tamaño: unas 476 líneas authored, por encima del presupuesto de ~400. Se confirma como un solo commit porque cancelar y reabrir comparten preview, digest y aceptación; separarlos dejaría la infraestructura de aceptación en un commit y su segundo consumidor en otro.
 
 ## Continuación
 
-Tras verificar y revisar esta unidad, queda la UI de estados, cancelación y reapertura, con su propia unidad. La forma de aceptación está duplicada de `client-scope.ts` porque allí no es genérica; extraerla exige editar ese módulo. Traslados entre proyectos quedan en T11. Sin push ni merge; las bases y certificados de prueba son temporales. Las aprobaciones registradas se limitan a creación backend y su UI, no al reparentado ni al resto de T8.
+Tras verificar y revisar esta unidad, queda la UI de estados, cancelación y reapertura, con su propia unidad. La forma de aceptación está duplicada de `client-scope.ts` porque allí no es genérica; extraerla exige editar ese módulo. Traslados entre proyectos quedan en T11. Sin push ni merge; las bases y certificados de prueba son temporales. Las aprobaciones registradas cubren cada commit por separado, no el acumulado de la rama.

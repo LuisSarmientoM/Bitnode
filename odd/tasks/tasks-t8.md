@@ -22,9 +22,9 @@ Permitir subtareas multinivel y cambios de jerarquía dentro del mismo proyecto,
 - [x] Commit local de tercera unidad `952efa6`.
 - [x] Revisión nativa de tercera unidad `review-4cad1f83d4db7387`, aprobada y reconocida; verificador independiente PASS en migración, rollback, change-state y rutas existentes.
 - [x] UI de cambiar/quitar padre: RED por botón ausente, preparación E2E corregida, 13 E2E de Tareas aprobados.
-- [ ] Revisión nativa de UI de reparentado.
+- [x] Revisión nativa de UI de reparentado `review-11d38cce0d7d63e9`, aprobada y reconocida.
 - [x] Cancelar con CANCEL_DESCENDANTS aceptado, conservando cerrados y última finalización, y reabrir a in_progress con REOPEN_ANCESTORS/REACTIVATE_PROJECT aceptados, limpieza de finalización y cliente archivado bloqueante. Backend/API: RED 12/47, GREEN 47/47. Padre: typecheck correcto, 180/180 pruebas y 13 E2E. ~476 líneas en un commit, por encima del presupuesto.
-- [ ] Revisión nativa y verificación independiente de cancelar/reabrir (reactiva proyectos y recalcula efectos bajo concurrencia).
+- [x] Commit `8f7586e`; revisión `review-8bc67c599bd773da` aprobada y reconocida; verificador independiente PASS. Límite conocido: MAX_TARGETS=1000.
 - [ ] Typecheck, suite completa, revisión y commit de cuarta unidad, a cargo del padre.
 - [ ] UI de estados, cancelación y reapertura con vista previa y aceptación.
 - [ ] Adaptar UI T7 tras comandos y contratos revisados.
