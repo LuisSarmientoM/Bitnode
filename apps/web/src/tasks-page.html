@@ -22,6 +22,7 @@
       <thead>
         <tr>
           <th scope="col">Título</th>
+          <th scope="col">Estado</th>
           <th scope="col">Proyecto</th>
           <th scope="col">Prioridad</th>
           <th scope="col">Planificación</th>
@@ -30,17 +31,69 @@
         </tr>
       </thead>
       <tbody>
-        @for (task of s.items(); track task.id) {
+        @for (row of s.rows(); track row.key) {
+          @let task = row.task;
+          @if (row.kind === 'more') {
+            <tr class="more-row">
+              <td colspan="7" [style.--depth]="row.depth">
+                <button type="button" (click)="s.loadMore(task)" [disabled]="s.loadingNodes().has(task.id)" [attr.aria-label]="'Cargar más subtareas de ' + task.title">Cargar más</button>
+              </td>
+            </tr>
+          } @else {
           <tr>
-            <th scope="row">{{ task.title }}@if (s.hasWarning(task)) { <small class="row-warning">La planificación es posterior al límite.</small> }</th>
+            <th scope="row" [style.--depth]="row.depth">
+              @if (task.childCount) {
+                <button type="button" class="tree-toggle" (click)="s.toggleNode(task)" [disabled]="s.loadingNodes().has(task.id)"
+                  [attr.aria-expanded]="s.expanded().has(task.id)" [attr.aria-label]="'Subtareas de ' + task.title" [attr.aria-describedby]="'count-' + task.id">
+                  <span aria-hidden="true">{{ s.expanded().has(task.id) ? '▾' : '▸' }}</span> {{ task.childCount }}
+                </button>
+                <span class="visually-hidden" [id]="'count-' + task.id">{{ task.childCount }} subtareas</span>
+              } @else { <span class="tree-spacer" aria-hidden="true"></span> }
+              {{ task.title }}@if (s.hasWarning(task)) { <small class="row-warning">La planificación es posterior al límite.</small> }</th>
+            <td>
+              <button type="button" class="state-badge" [class]="'state-' + task.state" [id]="'task-badge-' + task.id" aria-haspopup="menu"
+                [attr.aria-expanded]="s.menuFor() === task.id" [attr.aria-label]="'Cambiar estado de ' + task.title + ': ' + s.stateLabel(task.state)"
+                (click)="s.toggleMenu(task, $event.currentTarget)" [disabled]="s.busy()">{{ s.stateLabel(task.state) }}</button>
+              @if (s.menuFor() === task.id) {
+                <div class="state-menu" role="menu" [attr.aria-label]="'Estado de ' + task.title" [style.left.px]="s.menuPos().left" [style.top.px]="s.menuPos().top" (keydown)="onMenuKey($event)">
+                  @for (item of s.menuItems(task); track item.id) {
+                    <button type="button" role="menuitem" [class.danger]="item.id === 'cancel'" (click)="s.pickMenuItem(task, item.id)">{{ item.label }}</button>
+                  }
+                </div>
+              }
+            </td>
             <td>{{ task.context.projectName }}<small class="row-context">{{ task.context.clientName }}</small></td>
             <td>{{ s.priorityLabel(task.priority) }}</td>
             <td>{{ formatDate(task.planned) }}</td>
             <td>{{ formatDate(task.due) }}</td>
             <td><div class="actions">
               <button type="button" (click)="s.openEdit(task)" [disabled]="s.busy()" [attr.aria-label]="'Editar ' + task.title">Editar</button>
+              <button type="button" (click)="s.openSubtask(task)" [disabled]="s.busy()">Crear subtarea</button>
+              <button type="button" (click)="s.openHierarchy(task)" [disabled]="s.busy()">Cambiar padre</button>
             </div></td>
           </tr>
+          @if (s.effect(); as pending) {
+            @if (pending.inRow && pending.task.id === task.id) {
+              <tr class="effect-row">
+                <td colspan="7">
+                  <section class="warning" [attr.aria-label]="pending.kind === 'cancel' ? 'Confirmar cancelación' : 'Confirmar reapertura'">
+                    @if (s.effectNotice()) { <p class="message error" role="alert">{{ s.effectNotice() }}</p> }
+                    @for (line of s.effectLines(); track $index) { <p>{{ line }}</p> }
+                    <div class="actions">
+                      <button type="button" id="task-row-confirm" class="primary" (click)="s.confirmEffect()" [disabled]="s.busy()">Confirmar</button>
+                      <button type="button" (click)="s.dismissEffect()" [disabled]="s.busy()">Volver</button>
+                    </div>
+                  </section>
+                </td>
+              </tr>
+            }
+          }
+          @if (s.rowMessage(); as note) {
+            @if (note.id === task.id) {
+              <tr class="effect-row"><td colspan="7"><p class="message error" role="alert">{{ note.text }}</p></td></tr>
+            }
+          }
+          }
         }
       </tbody>
     </table>
@@ -58,14 +111,59 @@
     </nav>
   }
 
-  <dialog #taskDialog class="task-dialog" [attr.aria-label]="s.editing() ? 'Editar tarea' : 'Nueva tarea'" (cancel)="onCancel($event)">
-    @if (s.formOpen()) {
+  <dialog #taskDialog class="task-dialog" [attr.aria-label]="s.hierarchyTarget() ? 'Cambiar padre' : s.editing() ? 'Editar tarea' : s.parent() ? 'Nueva subtarea' : 'Nueva tarea'" (cancel)="onCancel($event)">
+    @if (s.formOpen() && s.hierarchyTarget(); as task) {
+      <form (ngSubmit)="s.saveHierarchy()" novalidate>
+        <h2>Cambiar padre</h2>
+        <p class="breadcrumb">{{ task.title }}</p>
+        <p class="breadcrumb">{{ task.context.projectName }} / {{ task.context.clientName }}</p>
+        <label for="task-parent">Nuevo padre</label>
+        <select id="task-parent" name="parentId" [ngModel]="s.selectedParentId()" (ngModelChange)="s.selectedParentId.set($event)" [disabled]="s.busy()">
+          <option value="">Sin padre</option>
+          @for (candidate of s.parentOptions(); track candidate.id) {
+            <option [value]="candidate.id">{{ candidate.title }}</option>
+          }
+        </select>
+        <p class="hint">Solo tareas del mismo proyecto. Se conservan proyecto, estados y descendientes. Reabre el nuevo padre y sus ancestros cerrados antes de cambiarlo.</p>
+        @if (s.formError()) { <div class="message error" role="alert">{{ s.formError() }}</div> }
+        <footer>
+          <button type="button" (click)="s.cancel()" [disabled]="s.busy()">Cancelar</button>
+          <button type="submit" class="primary" [disabled]="s.busy()">{{ s.busy() ? 'Procesando…' : 'Guardar padre' }}</button>
+        </footer>
+      </form>
+    } @else if (s.formOpen()) {
       <form (ngSubmit)="s.save()" novalidate>
-        <h2>{{ s.editing() ? 'Editar tarea' : 'Nueva tarea' }}</h2>
+        <h2>{{ s.editing() ? 'Editar tarea' : s.parent() ? 'Nueva subtarea' : 'Nueva tarea' }}</h2>
+        @if (s.parent(); as parent) {
+          <p class="breadcrumb">Padre: {{ parent.title }}</p>
+        }
         @if (s.editing(); as task) {
           <p class="breadcrumb">{{ task.context.projectName }} / {{ task.context.clientName }}</p>
-          <p class="readonly-field"><span>Estado</span> <strong>{{ s.stateLabel(task.state) }}</strong></p>
+          <label for="task-state">Estado</label>
+          <select id="task-state" name="state" [ngModel]="s.selectedState()" (ngModelChange)="s.selectedState.set($event)" [disabled]="s.busy()">
+            @if (task.state === 'cancelled') { <option value="cancelled" disabled>{{ s.stateLabel('cancelled') }}</option> }
+            @for (option of stateOptions; track option) { <option [value]="option">{{ s.stateLabel(option) }}</option> }
+          </select>
+          <div class="actions">
+            <button type="button" (click)="s.applyState()" [disabled]="s.busy() || s.selectedState() === 'cancelled'">Aplicar estado</button>
+            @if (task.state !== 'cancelled') { <button type="button" id="task-cancel" (click)="s.requestEffect('cancel')" [disabled]="s.busy()">Cancelar tarea</button> }
+            @if (!s.isOpen(task)) { <button type="button" id="task-reopen" (click)="s.requestEffect('reopen')" [disabled]="s.busy()">Reabrir</button> }
+          </div>
+          @if (s.formNotice()) { <p class="hint" role="status">{{ s.formNotice() }}</p> }
+          @if (s.effect(); as pending) {
+            <section class="warning" [attr.aria-label]="pending.kind === 'cancel' ? 'Confirmar cancelación' : 'Confirmar reapertura'">
+              @for (line of s.effectLines(); track $index) { <p>{{ line }}</p> }
+              <div class="actions">
+                <button type="button" id="task-effect-confirm" class="primary" (click)="s.confirmEffect()" [disabled]="s.busy()">Confirmar</button>
+                <button type="button" (click)="s.dismissEffect()" [disabled]="s.busy()">Volver</button>
+              </div>
+            </section>
+          }
           @if (s.hasWarning(task)) { <p class="warning" role="status">La planificación es posterior al límite.</p> }
+        } @else if (s.parent(); as parent) {
+          <p class="readonly-field"><span>Proyecto</span> <strong>{{ parent.context.projectName }}</strong></p>
+          <p class="breadcrumb">{{ parent.context.clientName }}</p>
+          <p class="hint">El proyecto es el del padre. Reabre el padre y sus ancestros cerrados antes de crear la subtarea.</p>
         } @else {
           <label for="task-project">Proyecto</label>
           <select id="task-project" name="projectId" required [ngModel]="s.projectId()" (ngModelChange)="s.projectId.set($event)" [disabled]="s.busy()">
@@ -121,7 +219,7 @@
         </div>
         @if (s.formError()) {
           <div class="message error" role="alert">{{ s.formError() }}
-            @if (s.conflict()) { <button type="button" (click)="s.reloadSaved()" [disabled]="s.busy()">Cargar versión guardada</button> }
+            @if (s.conflict() && s.editing()) { <button type="button" (click)="s.reloadSaved()" [disabled]="s.busy()">Cargar versión guardada</button> }
           </div>
         }
         <footer>

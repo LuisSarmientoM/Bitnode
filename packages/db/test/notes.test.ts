@@ -71,9 +71,9 @@ test('rechaza bases de una versión futura sin modificar sus tablas', () => {
   const path = join(directory, 'notes.sqlite');
   const future = new Database(path);
   try {
-    future.exec('PRAGMA user_version = 7; CREATE TABLE future_data (value TEXT);');
+    future.exec('PRAGMA user_version = 8; CREATE TABLE future_data (value TEXT);');
     assert.throws(() => openNotes(path), /versión más reciente/);
-    assert.equal(future.pragma('user_version', { simple: true }), 7);
+    assert.equal(future.pragma('user_version', { simple: true }), 8);
     assert.ok(future.prepare("SELECT name FROM sqlite_master WHERE name = 'future_data'").get());
   } finally {
     future.close();

@@ -6,7 +6,7 @@ export type { Tag } from '../../../packages/core/src/tag-types';
  * type: the Angular compiler would pull that module (node:crypto, .ts import paths) into the web build.
  */
 export interface ScopePreview {
-  operation: 'client.change_scope';
+  operation: 'client.change_scope' | 'task.cancel' | 'task.reopen';
   targetId: string;
   previewDigest: string;
   effects: { code: string; targets: string[]; details?: Record<string, string | number | null> }[];
@@ -35,7 +35,7 @@ const isScalar = (value: unknown) => value === null || typeof value === 'string'
 /** The server preview is untrusted input: keep it only when it is well formed, so a malformed one never enables Confirm. */
 function scopePreviewOf(value: unknown): ScopePreview | undefined {
   const preview = value as Partial<ScopePreview> | null | undefined;
-  if (!preview || typeof preview !== 'object' || preview.operation !== 'client.change_scope'
+  if (!preview || typeof preview !== 'object' || !['client.change_scope', 'task.cancel', 'task.reopen'].includes(preview.operation as string)
     || typeof preview.targetId !== 'string' || typeof preview.previewDigest !== 'string' || !DIGEST.test(preview.previewDigest)
     || !Array.isArray(preview.effects)) return undefined;
   const effects = preview.effects.every(effect => {

@@ -2,7 +2,8 @@ import type Database from 'better-sqlite3';
 import { randomUUID } from 'node:crypto';
 import { DomainError } from '../../core/src/notes.ts';
 import {
-  taskInput, taskPatch, taskWarnings,
+  OPEN_TASK_STATES, TaskConfirmationError, taskAcceptanceMatches, taskCancel, taskChangeState, taskDetach, taskInput, taskPatch,
+  taskPreview, taskReopen, taskReparent, taskWarnings, type TaskAcceptance,
   type ReferenceInput, type Task, type TaskDate, type TaskPriority, type TaskReference, type TaskState, type TasksRepository,
 } from '../../core/src/tasks.ts';
 
@@ -47,17 +48,25 @@ export function migrateTasks(sqlite: Database.Database) {
   PRAGMA user_version = 6;`);
 }
 
+/** Upgrade v6 in place; historical completion instants are unknown and stay null. */
+export function migrateTaskStates(sqlite: Database.Database) {
+  sqlite.exec(`ALTER TABLE tasks ADD COLUMN last_completed_at INTEGER;
+    PRAGMA user_version = 7;`);
+}
+
 interface Row {
   id: string; projectId: string; parentId: string | null; title: string; description: string; state: TaskState;
   priority: TaskPriority; plannedKind: string | null; plannedDay: string | null; plannedAt: number | null;
   dueKind: string | null; dueDay: string | null; dueAt: number | null; revision: number; createdAt: number; updatedAt: number;
+  lastCompletedAt: number | null; childCount: number;
   projectName: string; clientId: string; clientName: string;
 }
 
 const columns = `t.id, t.project_id AS projectId, t.parent_id AS parentId, t.title, t.description, t.state, t.priority,
   t.planned_kind AS plannedKind, t.planned_day AS plannedDay, t.planned_at AS plannedAt,
   t.due_kind AS dueKind, t.due_day AS dueDay, t.due_at AS dueAt,
-  t.revision, t.created_at AS createdAt, t.updated_at AS updatedAt,
+  t.revision, t.created_at AS createdAt, t.updated_at AS updatedAt, t.last_completed_at AS lastCompletedAt,
+  (SELECT count(*) FROM tasks c WHERE c.parent_id = t.id) AS childCount,
   p.name AS projectName, p.client_id AS clientId, c.full_name AS clientName`;
 const from = 'tasks t JOIN projects p ON p.id = t.project_id JOIN clients c ON c.id = p.client_id';
 
@@ -77,7 +86,8 @@ export function taskStore(sqlite: Database.Database): TasksRepository {
       id: row.id, projectId: row.projectId, parentId: row.parentId, title: row.title, description: row.description,
       state: row.state, priority: row.priority, planned, due, references: references(row.id), warnings: taskWarnings(planned, due),
       context: { projectId: row.projectId, projectName: row.projectName, clientId: row.clientId, clientName: row.clientName },
-      revision: row.revision, createdAt: row.createdAt, updatedAt: row.updatedAt,
+      revision: row.revision, createdAt: row.createdAt, updatedAt: row.updatedAt, lastCompletedAt: row.lastCompletedAt,
+      childCount: row.childCount,
     };
   };
   const get = (id: string) => {
@@ -97,16 +107,82 @@ export function taskStore(sqlite: Database.Database): TasksRepository {
     const insert = sqlite.prepare('INSERT INTO task_references (id, task_id, url, name, position) VALUES (?, ?, ?, ?, ?)');
     next.forEach((reference, position) => insert.run(reference.id ?? randomUUID(), taskId, reference.url, reference.name, position));
   };
+  const checkParent = (projectId: string, parentId: string, revision: number, closedAction: string, movingId?: string) => {
+    const parent = get(parentId);
+    if (parent.projectId !== projectId) {
+      throw new DomainError('PARENT_PROJECT_MISMATCH', 'El padre debe pertenecer al mismo proyecto.');
+    }
+    if (parent.revision !== revision) {
+      throw new DomainError('REVISION_CONFLICT', 'El padre cambió. Vuelve a abrir la versión guardada.');
+    }
+    // UNION terminates even when an externally corrupted database already contains a cycle.
+    const ancestors = sqlite.prepare(`WITH RECURSIVE ancestors(id, parent_id, state) AS (
+      SELECT id, parent_id, state FROM tasks WHERE id = ?
+      UNION
+      SELECT t.id, t.parent_id, t.state FROM tasks t JOIN ancestors a ON t.id = a.parent_id
+    ) SELECT id, state FROM ancestors`).all(parentId) as { id: string; state: TaskState }[];
+    if (ancestors.some(ancestor => ancestor.id === movingId)) {
+      throw new DomainError('HIERARCHY_CYCLE', 'La tarea no puede adoptar como padre a sí misma ni a un descendiente.');
+    }
+    if (ancestors.some(ancestor => !OPEN_TASK_STATES.includes(ancestor.state))) {
+      throw new DomainError('PARENT_CLOSED', `Reabre explícitamente el padre y sus ancestros cerrados antes de ${closedAction}.`);
+    }
+  };
+  type Target = { id: string; revision: number };
+  // Both sets are re-read inside the write transaction, so the preview digest covers current membership and revisions.
+  const openDescendants = (id: string) => sqlite.prepare(`WITH RECURSIVE branch(id) AS (
+    SELECT id FROM tasks WHERE parent_id = ?
+    UNION
+    SELECT t.id FROM tasks t JOIN branch b ON t.parent_id = b.id
+  ) SELECT t.id, t.revision FROM tasks t JOIN branch b ON t.id = b.id WHERE t.state IN ('new', 'in_progress', 'blocked', 'in_review')`).all(id) as Target[];
+  const closedAncestors = (parentId: string) => sqlite.prepare(`WITH RECURSIVE ancestors(id, parent_id) AS (
+    SELECT id, parent_id FROM tasks WHERE id = ?
+    UNION
+    SELECT t.id, t.parent_id FROM tasks t JOIN ancestors a ON t.id = a.parent_id
+  ) SELECT t.id, t.revision FROM tasks t JOIN ancestors a ON t.id = a.id WHERE t.state IN ('done', 'cancelled')`).all(parentId) as Target[];
+  const requireAcceptance = (operation: 'task.cancel' | 'task.reopen', task: Target, effects: { code: string; targets: Target[] }[],
+    acceptance: TaskAcceptance | undefined, message: string) => {
+    const preview = taskPreview(operation, task, effects);
+    if (!acceptance) throw new TaskConfirmationError('CONFIRMATION_REQUIRED', message, preview);
+    if (!taskAcceptanceMatches(preview, acceptance)) {
+      throw new TaskConfirmationError('PREVIEW_CHANGED', 'Los efectos cambiaron desde la vista previa. Revisa la vista previa actual.', preview);
+    }
+  };
+  const changeParent = (id: string, revision: number, parentId: string | null, parentRevision?: number) =>
+    sqlite.transaction(() => {
+      const found = get(id);
+      if (found.revision !== revision) {
+        throw new DomainError('REVISION_CONFLICT', 'La tarea cambió. Vuelve a abrir la versión guardada.');
+      }
+      if (parentId !== null) {
+        const project = sqlite.prepare('SELECT state FROM projects WHERE id = ?').get(found.projectId) as { state: string };
+        if (project.state !== 'active' && project.state !== 'paused') {
+          throw new DomainError('PROJECT_CLOSED', 'Reactiva el proyecto antes de reparentar tareas.');
+        }
+        checkParent(found.projectId, parentId, parentRevision!, 'cambiar la jerarquía', id);
+      }
+      if (found.parentId === parentId) return found;
+      sqlite.prepare(`UPDATE tasks SET parent_id = ?, revision = revision + 1, updated_at = ?
+        WHERE id = ? AND revision = ?`).run(parentId, Date.now(), id, revision);
+      return get(id);
+    }).immediate();
   return {
     list(offset, limit, query = { projectId: undefined }) {
-      const projectId = query.projectId ?? null;
-      return sqlite.transaction(() => ({
-        items: (sqlite.prepare(`SELECT ${columns} FROM ${from} WHERE (@projectId IS NULL OR t.project_id = @projectId)
-          ORDER BY t.created_at DESC, t.id LIMIT @limit OFFSET @offset`).all({ projectId, limit, offset }) as Row[]).map(toTask),
-        total: (sqlite.prepare('SELECT count(*) AS count FROM tasks WHERE (@projectId IS NULL OR project_id = @projectId)')
-          .get({ projectId }) as { count: number }).count,
-        offset, limit,
-      }))();
+      const filter = { projectId: query.projectId ?? null, roots: query.roots ? 1 : 0, parentId: query.parentId ?? null };
+      return sqlite.transaction(() => {
+        if (filter.parentId !== null) get(filter.parentId);
+        // Children read oldest first so a branch keeps creation order; every other listing is newest first.
+        return {
+          items: (sqlite.prepare(`SELECT ${columns} FROM ${from} WHERE (@projectId IS NULL OR t.project_id = @projectId)
+            AND (@roots = 0 OR t.parent_id IS NULL) AND (@parentId IS NULL OR t.parent_id = @parentId)
+            ORDER BY CASE WHEN @parentId IS NULL THEN -t.created_at ELSE t.created_at END, t.id LIMIT @limit OFFSET @offset`)
+            .all({ ...filter, limit, offset }) as Row[]).map(toTask),
+          total: (sqlite.prepare(`SELECT count(*) AS count FROM tasks WHERE (@projectId IS NULL OR project_id = @projectId)
+            AND (@roots = 0 OR parent_id IS NULL) AND (@parentId IS NULL OR parent_id = @parentId)`)
+            .get(filter) as { count: number }).count,
+          offset, limit,
+        };
+      })();
     },
     get: id => sqlite.transaction(() => get(id))(),
     create(value) {
@@ -117,12 +193,117 @@ export function taskStore(sqlite: Database.Database): TasksRepository {
         if (project.state !== 'active' && project.state !== 'paused') {
           throw new DomainError('PROJECT_CLOSED', 'El proyecto está completado o archivado; reactívalo antes de crear tareas.');
         }
+        if (input.parentId !== null) checkParent(input.projectId, input.parentId, input.parentRevision!, 'crear la subtarea');
         const id = randomUUID();
         const now = Date.now();
         sqlite.prepare(`INSERT INTO tasks (id, project_id, parent_id, title, description, state, priority,
           planned_kind, planned_day, planned_at, due_kind, due_day, due_at, revision, created_at, updated_at)
-          VALUES (?, ?, NULL, ?, ?, 'new', 'none', ?, ?, ?, ?, ?, ?, 1, ?, ?)`).run(id, input.projectId, input.title,
+          VALUES (?, ?, ?, ?, ?, 'new', 'none', ?, ?, ?, ?, ?, ?, 1, ?, ?)`).run(id, input.projectId, input.parentId, input.title,
           input.description, ...dateParams(input.planned), ...dateParams(input.due), now, now);
+        return get(id);
+      }).immediate();
+    },
+    reparent(id, value) {
+      const input = taskReparent(value);
+      return changeParent(id, input.revision, input.parentId, input.parentRevision);
+    },
+    detach(id, value) {
+      return changeParent(id, taskDetach(value).revision, null);
+    },
+    changeState(id, value) {
+      const { revision, state } = taskChangeState(value);
+      return sqlite.transaction(() => {
+        const found = get(id);
+        if (found.revision !== revision) {
+          throw new DomainError('REVISION_CONFLICT', 'La tarea cambió. Vuelve a abrir la versión guardada.');
+        }
+        if (state !== 'done') {
+          if (!OPEN_TASK_STATES.includes(found.state)) {
+            throw new DomainError('REOPEN_REQUIRED', 'Reabre la tarea mediante el comando específico antes de cambiar a un estado abierto.');
+          }
+          const project = sqlite.prepare('SELECT state FROM projects WHERE id = ?').get(found.projectId) as { state: string };
+          if (project.state !== 'active' && project.state !== 'paused') {
+            throw new DomainError('PROJECT_CLOSED', 'Reactiva el proyecto antes de cambiar tareas abiertas.');
+          }
+          if (found.parentId !== null) {
+            const ancestors = sqlite.prepare(`WITH RECURSIVE ancestors(id, parent_id, state) AS (
+              SELECT id, parent_id, state FROM tasks WHERE id = ?
+              UNION
+              SELECT t.id, t.parent_id, t.state FROM tasks t JOIN ancestors a ON t.id = a.parent_id
+            ) SELECT state FROM ancestors`).all(found.parentId) as { state: TaskState }[];
+            if (ancestors.some(ancestor => !OPEN_TASK_STATES.includes(ancestor.state))) {
+              throw new DomainError('PARENT_CLOSED', 'Reabre previamente los ancestros cerrados.');
+            }
+          }
+        }
+        if (found.state === state) return found;
+        if (state === 'done') {
+          const descendants = sqlite.prepare(`WITH RECURSIVE branch(id) AS (
+            SELECT id FROM tasks WHERE parent_id = ?
+            UNION
+            SELECT t.id FROM tasks t JOIN branch b ON t.parent_id = b.id
+          ) SELECT t.state FROM tasks t JOIN branch b ON t.id = b.id`).all(id) as { state: TaskState }[];
+          if (descendants.some(task => OPEN_TASK_STATES.includes(task.state))) {
+            throw new DomainError('OPEN_DESCENDANTS', 'Resuelve todos los descendientes abiertos antes de completar la tarea.');
+          }
+        }
+        const now = Date.now();
+        sqlite.prepare(`UPDATE tasks SET state = ?, last_completed_at = ?, revision = revision + 1, updated_at = ?
+          WHERE id = ? AND revision = ?`).run(state, state === 'done' ? now : found.lastCompletedAt, now, id, revision);
+        return get(id);
+      }).immediate();
+    },
+    cancel(id, value) {
+      const { revision, acceptance } = taskCancel(value);
+      return sqlite.transaction(() => {
+        const found = get(id);
+        if (found.revision !== revision) {
+          throw new DomainError('REVISION_CONFLICT', 'La tarea cambió. Vuelve a abrir la versión guardada.');
+        }
+        if (found.state === 'cancelled') return found;
+        const descendants = openDescendants(id);
+        if (descendants.length) {
+          requireAcceptance('task.cancel', found, [{ code: 'CANCEL_DESCENDANTS', targets: descendants }], acceptance,
+            'Cancelar la tarea cancela también todos sus descendientes abiertos.');
+        }
+        const now = Date.now();
+        const cancel = sqlite.prepare(`UPDATE tasks SET state = 'cancelled', revision = revision + 1, updated_at = ? WHERE id = ?`);
+        // Closed descendants and last_completed_at are untouched; the target is written last.
+        for (const descendant of descendants) cancel.run(now, descendant.id);
+        cancel.run(now, id);
+        return get(id);
+      }).immediate();
+    },
+    reopen(id, value) {
+      const { revision, acceptance } = taskReopen(value);
+      return sqlite.transaction(() => {
+        const found = get(id);
+        if (found.revision !== revision) {
+          throw new DomainError('REVISION_CONFLICT', 'La tarea cambió. Vuelve a abrir la versión guardada.');
+        }
+        if (OPEN_TASK_STATES.includes(found.state)) throw new DomainError('TASK_NOT_CLOSED', 'La tarea ya está abierta.');
+        const project = sqlite.prepare(`SELECT p.state, p.revision, c.archived_at AS archivedAt FROM projects p
+          JOIN clients c ON c.id = p.client_id WHERE p.id = ?`).get(found.projectId) as { state: string; revision: number; archivedAt: number | null };
+        if (project.archivedAt !== null) {
+          throw new DomainError('CLIENT_ARCHIVED', 'El cliente está archivado. Reactívalo antes de reabrir tareas.');
+        }
+        const ancestors = found.parentId === null ? [] : closedAncestors(found.parentId);
+        const projectClosed = project.state === 'completed' || project.state === 'archived';
+        const effects = [
+          ...projectClosed ? [{ code: 'REACTIVATE_PROJECT', targets: [{ id: found.projectId, revision: project.revision }] }] : [],
+          ...ancestors.length ? [{ code: 'REOPEN_ANCESTORS', targets: ancestors }] : [],
+        ];
+        if (effects.length) {
+          requireAcceptance('task.reopen', found, effects, acceptance, 'Reabrir la tarea reabre ancestros cerrados y reactiva el proyecto.');
+        }
+        const now = Date.now();
+        if (projectClosed) {
+          sqlite.prepare(`UPDATE projects SET state = 'active', revision = revision + 1, updated_at = ? WHERE id = ?`).run(now, found.projectId);
+        }
+        const reopen = sqlite.prepare(`UPDATE tasks SET state = 'in_progress', last_completed_at = NULL,
+          revision = revision + 1, updated_at = ? WHERE id = ?`);
+        for (const ancestor of ancestors) reopen.run(now, ancestor.id);
+        reopen.run(now, id);
         return get(id);
       }).immediate();
     },

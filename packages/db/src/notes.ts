@@ -8,7 +8,7 @@ import { clientStore, migrateClients } from './clients.ts';
 import { contactScopeImpact, contactStore, migrateContacts } from './contacts.ts';
 import { migrateProjects, projectScopeImpact, projectStore } from './projects.ts';
 import { migrateTags, tagStore } from './tags.ts';
-import { migrateTasks, taskStore } from './tasks.ts';
+import { migrateTasks, migrateTaskStates, taskStore } from './tasks.ts';
 import { DomainError, inputObject, noteInput, revisionInput, type NotesRepository } from '../../core/src/notes.ts';
 import type { ClientsRepository } from '../../core/src/clients.ts';
 import type { ContactsRepository } from '../../core/src/contacts.ts';
@@ -23,7 +23,7 @@ export function openNotes(path: string): NotesRepository & { clients: ClientsRep
     sqlite.pragma('foreign_keys = ON');
     sqlite.transaction(() => {
       const version = sqlite.pragma('user_version', { simple: true }) as number;
-      if (version > 6) throw new Error('La base usa una versión más reciente de Bitnode.');
+      if (version > 7) throw new Error('La base usa una versión más reciente de Bitnode.');
       if (version === 0) {
         sqlite.exec(`CREATE TABLE notes (
           id TEXT PRIMARY KEY NOT NULL,
@@ -41,6 +41,7 @@ export function openNotes(path: string): NotesRepository & { clients: ClientsRep
       if (version < 4) migrateContacts(sqlite);
       if (version < 5) migrateProjects(sqlite);
       if (version < 6) migrateTasks(sqlite);
+      if (version < 7) migrateTaskStates(sqlite);
     }).immediate();
   } catch (error) {
     sqlite.close();

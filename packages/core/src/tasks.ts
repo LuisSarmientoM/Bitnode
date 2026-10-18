@@ -1,4 +1,5 @@
-import { inputObject, invalid } from './notes.ts';
+import { createHash } from 'node:crypto';
+import { DomainError, inputObject, invalid } from './notes.ts';
 
 export type TaskState = 'new' | 'in_progress' | 'blocked' | 'in_review' | 'done' | 'cancelled';
 export type TaskPriority = 'none' | 'low' | 'medium' | 'high';
@@ -14,9 +15,12 @@ export interface Task {
   id: string;
   projectId: string;
   parentId: string | null;
+  /** Direct children in any state; descendants further down are not counted. */
+  childCount: number;
   title: string;
   description: string;
   state: TaskState;
+  lastCompletedAt: number | null;
   priority: TaskPriority;
   planned: TaskDate;
   due: TaskDate;
@@ -29,13 +33,19 @@ export interface Task {
 }
 
 export interface TaskPage { items: Task[]; total: number; offset: number; limit: number }
-export interface TaskQuery { projectId: string | undefined }
+/** `roots` and `parentId` select a level of the tree; they are mutually exclusive, and `parentId` excludes `projectId`. */
+export interface TaskQuery { projectId: string | undefined; roots?: boolean; parentId?: string | undefined }
 
 export interface TasksRepository {
   list(offset: number, limit: number, query?: TaskQuery): TaskPage;
   get(id: string): Task;
   create(value: unknown): Task;
   update(id: string, value: unknown): Task;
+  reparent(id: string, value: unknown): Task;
+  detach(id: string, value: unknown): Task;
+  changeState(id: string, value: unknown): Task;
+  cancel(id: string, value: unknown): Task;
+  reopen(id: string, value: unknown): Task;
 }
 
 export interface ReferenceInput { id: string | null; url: string; name: string | null }
@@ -138,16 +148,107 @@ export function taskRevision(value: unknown): number {
   return value;
 }
 
-/** New tasks are always `new` with no priority; hierarchy arrives in T8, so only a null parent is accepted. */
+/** New tasks are always `new` with no priority; a parent requires the revision the caller read. */
 export function taskInput(value: unknown) {
-  const input = inputObject(value, ['projectId', 'parentId', 'title', 'description', 'planned', 'due']);
+  const input = inputObject(value, ['projectId', 'parentId', 'expectedParentRevision', 'title', 'description', 'planned', 'due']);
   if (typeof input.projectId !== 'string' || !input.projectId) invalid('Selecciona el proyecto de la tarea.');
-  if (input.parentId !== undefined && input.parentId !== null) invalid('Las subtareas aún no están disponibles.');
+  const parentId = input.parentId ?? null;
+  if (parentId !== null && (typeof parentId !== 'string' || !parentId.trim())) invalid('Selecciona el padre de la subtarea.');
+  if (parentId === null && input.expectedParentRevision !== undefined) invalid('La revisión del padre requiere un padre.');
+  const parentRevision = parentId === null ? null : taskRevision(input.expectedParentRevision);
   return {
-    projectId: input.projectId, title: titleInput(input.title), description: descriptionInput(input.description),
+    projectId: input.projectId, parentId, parentRevision, title: titleInput(input.title), description: descriptionInput(input.description),
     planned: input.planned === undefined ? null : taskDateInput(input.planned),
     due: input.due === undefined ? null : taskDateInput(input.due),
   };
+}
+
+/** Cancel and reopen use separate commands, not change-state or PATCH. */
+export function taskChangeState(value: unknown) {
+  const input = inputObject(value, ['expectedRevision', 'state']);
+  if (input.state !== 'done' && !OPEN_TASK_STATES.includes(input.state as TaskState)) {
+    invalid('Selecciona un estado abierto o completada. Cancelar requiere su propio comando.');
+  }
+  return { revision: taskRevision(input.expectedRevision), state: input.state as Exclude<TaskState, 'cancelled'> };
+}
+
+/** Same shape as the client scope protocol; `details.revisions` is covered by the digest, not compared on acceptance. */
+export interface TaskEffect { code: string; targets: string[]; details?: Record<string, string | number | null> }
+export interface TaskPreview { operation: 'task.cancel' | 'task.reopen'; targetId: string; previewDigest: string; effects: TaskEffect[] }
+export interface TaskAcceptance { previewDigest: string; effects: { code: string; targets: string[] }[] }
+
+/** Carries a preview for CONFIRMATION_REQUIRED (nothing accepted yet) or PREVIEW_CHANGED (acceptance no longer matches). */
+export class TaskConfirmationError extends DomainError {
+  constructor(code: 'CONFIRMATION_REQUIRED' | 'PREVIEW_CHANGED', message: string, public readonly preview: TaskPreview) {
+    super(code, message);
+  }
+}
+
+const DIGEST = /^sha256-[0-9a-f]{64}$/;
+const MAX_EFFECTS = 50;
+const MAX_TARGETS = 1000;
+
+function acceptanceInput(value: unknown): TaskAcceptance {
+  const input = inputObject(value, ['previewDigest', 'effects']);
+  if (typeof input.previewDigest !== 'string' || !DIGEST.test(input.previewDigest)) invalid('La aceptación no incluye un digest válido.');
+  if (!Array.isArray(input.effects) || input.effects.length > MAX_EFFECTS) invalid('La aceptación debe listar los efectos aceptados.');
+  const effects = input.effects.map((entry: unknown) => {
+    const effect = inputObject(entry, ['code', 'targets', 'details']);
+    if (typeof effect.code !== 'string' || !effect.code || !Array.isArray(effect.targets) || effect.targets.length > MAX_TARGETS
+      || effect.targets.some((target: unknown) => typeof target !== 'string')) invalid('Un efecto aceptado no es válido.');
+    return { code: effect.code, targets: effect.targets as string[] };
+  });
+  return { previewDigest: input.previewDigest, effects };
+}
+
+function effectsCommand(value: unknown) {
+  const input = inputObject(value, ['expectedRevision', 'acceptance']);
+  return {
+    revision: taskRevision(input.expectedRevision),
+    acceptance: input.acceptance === undefined ? undefined : acceptanceInput(input.acceptance),
+  };
+}
+
+/** Cancel and reopen share one contract; the operation, not the payload, tells them apart. */
+export const taskCancel = effectsCommand;
+export const taskReopen = effectsCommand;
+
+const sorted = <T>(values: T[], key: (value: T) => string) => [...values].sort((a, b) => key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0);
+
+/** Pure: targets carry the revision read inside the write transaction, so a changed set or revision changes the digest. */
+export function taskPreview(operation: TaskPreview['operation'], task: { id: string; revision: number },
+  effects: { code: string; targets: { id: string; revision: number }[] }[]): TaskPreview {
+  const canonical = sorted(effects, effect => effect.code).map(effect => {
+    const targets = sorted(effect.targets, target => target.id);
+    return { code: effect.code, targets: targets.map(target => target.id),
+      details: { revisions: targets.map(target => `${target.id}:${target.revision}`).join(',') } };
+  });
+  const digest = createHash('sha256').update(JSON.stringify({
+    operation, targetId: task.id, revision: task.revision, effects: canonical,
+  })).digest('hex');
+  return { operation, targetId: task.id, previewDigest: `sha256-${digest}`, effects: canonical };
+}
+
+/** The digest is not trusted alone: the accepted codes and targets must also equal the recomputed effects. */
+export function taskAcceptanceMatches(preview: TaskPreview, acceptance: TaskAcceptance): boolean {
+  const shape = (effects: { code: string; targets: string[] }[]) => JSON.stringify(
+    sorted(effects, effect => effect.code).map(effect => [effect.code, sorted(effect.targets, target => target)]));
+  return acceptance.previewDigest === preview.previewDigest && shape(acceptance.effects) === shape(preview.effects);
+}
+
+/** Hierarchy commands never accept project or state changes. */
+export function taskReparent(value: unknown) {
+  const input = inputObject(value, ['expectedRevision', 'parentId', 'expectedParentRevision']);
+  if (typeof input.parentId !== 'string' || !input.parentId.trim()) invalid('Selecciona el nuevo padre.');
+  return {
+    revision: taskRevision(input.expectedRevision), parentId: input.parentId,
+    parentRevision: taskRevision(input.expectedParentRevision),
+  };
+}
+
+export function taskDetach(value: unknown) {
+  const input = inputObject(value, ['expectedRevision']);
+  return { revision: taskRevision(input.expectedRevision) };
 }
 
 export interface TaskChanges {
@@ -169,7 +270,11 @@ export function taskPatch(value: unknown): { revision: number; changes: TaskChan
   return { revision, changes };
 }
 
-export function taskQuery(value: { projectId?: unknown }): TaskQuery {
+export function taskQuery(value: { projectId?: unknown; roots?: unknown; parentId?: unknown }): TaskQuery {
   if (value.projectId !== undefined && (typeof value.projectId !== 'string' || !value.projectId)) invalid('El filtro de proyecto no es válido.');
-  return { projectId: value.projectId as string | undefined };
+  if (value.roots !== undefined && value.roots !== 'true') invalid('El filtro de raíces solo admite el valor true.');
+  if (value.parentId !== undefined && (typeof value.parentId !== 'string' || !value.parentId)) invalid('El filtro de padre no es válido.');
+  if (value.roots !== undefined && value.parentId !== undefined) invalid('No se pueden combinar raíces y padre en la misma consulta.');
+  if (value.parentId !== undefined && value.projectId !== undefined) invalid('Las hijas de un padre ya pertenecen a su proyecto; no combines padre y proyecto.');
+  return { projectId: value.projectId as string | undefined, roots: value.roots === 'true', parentId: value.parentId as string | undefined };
 }
