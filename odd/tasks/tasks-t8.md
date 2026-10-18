@@ -1,6 +1,6 @@
 # T8: jerarquía y transiciones
 
-Estado: parcial. Alcance acordado web/API, sin CLI. Creación backend en `744cae5`, con revisión nativa aprobada y reconocida. UI de creación verificada, pendiente de revisión nativa propia.
+Estado: parcial. Alcance acordado web/API, sin CLI. Creación backend en `744cae5`, con revisión nativa aprobada y reconocida. UI de creación en `e2ac786`, verificada y con revisión nativa propia aprobada y reconocida.
 
 ## Intención
 
@@ -12,8 +12,10 @@ Permitir subtareas multinivel y cambios de jerarquía dentro del mismo proyecto,
 - [x] Lectura estructural, typecheck y suite completa de creación: 156 pruebas aprobadas, cero fallos.
 - [x] Commit local `744cae5` y revisión nativa `review-e31e7d4d4e6173d8` aprobada y reconocida. Solo backend de creación, 193 líneas authored.
 - [x] UI de creación de subtareas: RED por botón ausente, GREEN 11 pruebas E2E Tareas aprobadas, con viewport móvil y contexto fuera de la página.
-- [ ] Revisión nativa de UI de creación, en su propio candidato local.
-- [ ] Cambiar/quitar padre: revisión optimista, ciclos, mismo proyecto, negativos y rollback.
+- [x] Revisión nativa de UI de creación `review-eae8b17feaac52fa`, aprobada y reconocida, rango `744cae5..e2ac786`.
+- [x] Cambiar/quitar padre backend: revisión optimista, ciclos, mismo proyecto, no-op, negativos, rollback y dos conexiones con revisión obsoleta. RED 23/28, GREEN 29/29; detalles en registro T8.
+- [x] Typecheck y suite completa de segunda unidad: 162 pruebas aprobadas, cero fallos.
+- [ ] Revisión nativa y commit local de segunda unidad, a cargo del padre.
 - [ ] Transiciones: migración last_completed_at, completar sin descendientes abiertos también desde cancelled, cancelar todos los descendientes abiertos o abortar, reapertura in_progress con ancestros/proyecto y cliente archivado bloqueante.
 - [ ] Adaptar UI T7 tras comandos y contratos revisados.
 
@@ -21,6 +23,8 @@ Permitir subtareas multinivel y cambios de jerarquía dentro del mismo proyecto,
 
 Sin migración en creación. Sin traslado de proyectos T11, timers, eliminación, consentimiento combinado ni transiciones ahora. No se modifica odd/tasks/projects-t6.md ajeno.
 
-Riesgo: escrituras de jerarquía y estado concurrentes. Primera subunidad valida estado actual bajo IMMEDIATE, sin reclamar prueba multiproceso. Las operaciones futuras de rama deben verificar membresía y revisiones, no confiar solo en raíz.
+Riesgo: escrituras de jerarquía y estado concurrentes. Creación y cambio de padre validan estado actual bajo IMMEDIATE, sin reclamar prueba multiproceso. Las operaciones futuras de rama deben verificar membresía y revisiones, no confiar solo en raíz.
 
-Rollback de esta subunidad: retirar creación con padre, su validación, mapeo HTTP, tests y registro en los ocho archivos autorizados. No hay cambio de esquema que revertir. Retirar el código no convierte subtareas ya creadas en raíces.
+Rollback de creación: retirar creación con padre, su validación, mapeo HTTP, tests y registro en los ocho archivos autorizados. No hay cambio de esquema que revertir. Retirar el código no convierte subtareas ya creadas en raíces.
+
+Rollback de segunda unidad: retirar reparent/detach de core, DB y API con sus tests/registro; restaurar validación de padre inline de creación si se retira el helper compartido. No revierte cambios de parent_id ya guardados. Base de esta unidad e2ac786; no modifica UI, esquema, estados ni proyectos.

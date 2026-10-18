@@ -51,6 +51,37 @@ async function error(response: globalThis.Response, status: number, code: string
   assert.equal(typeof body.error.message, 'string');
 }
 
+test('API reparent/detach: revisiones, no-op y conflictos de jerarquía', async () => {
+  const h = await harness();
+  try {
+    const projectId = h.project('Portal');
+    const parent = await h.create({ projectId, title: 'Padre' });
+    const task = await h.create({ projectId, title: 'Tarea' });
+    const route = '/' + task.id;
+    const input = { expectedRevision: 1, parentId: parent.id, expectedParentRevision: 1 };
+    await error(await h.send(route + '/reparent', 'POST', { ...input, expectedParentRevision: undefined }), 400, 'VALIDATION_ERROR');
+    await error(await h.send(route + '/detach', 'POST', { expectedRevision: 1, parentId: null }), 400, 'VALIDATION_ERROR');
+    const response = await h.send(route + '/reparent', 'POST', input);
+    assert.equal(response.status, 200);
+    const moved = await response.json();
+    assert.deepEqual([moved.parentId, moved.projectId, moved.revision], [parent.id, projectId, 2]);
+    assert.deepEqual(await (await h.send(route + '/reparent', 'POST', { ...input, expectedRevision: 2 })).json(), moved);
+    await error(await h.send(route + '/detach', 'POST', { expectedRevision: 1 }), 409, 'CONFLICT', 'REVISION_MISMATCH');
+    await error(await h.send('/' + parent.id + '/reparent', 'POST', {
+      expectedRevision: 1, parentId: task.id, expectedParentRevision: 2,
+    }), 409, 'CONFLICT', 'HIERARCHY_CYCLE');
+    await error(await h.send(route + '/reparent', 'POST', { ...input, expectedRevision: 2, parentId: 'missing' }), 404, 'NOT_FOUND');
+    const detached = await h.send(route + '/detach', 'POST', { expectedRevision: 2 });
+    assert.equal(detached.status, 200);
+    const root = await detached.json();
+    assert.deepEqual([root.parentId, root.revision], [null, 3]);
+    assert.deepEqual(await (await h.send(route + '/detach', 'POST', { expectedRevision: 3 })).json(), root);
+    h.raw.prepare("UPDATE tasks SET state = 'done' WHERE id = ?").run(parent.id);
+    await error(await h.send(route + '/reparent', 'POST', { ...input, expectedRevision: 3 }), 409, 'CONFLICT', 'PARENT_CLOSED');
+    assert.deepEqual(await (await h.send(route)).json(), root);
+  } finally { await h.close(); }
+});
+
 test('API de tareas crea en proyecto abierto con estado nueva, sin prioridad, contexto y aviso', async () => {
   const h = await harness();
   try {

@@ -1,5 +1,5 @@
 import {
-  ArgumentsHost, Body, Catch, Controller, Get, Inject, Param, Patch, Post, Query, UseFilters, type ExceptionFilter,
+  ArgumentsHost, Body, Catch, Controller, Get, HttpCode, Inject, Param, Patch, Post, Query, UseFilters, type ExceptionFilter,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { DomainError, invalid, pagination } from '../../../packages/core/src/notes.ts';
@@ -9,7 +9,7 @@ export const TASKS_REPOSITORY = Symbol('tasks.repository');
 
 const CONFLICT_REASONS: Record<string, string> = {
   REVISION_CONFLICT: 'REVISION_MISMATCH', PROJECT_CLOSED: 'PROJECT_CLOSED',
-  PARENT_PROJECT_MISMATCH: 'PARENT_PROJECT_MISMATCH', PARENT_CLOSED: 'PARENT_CLOSED',
+  PARENT_PROJECT_MISMATCH: 'PARENT_PROJECT_MISMATCH', PARENT_CLOSED: 'PARENT_CLOSED', HIERARCHY_CYCLE: 'HIERARCHY_CYCLE',
 };
 
 @Catch(DomainError)
@@ -24,7 +24,7 @@ class TaskErrors implements ExceptionFilter {
 
 const LIST_PARAMETERS = ['offset', 'limit', 'projectId'];
 
-/** Creation accepts a parent; state, reparent, detach, move and deletion remain separate future commands. */
+/** Hierarchy has explicit commands; state, move and deletion remain separate future commands. */
 @Controller('api/v1/tasks')
 @UseFilters(TaskErrors)
 export class TasksController {
@@ -42,6 +42,14 @@ export class TasksController {
 
   @Post()
   create(@Body() value: unknown) { return this.tasks.create(value); }
+
+  @Post(':id/reparent')
+  @HttpCode(200)
+  reparent(@Param('id') id: string, @Body() value: unknown) { return this.tasks.reparent(id, value); }
+
+  @Post(':id/detach')
+  @HttpCode(200)
+  detach(@Param('id') id: string, @Body() value: unknown) { return this.tasks.detach(id, value); }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() value: unknown) { return this.tasks.update(id, value); }

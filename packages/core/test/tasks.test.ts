@@ -1,9 +1,24 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { taskDateInput, taskInput, taskPatch, taskQuery, taskWarnings } from '../src/tasks.ts';
+import { taskDateInput, taskDetach, taskInput, taskPatch, taskQuery, taskReparent, taskWarnings } from '../src/tasks.ts';
 
 const invalid = { code: 'VALIDATION_ERROR' };
 const at = (iso: string) => Date.parse(iso);
+
+test('comandos de jerarquía exigen revisiones y rechazan campos ajenos', () => {
+  const input = { expectedRevision: 2, parentId: 'p', expectedParentRevision: 3 };
+  assert.deepEqual(taskReparent(input), { revision: 2, parentId: 'p', parentRevision: 3 });
+  assert.deepEqual(taskDetach({ expectedRevision: 2 }), { revision: 2 });
+  for (const fields of [
+    { expectedRevision: undefined }, { expectedRevision: 0 }, { parentId: null }, { parentId: '' },
+    { parentId: ' ' }, { parentId: 4 }, { expectedParentRevision: undefined }, { expectedParentRevision: '3' },
+    { expectedParentRevision: -1 }, { projectId: 'otro' }, { state: 'done' },
+  ]) assert.throws(() => taskReparent({ ...input, ...fields }), invalid);
+  for (const value of [{}, { expectedRevision: 0 }, { expectedRevision: 1, parentId: null },
+    { expectedRevision: 1, expectedParentRevision: 2 }]) {
+    assert.throws(() => taskDetach(value), invalid);
+  }
+});
 
 test('crear fuerza nueva y sin prioridad, exige proyecto y título, y admite padre con revisión', () => {
   const input = taskInput({

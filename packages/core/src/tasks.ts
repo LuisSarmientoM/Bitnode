@@ -36,6 +36,8 @@ export interface TasksRepository {
   get(id: string): Task;
   create(value: unknown): Task;
   update(id: string, value: unknown): Task;
+  reparent(id: string, value: unknown): Task;
+  detach(id: string, value: unknown): Task;
 }
 
 export interface ReferenceInput { id: string | null; url: string; name: string | null }
@@ -151,6 +153,21 @@ export function taskInput(value: unknown) {
     planned: input.planned === undefined ? null : taskDateInput(input.planned),
     due: input.due === undefined ? null : taskDateInput(input.due),
   };
+}
+
+/** Hierarchy commands never accept project or state changes. */
+export function taskReparent(value: unknown) {
+  const input = inputObject(value, ['expectedRevision', 'parentId', 'expectedParentRevision']);
+  if (typeof input.parentId !== 'string' || !input.parentId.trim()) invalid('Selecciona el nuevo padre.');
+  return {
+    revision: taskRevision(input.expectedRevision), parentId: input.parentId,
+    parentRevision: taskRevision(input.expectedParentRevision),
+  };
+}
+
+export function taskDetach(value: unknown) {
+  const input = inputObject(value, ['expectedRevision']);
+  return { revision: taskRevision(input.expectedRevision) };
 }
 
 export interface TaskChanges {

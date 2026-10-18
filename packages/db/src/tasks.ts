@@ -2,7 +2,7 @@ import type Database from 'better-sqlite3';
 import { randomUUID } from 'node:crypto';
 import { DomainError } from '../../core/src/notes.ts';
 import {
-  OPEN_TASK_STATES, taskInput, taskPatch, taskWarnings,
+  OPEN_TASK_STATES, taskDetach, taskInput, taskPatch, taskReparent, taskWarnings,
   type ReferenceInput, type Task, type TaskDate, type TaskPriority, type TaskReference, type TaskState, type TasksRepository,
 } from '../../core/src/tasks.ts';
 
@@ -97,6 +97,45 @@ export function taskStore(sqlite: Database.Database): TasksRepository {
     const insert = sqlite.prepare('INSERT INTO task_references (id, task_id, url, name, position) VALUES (?, ?, ?, ?, ?)');
     next.forEach((reference, position) => insert.run(reference.id ?? randomUUID(), taskId, reference.url, reference.name, position));
   };
+  const checkParent = (projectId: string, parentId: string, revision: number, movingId?: string) => {
+    const parent = get(parentId);
+    if (parent.projectId !== projectId) {
+      throw new DomainError('PARENT_PROJECT_MISMATCH', 'El padre debe pertenecer al mismo proyecto.');
+    }
+    if (parent.revision !== revision) {
+      throw new DomainError('REVISION_CONFLICT', 'El padre cambió. Vuelve a abrir la versión guardada.');
+    }
+    // UNION terminates even when an externally corrupted database already contains a cycle.
+    const ancestors = sqlite.prepare(`WITH RECURSIVE ancestors(id, parent_id, state) AS (
+      SELECT id, parent_id, state FROM tasks WHERE id = ?
+      UNION
+      SELECT t.id, t.parent_id, t.state FROM tasks t JOIN ancestors a ON t.id = a.parent_id
+    ) SELECT id, state FROM ancestors`).all(parentId) as { id: string; state: TaskState }[];
+    if (ancestors.some(ancestor => ancestor.id === movingId)) {
+      throw new DomainError('HIERARCHY_CYCLE', 'La tarea no puede adoptar como padre a sí misma ni a un descendiente.');
+    }
+    if (ancestors.some(ancestor => !OPEN_TASK_STATES.includes(ancestor.state))) {
+      throw new DomainError('PARENT_CLOSED', 'Reabre explícitamente el padre y sus ancestros cerrados antes de cambiar la jerarquía.');
+    }
+  };
+  const changeParent = (id: string, revision: number, parentId: string | null, parentRevision?: number) =>
+    sqlite.transaction(() => {
+      const found = get(id);
+      if (found.revision !== revision) {
+        throw new DomainError('REVISION_CONFLICT', 'La tarea cambió. Vuelve a abrir la versión guardada.');
+      }
+      if (parentId !== null) {
+        const project = sqlite.prepare('SELECT state FROM projects WHERE id = ?').get(found.projectId) as { state: string };
+        if (project.state !== 'active' && project.state !== 'paused') {
+          throw new DomainError('PROJECT_CLOSED', 'Reactiva el proyecto antes de reparentar tareas.');
+        }
+        checkParent(found.projectId, parentId, parentRevision!, id);
+      }
+      if (found.parentId === parentId) return found;
+      sqlite.prepare(`UPDATE tasks SET parent_id = ?, revision = revision + 1, updated_at = ?
+        WHERE id = ? AND revision = ?`).run(parentId, Date.now(), id, revision);
+      return get(id);
+    }).immediate();
   return {
     list(offset, limit, query = { projectId: undefined }) {
       const projectId = query.projectId ?? null;
@@ -117,24 +156,7 @@ export function taskStore(sqlite: Database.Database): TasksRepository {
         if (project.state !== 'active' && project.state !== 'paused') {
           throw new DomainError('PROJECT_CLOSED', 'El proyecto está completado o archivado; reactívalo antes de crear tareas.');
         }
-        if (input.parentId !== null) {
-          const parent = get(input.parentId);
-          if (parent.projectId !== input.projectId) {
-            throw new DomainError('PARENT_PROJECT_MISMATCH', 'El padre debe pertenecer al mismo proyecto.');
-          }
-          if (parent.revision !== input.parentRevision) {
-            throw new DomainError('REVISION_CONFLICT', 'El padre cambió. Vuelve a abrir la versión guardada.');
-          }
-          // UNION also terminates if an externally corrupted database already contains a cycle.
-          const ancestors = sqlite.prepare(`WITH RECURSIVE ancestors(id, parent_id, state) AS (
-            SELECT id, parent_id, state FROM tasks WHERE id = ?
-            UNION
-            SELECT t.id, t.parent_id, t.state FROM tasks t JOIN ancestors a ON t.id = a.parent_id
-          ) SELECT state FROM ancestors`).all(parent.id) as { state: TaskState }[];
-          if (ancestors.some(ancestor => !OPEN_TASK_STATES.includes(ancestor.state))) {
-            throw new DomainError('PARENT_CLOSED', 'Reabre explícitamente el padre y sus ancestros cerrados antes de crear la subtarea.');
-          }
-        }
+        if (input.parentId !== null) checkParent(input.projectId, input.parentId, input.parentRevision!);
         const id = randomUUID();
         const now = Date.now();
         sqlite.prepare(`INSERT INTO tasks (id, project_id, parent_id, title, description, state, priority,
@@ -143,6 +165,13 @@ export function taskStore(sqlite: Database.Database): TasksRepository {
           input.description, ...dateParams(input.planned), ...dateParams(input.due), now, now);
         return get(id);
       }).immediate();
+    },
+    reparent(id, value) {
+      const input = taskReparent(value);
+      return changeParent(id, input.revision, input.parentId, input.parentRevision);
+    },
+    detach(id, value) {
+      return changeParent(id, taskDetach(value).revision, null);
     },
     update(id, value) {
       const { revision, changes } = taskPatch(value);

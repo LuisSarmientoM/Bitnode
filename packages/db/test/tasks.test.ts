@@ -8,6 +8,7 @@ import { migrateClients } from '../src/clients.ts';
 import { migrateContacts } from '../src/contacts.ts';
 import { openNotes } from '../src/notes.ts';
 import { migrateTags } from '../src/tags.ts';
+import { taskStore } from '../src/tasks.ts';
 
 /** Explicit schema-4 database: notes, tags, clients and contacts, as shipped before projects and tasks. */
 function schema4(path: string) {
@@ -48,6 +49,94 @@ function withDb(run: (db: ReturnType<typeof openNotes>, project: (name: string, 
     rmSync(directory, { recursive: true, force: true });
   }
 }
+
+test('reparentar y separar conservan rama, proyecto y datos; no-op conserva revisión y timestamp', () => withDb((db, project, raw) => {
+  const projectId = project('Pausado', 'paused');
+  const root = db.tasks.create({ projectId, title: 'Raíz' });
+  const branch = db.tasks.create({ projectId, title: 'Rama' });
+  const leaf = db.tasks.create({ projectId, parentId: branch.id, expectedParentRevision: 1, title: 'Hoja' });
+  raw.prepare("UPDATE tasks SET state = 'done' WHERE id = ?").run(branch.id);
+  const before = db.tasks.get(branch.id);
+  const moved = db.tasks.reparent(branch.id, { expectedRevision: 1, parentId: root.id, expectedParentRevision: 1 });
+  assert.deepEqual(moved, { ...before, parentId: root.id, revision: 2, updatedAt: moved.updatedAt });
+  assert.deepEqual(db.tasks.get(leaf.id), leaf);
+  assert.deepEqual(db.tasks.get(root.id), root);
+  assert.deepEqual(db.tasks.reparent(branch.id, { expectedRevision: 2, parentId: root.id, expectedParentRevision: 1 }), moved);
+  raw.prepare("UPDATE projects SET state = 'archived' WHERE id = ?").run(projectId);
+  const detached = db.tasks.detach(branch.id, { expectedRevision: 2 });
+  assert.deepEqual(detached, { ...moved, parentId: null, revision: 3, updatedAt: detached.updatedAt });
+  assert.deepEqual(db.tasks.detach(branch.id, { expectedRevision: 3 }), detached);
+  assert.deepEqual(db.tasks.get(leaf.id), leaf);
+}));
+
+test('reparentar rechaza ciclos, padres ajenos/ausentes y ancestros cerrados sin cambios', () => withDb((db, project, raw) => {
+  const projectId = project('Portal');
+  const root = db.tasks.create({ projectId, title: 'Raíz' });
+  const child = db.tasks.create({ projectId, parentId: root.id, expectedParentRevision: 1, title: 'Hija' });
+  const leaf = db.tasks.create({ projectId, parentId: child.id, expectedParentRevision: 1, title: 'Hoja' });
+  const other = db.tasks.create({ projectId: project('Otro'), title: 'Ajena' });
+  for (const [parentId, code] of [[root.id, 'HIERARCHY_CYCLE'], [leaf.id, 'HIERARCHY_CYCLE'],
+    [other.id, 'PARENT_PROJECT_MISMATCH'], ['missing', 'NOT_FOUND']]) {
+    const before = db.tasks.list(0, 50);
+    assert.throws(() => db.tasks.reparent(root.id, { expectedRevision: 1, parentId, expectedParentRevision: 1 }), { code });
+    assert.deepEqual(db.tasks.list(0, 50), before);
+  }
+  const target = db.tasks.create({ projectId, title: 'Mover' });
+  for (const id of [root.id, child.id]) {
+    for (const state of ['done', 'cancelled']) {
+      raw.prepare('UPDATE tasks SET state = ? WHERE id = ?').run(state, id);
+      assert.throws(() => db.tasks.reparent(target.id, { expectedRevision: 1, parentId: child.id, expectedParentRevision: 1 }),
+        { code: 'PARENT_CLOSED' });
+      assert.deepEqual(db.tasks.get(target.id), target);
+      raw.prepare("UPDATE tasks SET state = 'new' WHERE id = ?").run(id);
+    }
+  }
+  for (const state of ['completed', 'archived']) {
+    raw.prepare('UPDATE projects SET state = ? WHERE id = ?').run(state, projectId);
+    assert.throws(() => db.tasks.reparent(target.id, { expectedRevision: 1, parentId: child.id, expectedParentRevision: 1 }),
+      { code: 'PROJECT_CLOSED' });
+    assert.deepEqual(db.tasks.get(target.id), target);
+  }
+  assert.throws(() => db.tasks.detach('missing', { expectedRevision: 1 }), { code: 'NOT_FOUND' });
+}));
+
+test('dos conexiones detectan revisión obsoleta de tarea/padre incluso en no-op', () => withDb((db, project, raw) => {
+  raw.pragma('foreign_keys = ON');
+  const second = taskStore(raw);
+  const projectId = project('Portal');
+  const parent = db.tasks.create({ projectId, title: 'Padre' });
+  const task = db.tasks.create({ projectId, title: 'Tarea' });
+  second.update(parent.id, { expectedRevision: 1, title: 'Padre editado' });
+  assert.throws(() => db.tasks.reparent(task.id, { expectedRevision: 1, parentId: parent.id, expectedParentRevision: 1 }),
+    { code: 'REVISION_CONFLICT' });
+  assert.deepEqual(db.tasks.get(task.id), task);
+  const moved = second.reparent(task.id, { expectedRevision: 1, parentId: parent.id, expectedParentRevision: 2 });
+  assert.throws(() => db.tasks.reparent(task.id, { expectedRevision: 2, parentId: parent.id, expectedParentRevision: 1 }),
+    { code: 'REVISION_CONFLICT' });
+  assert.throws(() => db.tasks.reparent(task.id, { expectedRevision: 1, parentId: parent.id, expectedParentRevision: 2 }),
+    { code: 'REVISION_CONFLICT' });
+  assert.throws(() => db.tasks.detach(task.id, { expectedRevision: 1 }), { code: 'REVISION_CONFLICT' });
+  assert.deepEqual(db.tasks.get(task.id), moved);
+  second.detach(task.id, { expectedRevision: 2 });
+  assert.throws(() => db.tasks.detach(task.id, { expectedRevision: 2 }), { code: 'REVISION_CONFLICT' });
+  assert.equal(db.tasks.get(task.id).revision, 3);
+}));
+
+test('fallo posterior al UPDATE revierte parent_id y revisión de reparent/detach', () => withDb((db, project, raw) => {
+  const projectId = project('Portal');
+  const parent = db.tasks.create({ projectId, title: 'Padre' });
+  const task = db.tasks.create({ projectId, title: 'Tarea' });
+  raw.exec(`CREATE TRIGGER reject_hierarchy AFTER UPDATE OF parent_id ON tasks
+    BEGIN SELECT RAISE(ABORT, 'fixture rollback'); END;`);
+  assert.throws(() => db.tasks.reparent(task.id, { expectedRevision: 1, parentId: parent.id, expectedParentRevision: 1 }), /fixture rollback/);
+  assert.deepEqual(db.tasks.get(task.id), task);
+  raw.exec('DROP TRIGGER reject_hierarchy');
+  const moved = db.tasks.reparent(task.id, { expectedRevision: 1, parentId: parent.id, expectedParentRevision: 1 });
+  raw.exec(`CREATE TRIGGER reject_hierarchy AFTER UPDATE OF parent_id ON tasks
+    BEGIN SELECT RAISE(ABORT, 'fixture rollback'); END;`);
+  assert.throws(() => db.tasks.detach(task.id, { expectedRevision: 2 }), /fixture rollback/);
+  assert.deepEqual(db.tasks.get(task.id), moved);
+}));
 
 test('migra user_version 4 a 6 conservando datos, persiste al reabrir y rechaza versiones futuras', () => {
   const directory = mkdtempSync(join(tmpdir(), 'bitnode-tasks-'));
