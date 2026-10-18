@@ -10,7 +10,11 @@ h1 { margin: 0; }
 table { width: 100%; min-width: 640px; border-collapse: collapse; font-size: 13px; }
 th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--outline); vertical-align: middle; }
 thead th { font-size: 11px; font-weight: 600; color: #9ca19d; background: #151819; white-space: nowrap; }
-tbody th { font-weight: 600; overflow-wrap: anywhere; }
+tbody th { font-weight: 600; overflow-wrap: anywhere; padding-left: calc(12px + min(var(--depth, 0) * 20px, 120px)); }
+.tree-toggle { display: inline-flex; align-items: center; gap: 4px; min-width: 44px; min-height: 28px; margin-right: 8px; padding: 2px 8px; font-size: 11px; font-weight: 400; }
+.tree-spacer { display: inline-block; width: 52px; }
+.more-row td { padding-left: calc(12px + min(var(--depth, 0) * 20px, 120px)); }
+.more-row button { padding: 4px 10px; font-size: 12px; }
 tbody tr:last-child > * { border-bottom: 0; }
 .row-context, .row-warning { display: block; margin-top: 2px; font-size: 11px; font-weight: 400; color: #9ca19d; }
 .row-warning { color: #e6c27a; }

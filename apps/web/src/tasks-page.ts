@@ -20,6 +20,7 @@ export interface Task {
   due: TaskDate;
   references: TaskReference[];
   warnings: string[];
+  childCount: number;
   context: { projectId: string; projectName: string; clientId: string; clientName: string };
   revision: number;
 }
@@ -27,6 +28,9 @@ export interface Task {
 export interface ProjectOption { id: string; name: string; state: string; client?: { fullName?: string } }
 
 interface TaskPage { items: Task[]; total: number; offset: number; limit: number }
+/** Direct children of one expanded task, loaded by parent id and page, never derived from the flat list. */
+interface ChildNode { items: Task[]; total: number }
+interface TreeRow { key: string; kind: 'task' | 'more'; task: Task; depth: number }
 interface ProjectPage { items: ProjectOption[] }
 
 /** A date being edited: the mode picks the stored shape; `time` only matters for an instant. */
@@ -80,7 +84,11 @@ export function formatTaskDate(value: TaskDate): string {
 @Injectable({ providedIn: 'root' })
 export class TasksStore {
   readonly pageSize = 50;
+  /** Root tasks of the current page; deeper levels live in `children`. */
   readonly items = signal<Task[]>([]);
+  readonly expanded = signal<ReadonlySet<string>>(new Set());
+  readonly children = signal<Record<string, ChildNode>>({});
+  readonly loadingNodes = signal<ReadonlySet<string>>(new Set());
   readonly total = signal(0);
   readonly offset = signal(0);
   readonly projectFilter = signal('');
@@ -114,6 +122,25 @@ export class TasksStore {
   readonly conflict = signal(false);
   private initial = '';
   private loadSeq = 0;
+  private treeKey = '';
+
+  /** Flattened visible tree, in display order; each row is keyed by its path so a task shown twice never collides. */
+  readonly rows = computed(() => {
+    const out: TreeRow[] = [];
+    const open = this.expanded();
+    const nodes = this.children();
+    const walk = (task: Task, depth: number, path: string) => {
+      if (`/${path}/`.includes(`/${task.id}/`)) return;
+      const key = path ? `${path}/${task.id}` : task.id;
+      out.push({ key, kind: 'task', task, depth });
+      const node = open.has(task.id) ? nodes[task.id] : undefined;
+      if (!node) return;
+      for (const child of node.items) walk(child, depth + 1, key);
+      if (node.items.length < node.total) out.push({ key: `${key}/more`, kind: 'more', task, depth: depth + 1 });
+    };
+    for (const root of this.items()) walk(root, 0, '');
+    return out;
+  });
 
   private snapshot() {
     return JSON.stringify([this.projectId(), this.title(), this.description(), this.priority(), this.planned(), this.due(), this.references(), this.selectedParentId()]);
@@ -146,7 +173,7 @@ export class TasksStore {
   });
 
   private listPath(offset: number) {
-    const params = new URLSearchParams({ offset: String(offset), limit: String(this.pageSize) });
+    const params = new URLSearchParams({ roots: 'true', offset: String(offset), limit: String(this.pageSize) });
     if (this.projectFilter()) params.set('projectId', this.projectFilter());
     return '/tasks?' + params;
   }
@@ -162,9 +189,85 @@ export class TasksStore {
       this.items.set(page.items);
       this.total.set(page.total);
       this.offset.set(page.offset);
+      await this.syncTree(seq);
     } catch (error) {
       if (seq === this.loadSeq) this.listError.set(this.message(error));
     } finally { if (seq === this.loadSeq) this.busy.set(false); }
+  }
+
+  /** A new filter or page starts collapsed; reloading the same page keeps what the user expanded. */
+  private async syncTree(seq: number) {
+    const key = `${this.projectFilter()}|${this.offset()}`;
+    if (key !== this.treeKey) {
+      this.treeKey = key;
+      this.expanded.set(new Set());
+      this.children.set({});
+      return;
+    }
+    const nodes = await Promise.all([...this.expanded()].map(async (id): Promise<[string, ChildNode] | null> => {
+      // A node that fails to refresh keeps its last rows.
+      try { return [id, await this.fetchNode(id, Math.max(this.pageSize, this.children()[id]?.items.length ?? 0))]; } catch { return null; }
+    }));
+    if (seq !== this.loadSeq) return;
+    this.children.update(map => ({ ...map, ...Object.fromEntries(nodes.filter((node): node is [string, ChildNode] => node !== null)) }));
+  }
+
+  private childrenPath(id: string, offset: number) {
+    return '/tasks?' + new URLSearchParams({ parentId: id, offset: String(offset), limit: String(this.pageSize) });
+  }
+
+  /** Reads pages from the start until `want` children are loaded, so a refresh keeps what "Cargar más" had added. */
+  private async fetchNode(id: string, want = this.pageSize): Promise<ChildNode> {
+    const items: Task[] = [];
+    while (true) {
+      const page = await apiRequest<TaskPage>(this.childrenPath(id, items.length));
+      items.push(...page.items);
+      if (!page.items.length || items.length >= page.total || items.length >= want) return { items, total: page.total };
+    }
+  }
+
+  private async trackNode(id: string, work: () => Promise<void>) {
+    this.loadingNodes.update(set => new Set(set).add(id));
+    try { await work(); } finally {
+      this.loadingNodes.update(set => { const next = new Set(set); next.delete(id); return next; });
+    }
+  }
+
+  /** Expanding loads the direct children; collapsing drops the whole subtree so it reopens collapsed. */
+  async toggleNode(task: Task) {
+    if (this.expanded().has(task.id)) { this.collapse(task.id); return; }
+    this.expanded.update(open => new Set(open).add(task.id));
+    await this.trackNode(task.id, async () => {
+      try {
+        const node = await this.fetchNode(task.id);
+        if (this.expanded().has(task.id)) this.children.update(map => ({ ...map, [task.id]: node }));
+      } catch (error) {
+        this.expanded.update(open => { const next = new Set(open); next.delete(task.id); return next; });
+        this.listError.set(this.message(error));
+      }
+    });
+  }
+
+  private collapse(id: string) {
+    const dropped = new Set<string>();
+    const walk = (nodeId: string) => {
+      dropped.add(nodeId);
+      for (const child of this.children()[nodeId]?.items ?? []) walk(child.id);
+    };
+    walk(id);
+    this.expanded.update(open => new Set([...open].filter(value => !dropped.has(value))));
+    this.children.update(map => Object.fromEntries(Object.entries(map).filter(([key]) => !dropped.has(key))));
+  }
+
+  async loadMore(task: Task) {
+    const node = this.children()[task.id];
+    if (!node || this.loadingNodes().has(task.id)) return;
+    await this.trackNode(task.id, async () => {
+      try {
+        const page = await apiRequest<TaskPage>(this.childrenPath(task.id, node.items.length));
+        this.children.update(map => map[task.id] ? { ...map, [task.id]: { items: [...map[task.id]!.items, ...page.items], total: page.total } } : map);
+      } catch (error) { this.listError.set(this.message(error)); }
+    });
   }
 
   /** The filter offers every project; failing to load it never blocks the task list. */
@@ -363,7 +466,7 @@ export class TasksStore {
 
   /** Titles already on the page or fetched by id; only the first targets are named. */
   private async nameTargets(preview: ScopePreview) {
-    const known = new Map(this.items().map(item => [item.id, item.title]));
+    const known = new Map(this.rows().filter(row => row.kind === 'task').map(row => [row.task.id, row.task.title]));
     const ids = [...new Set(preview.effects.flatMap(item => item.code === 'REACTIVATE_PROJECT' ? [] : item.targets.slice(0, NAMED_TARGETS)))];
     const titles = await Promise.all(ids.map(async (id): Promise<[string, string]> =>
       [id, known.get(id) ?? await apiRequest<Task>('/tasks/' + encodeURIComponent(id)).then(task => task.title, () => '')]));

@@ -39,7 +39,8 @@ Solicitud del usuario, literal: "La UI es edficiente, no sé qué tareas son hij
 Contrato acordado por el padre: `GET /api/v1/tasks?roots=true` (con `projectId`, `offset`, `limit`) lista solo raíces, recientes primero; `GET /api/v1/tasks?parentId=<id>` lista hijas directas, más antiguas primero, paginadas; ambos parámetros son excluyentes (400) y un padre inexistente da 404. El DTO `Task` añade `childCount` (hijas directas en cualquier estado). El listado plano actual no cambia.
 
 - [x] U1. Backend del árbol (S1): `roots`, `parentId`, `childCount`. RED 46/52, GREEN 52/52; typecheck y 185/185.
-- [ ] U2. UI (S1-S3): árbol expandible, insignias de color y menú de acción rápida, con E2E.
+- [x] U2a. UI del árbol (S1): RED válido, GREEN 185/185 y 104 E2E.
+- [ ] U2b. UI de colores y acción rápida (S2-S3), con E2E en `tests/e2e/tasks-quick.spec.ts`.
 
 ## Entrega
 

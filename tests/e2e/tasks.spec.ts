@@ -24,10 +24,11 @@ const row = (page: Page, name: string) => page.getByRole('row').filter({ hasText
 type Stored = { id: string; revision: number; state: string; lastCompletedAt: number | null };
 const fresh = async (request: APIRequestContext, id: string) => await (await request.get(`/api/v1/tasks/${id}`)).json() as Stored;
 
-async function closeTask(request: APIRequestContext, id: string) {
-  const done = await request.post(`/api/v1/tasks/${id}/change-state`, { data: { state: 'done', expectedRevision: (await fresh(request, id)).revision } });
-  expect(done.status()).toBe(200);
+async function setState(request: APIRequestContext, id: string, state: string) {
+  const changed = await request.post(`/api/v1/tasks/${id}/change-state`, { data: { state, expectedRevision: (await fresh(request, id)).revision } });
+  expect(changed.status()).toBe(200);
 }
+const closeTask = (request: APIRequestContext, id: string) => setState(request, id, 'done');
 
 async function seedChild(request: APIRequestContext, projectId: string, parentId: string, title: string) {
   return await seedTask(request, projectId, title, { parentId, expectedParentRevision: (await fresh(request, parentId)).revision });
@@ -38,6 +39,16 @@ async function editTask(page: Page, title: string) {
   await row(page, title).getByRole('button', { name: 'Editar' }).click();
   return page.getByRole('dialog', { name: 'Editar tarea' });
 }
+
+const toggle = (page: Page, title: string) => page.getByRole('button', { name: `Subtareas de ${title}`, exact: true });
+
+async function expandRow(page: Page, title: string) {
+  await toggle(page, title).click();
+  await expect(toggle(page, title)).toHaveAttribute('aria-expanded', 'true');
+}
+
+const indent = (page: Page, title: string) =>
+  row(page, title).getByRole('rowheader').evaluate(cell => parseFloat(getComputedStyle(cell).paddingLeft));
 
 async function openTasks(page: Page) {
   await page.goto('/');
@@ -91,7 +102,7 @@ test('crear una tarea en un proyecto la muestra en la lista con su contexto', as
     planned: { kind: 'day', day: '2026-06-04' }, due: { kind: 'instant', zone: 'America/Bogota' } });
 });
 
-test('crear subtarea fija proyecto y muestra padre aunque no esté en la página', async ({ page, request }) => {
+test('crear subtarea fija proyecto y muestra el padre consultado por id', async ({ page, request }) => {
   const { client, project } = await seedProject(request);
   const parentTitle = unique('Padre');
   const parent = await seedTask(request, project.id, parentTitle);
@@ -118,21 +129,21 @@ test('crear subtarea fija proyecto y muestra padre aunque no esté en la página
   await dialog.getByRole('button', { name: 'Guardar tarea' }).click();
   expect((await posted).postDataJSON()).toMatchObject({ projectId: project.id, parentId: parent.id, expectedParentRevision: parent.revision });
   await expect(dialog).toBeHidden();
+  // The list shows roots only: the parent now counts one child, and the new row sits under it.
+  await expect(toggle(page, parentTitle)).toContainText('1');
+  await expandRow(page, parentTitle);
   await expect(row(page, title)).toContainText(client.fullName);
   const stored = await (await request.get('/api/v1/tasks?projectId=' + project.id)).json();
   const child = stored.items.find((task: { title: string }) => task.title === title);
   expect(child).toMatchObject({ projectId: project.id, parentId: parent.id, state: 'new', priority: 'none' });
 
-  // The paginated list is not a tree. Hide the parent from this page, not from GET by id.
-  await page.route('**/api/v1/tasks?*', async route => {
-    const response = await route.fetch();
-    const body = await response.json();
-    body.items = body.items.filter((task: { id: string }) => task.id !== parent.id);
-    await route.fulfill({ response, json: body });
-  });
+  // Under the tree a child is only reachable through its expanded parent, so hiding the parent from the page no
+  // longer applies. The edit dialog must still name the parent by reading it by id.
   await openTasks(page);
-  await expect(row(page, parentTitle)).toHaveCount(0);
+  await expandRow(page, parentTitle);
+  const parentRead = page.waitForRequest(req => req.method() === 'GET' && req.url().endsWith(`/api/v1/tasks/${parent.id}`));
   await row(page, title).getByRole('button', { name: 'Editar' }).click();
+  await parentRead;
   const edit = page.getByRole('dialog', { name: 'Editar tarea' });
   await expect(edit.getByText(`Padre: ${parentTitle}`, { exact: true })).toBeVisible();
   await expect(edit.getByText(`${project.name} / ${client.fullName}`, { exact: true })).toBeVisible();
@@ -219,6 +230,8 @@ test('cambiar padre pagina candidatos y separar conserva proyecto y descendiente
   expect(saved).toMatchObject({ parentId: target.id, projectId: project.id, state: taskBody.state });
   expect(await (await request.get(`/api/v1/tasks/${child.id}`)).json()).toMatchObject({ parentId: task.id, projectId: project.id });
 
+  // The task now hangs under the target, so it only appears once the target is expanded; it stays expanded afterwards.
+  await expandRow(page, targetTitle);
   await row(page, title).getByRole('button', { name: 'Cambiar padre', exact: true }).click();
   await expect(select).toHaveValue(target.id);
   await dialog.getByRole('button', { name: 'Guardar padre', exact: true }).click();
@@ -368,14 +381,19 @@ test('cancelar con descendientes muestra la revisión, Volver no cambia nada y C
 test('reabrir con ancestro cerrado y proyecto completado muestra efectos y deja todo en curso', async ({ page, request }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const { project } = await seedProject(request);
-  const grand = await seedTask(request, project.id, unique('Abuela cerrada'));
-  const mid = await seedChild(request, project.id, grand.id, unique('Madre cerrada'));
+  const grandTitle = unique('Abuela cerrada');
+  const midTitle = unique('Madre cerrada');
+  const grand = await seedTask(request, project.id, grandTitle);
+  const mid = await seedChild(request, project.id, grand.id, midTitle);
   const title = unique('Hoja a reabrir');
   const leaf = await seedChild(request, project.id, mid.id, title);
   for (const id of [leaf.id, mid.id, grand.id]) await closeTask(request, id);
   const closed = await request.post(`/api/v1/projects/${project.id}/change-state`, { data: { state: 'completed', expectedRevision: project.revision } });
   expect(closed.status()).toBe(200);
   await openTasks(page);
+  // The leaf is two levels down: expand its closed ancestors first.
+  await expandRow(page, grandTitle);
+  await expandRow(page, midTitle);
   const dialog = await editTask(page, title);
   await expect(dialog.getByRole('button', { name: 'Cancelar tarea', exact: true })).toBeVisible();
   await dialog.getByRole('button', { name: 'Reabrir', exact: true }).click();
@@ -414,6 +432,62 @@ test('cancelar con efectos cambiados muestra el resumen nuevo y exige confirmar 
   await expect(dialog).toBeHidden();
   expect((await fresh(request, late.id)).state).toBe('cancelled');
   expect((await fresh(request, root.id)).state).toBe('cancelled');
+});
+
+test('árbol: la lista muestra raíces, cuenta hijas y expande y colapsa a cualquier nivel', async ({ page, request }) => {
+  const { project } = await seedProject(request);
+  const [rootTitle, aTitle, bTitle, cTitle] = [unique('Raíz árbol'), unique('Hija A'), unique('Hija B'), unique('Nieta C')];
+  const root = await seedTask(request, project.id, rootTitle);
+  const a = await seedChild(request, project.id, root.id, aTitle);
+  await seedChild(request, project.id, root.id, bTitle);
+  await seedChild(request, project.id, a.id, cTitle);
+  const rootsRequest = page.waitForRequest(req => new URL(req.url()).searchParams.get('roots') === 'true');
+  await openTasks(page);
+  expect(new URL((await rootsRequest).url()).pathname).toBe('/api/v1/tasks');
+  await expect(row(page, rootTitle)).toBeVisible();
+  for (const hidden of [aTitle, bTitle, cTitle]) await expect(row(page, hidden)).toHaveCount(0);
+  await expect(toggle(page, rootTitle)).toContainText('2');
+  await expect(toggle(page, rootTitle)).toHaveAttribute('aria-expanded', 'false');
+  const childrenRequest = page.waitForRequest(req => new URL(req.url()).searchParams.get('parentId') === root.id);
+  await expandRow(page, rootTitle);
+  await childrenRequest;
+  await expect(toggle(page, aTitle)).toContainText('1');
+  await expect(row(page, bTitle)).toBeVisible();
+  await expect(row(page, cTitle)).toHaveCount(0);
+  await expandRow(page, aTitle);
+  const [rootPad, childPad, grandPad] = [await indent(page, rootTitle), await indent(page, aTitle), await indent(page, cTitle)];
+  expect(childPad).toBeGreaterThan(rootPad);
+  expect(grandPad).toBeGreaterThan(childPad);
+  await toggle(page, rootTitle).click();
+  for (const gone of [aTitle, bTitle, cTitle]) await expect(row(page, gone)).toHaveCount(0);
+  await expect(toggle(page, rootTitle)).toHaveAttribute('aria-expanded', 'false');
+  await expandRow(page, rootTitle);
+  await expect(toggle(page, aTitle)).toHaveAttribute('aria-expanded', 'false');
+});
+
+test('árbol: un nodo con más de una página ofrece Cargar más', async ({ page, request }) => {
+  const { project } = await seedProject(request);
+  const title = unique('Padre grande');
+  const parent = await seedTask(request, project.id, title);
+  const sample = await seedChild(request, project.id, parent.id, unique('Muestra'));
+  const body = await (await request.get(`/api/v1/tasks/${sample.id}`)).json();
+  const synthetic = Array.from({ length: 60 }, (_, index) => ({ ...body, id: `hija-${index}`, title: `Hija sintética ${index}`, childCount: 0 }));
+  const offsets: number[] = [];
+  await page.route(url => url.pathname === '/api/v1/tasks' && url.searchParams.get('parentId') === parent.id, async route => {
+    const params = new URL(route.request().url()).searchParams;
+    const offset = Number(params.get('offset') ?? 0);
+    const limit = Number(params.get('limit') ?? 50);
+    offsets.push(offset);
+    await route.fulfill({ json: { items: synthetic.slice(offset, offset + limit), total: synthetic.length, offset, limit } });
+  });
+  await openTasks(page);
+  await expandRow(page, title);
+  await expect(row(page, 'Hija sintética 49')).toBeVisible();
+  await expect(row(page, 'Hija sintética 50')).toHaveCount(0);
+  await page.getByRole('button', { name: `Cargar más subtareas de ${title}`, exact: true }).click();
+  await expect(row(page, 'Hija sintética 59')).toBeVisible();
+  await expect(page.getByRole('button', { name: `Cargar más subtareas de ${title}` })).toHaveCount(0);
+  expect(offsets).toEqual([0, 50]);
 });
 
 test('editar prioridad, fechas y referencias persiste la revisión tras recargar', async ({ page, request }) => {

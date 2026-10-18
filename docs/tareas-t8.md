@@ -135,6 +135,12 @@ Solicitado por el usuario para leer la jerarquía en la lista.
 
 RED: 46 pasan y 6 fallan. GREEN: 52/52 pruebas enfocadas. Tres aserciones antiguas comparaban la tarea padre completa y se ajustaron a `{ ...root, childCount: 1 }`, conservando que crear una hija no cambia sus datos ni su revisión. Padre: typecheck correcto y `npm test` 185/185.
 
+## Árbol en la web
+
+La lista muestra solo tareas raíz (`roots=true`), con el filtro de proyecto y la paginación de siempre. Cada fila con hijas tiene el botón "Subtareas de <título>" con su contador y `aria-expanded`. Al expandir se cargan las hijas directas (`parentId`) en páginas de 50, indentadas a cualquier nivel, con "Cargar más subtareas de <título>" mientras haya más. Colapsar descarta el subárbol. Tras una mutación se vuelven a leer los nodos expandidos sin colapsarlos; cambiar de página o de filtro colapsa todo. La sangría tiene un tope de 120 px para que el título se lea en 390 px. El selector de "Cambiar padre" sigue usando el listado plano.
+
+E2E: RED válido con el backend real, por la UI ausente. Se ajustaron tres pruebas existentes que dependían de la lista plana (crear subtarea, cambiar padre y reabrir con ancestro cerrado): ahora expanden el padre para llegar a la hija. GREEN: typecheck correcto, 185/185 pruebas y 104 E2E aprobados con 3 omitidas preexistentes, sin contar `tasks-quick.spec.ts`, que pertenece a la unidad siguiente.
+
 ## Continuación
 
 T8 queda completa en web/API en la rama local `feat/tasks-t8`, sin push ni merge. La forma de aceptación está duplicada de `client-scope.ts` porque allí no es genérica; extraerla exige editar ese módulo. Traslados entre proyectos quedan en T11. Sin push ni merge; las bases y certificados de prueba son temporales. Las aprobaciones registradas cubren cada commit por separado, no el acumulado de la rama.

@@ -31,9 +31,25 @@
         </tr>
       </thead>
       <tbody>
-        @for (task of s.items(); track task.id) {
+        @for (row of s.rows(); track row.key) {
+          @let task = row.task;
+          @if (row.kind === 'more') {
+            <tr class="more-row">
+              <td colspan="7" [style.--depth]="row.depth">
+                <button type="button" (click)="s.loadMore(task)" [disabled]="s.loadingNodes().has(task.id)" [attr.aria-label]="'Cargar más subtareas de ' + task.title">Cargar más</button>
+              </td>
+            </tr>
+          } @else {
           <tr>
-            <th scope="row">{{ task.title }}@if (s.hasWarning(task)) { <small class="row-warning">La planificación es posterior al límite.</small> }</th>
+            <th scope="row" [style.--depth]="row.depth">
+              @if (task.childCount) {
+                <button type="button" class="tree-toggle" (click)="s.toggleNode(task)" [disabled]="s.loadingNodes().has(task.id)"
+                  [attr.aria-expanded]="s.expanded().has(task.id)" [attr.aria-label]="'Subtareas de ' + task.title" [attr.aria-describedby]="'count-' + task.id">
+                  <span aria-hidden="true">{{ s.expanded().has(task.id) ? '▾' : '▸' }}</span> {{ task.childCount }}
+                </button>
+                <span class="visually-hidden" [id]="'count-' + task.id">{{ task.childCount }} subtareas</span>
+              } @else { <span class="tree-spacer" aria-hidden="true"></span> }
+              {{ task.title }}@if (s.hasWarning(task)) { <small class="row-warning">La planificación es posterior al límite.</small> }</th>
             <td>{{ task.context.projectName }}<small class="row-context">{{ task.context.clientName }}</small></td>
             <td>{{ s.stateLabel(task.state) }}</td>
             <td>{{ s.priorityLabel(task.priority) }}</td>
@@ -45,6 +61,7 @@
               <button type="button" (click)="s.openHierarchy(task)" [disabled]="s.busy()">Cambiar padre</button>
             </div></td>
           </tr>
+          }
         }
       </tbody>
     </table>
