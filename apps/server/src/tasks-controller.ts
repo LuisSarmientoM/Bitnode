@@ -30,7 +30,7 @@ class TaskErrors implements ExceptionFilter {
   }
 }
 
-const LIST_PARAMETERS = ['offset', 'limit', 'projectId'];
+const LIST_PARAMETERS = ['offset', 'limit', 'projectId', 'roots', 'parentId'];
 
 /** Hierarchy, state, cancel and reopen have explicit commands; move and deletion remain future commands. */
 @Controller('api/v1/tasks')

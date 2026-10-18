@@ -60,7 +60,7 @@ test('reparentar y separar conservan rama, proyecto y datos; no-op conserva revi
   const moved = db.tasks.reparent(branch.id, { expectedRevision: 1, parentId: root.id, expectedParentRevision: 1 });
   assert.deepEqual(moved, { ...before, parentId: root.id, revision: 2, updatedAt: moved.updatedAt });
   assert.deepEqual(db.tasks.get(leaf.id), leaf);
-  assert.deepEqual(db.tasks.get(root.id), root);
+  assert.deepEqual(db.tasks.get(root.id), { ...root, childCount: 1 });
   assert.deepEqual(db.tasks.reparent(branch.id, { expectedRevision: 2, parentId: root.id, expectedParentRevision: 1 }), moved);
   raw.prepare("UPDATE projects SET state = 'archived' WHERE id = ?").run(projectId);
   const detached = db.tasks.detach(branch.id, { expectedRevision: 2 });
@@ -206,8 +206,8 @@ test('subtareas multinivel: mismo proyecto, revisión del padre y sin cambios en
   const leaf = db.tasks.create({ projectId, parentId: child.id, expectedParentRevision: 1, title: 'Nieta' });
   assert.deepEqual([child.parentId, leaf.parentId, leaf.projectId, leaf.state, leaf.revision],
     [root.id, child.id, projectId, 'new', 1]);
-  assert.deepEqual(db.tasks.get(root.id), root);
-  assert.deepEqual(db.tasks.get(child.id), child);
+  assert.deepEqual(db.tasks.get(root.id), { ...root, childCount: 1 });
+  assert.deepEqual(db.tasks.get(child.id), { ...child, childCount: 1 });
   assert.equal(db.tasks.list(0, 50, { projectId }).items.find(task => task.id === leaf.id)?.parentId, child.id);
   db.tasks.update(root.id, { expectedRevision: 1, title: 'Editada' });
   const total = db.tasks.list(0, 50).total;

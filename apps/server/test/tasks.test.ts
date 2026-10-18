@@ -73,6 +73,37 @@ test('API change-state: finalización, revisiones, descendientes y reopen obliga
   } finally { await h.close(); }
 });
 
+test('API del árbol: roots, parentId, childCount y validaciones 400/404', async () => {
+  const h = await harness();
+  try {
+    const projectId = h.project('Árbol');
+    const root = await h.create({ projectId, title: 'Raíz' });
+    assert.equal(root.childCount, 0);
+    const first = await h.create({ projectId, title: 'Primera', parentId: root.id, expectedParentRevision: 1 });
+    const second = await h.create({ projectId, title: 'Segunda', parentId: root.id, expectedParentRevision: 1 });
+    const grand = await h.create({ projectId, title: 'Nieta', parentId: first.id, expectedParentRevision: 1 });
+    const lone = await h.create({ projectId: h.project('Otro'), title: 'Suelta' });
+    const page = async (query: string) => (await (await h.send(query)).json());
+    const rootsPage = await page(`?roots=true&projectId=${projectId}`);
+    assert.deepEqual([rootsPage.items.map((task: { id: string }) => task.id), rootsPage.total], [[root.id], 1]);
+    assert.equal(rootsPage.items[0].childCount, 2);
+    assert.deepEqual((await page('?roots=true')).items.map((task: { id: string }) => task.id), [lone.id, root.id]);
+    const children = await page(`?parentId=${root.id}&limit=1&offset=1`);
+    assert.deepEqual([children.items.map((task: { id: string }) => task.id), children.total, children.limit, children.offset], [[second.id], 2, 1, 1]);
+    assert.deepEqual((await page(`?parentId=${root.id}`)).items.map((task: { id: string }) => task.id), [first.id, second.id]);
+    assert.deepEqual((await page(`?parentId=${first.id}`)).items.map((task: { id: string }) => task.id), [grand.id]);
+    assert.equal(await h.total(), 5);
+    assert.equal((await (await h.send('/' + root.id)).json()).childCount, 2);
+    const patched = await (await h.send('/' + first.id, 'PATCH', { expectedRevision: 1, title: 'Primera editada' })).json();
+    assert.equal(patched.childCount, 1);
+    await error(await h.send('?parentId=missing'), 404, 'NOT_FOUND');
+    for (const query of ['?roots=true&parentId=' + root.id, '?roots=false', '?roots=1', '?roots=', '?parentId=',
+      `?parentId=${root.id}&projectId=${projectId}`, '?roots=true&roots=true']) {
+      await error(await h.send(query), 400, 'VALIDATION_ERROR');
+    }
+  } finally { await h.close(); }
+});
+
 test('API cancel/reopen: 200, CONFIRMATION_REQUIRED, PREVIEW_CHANGED y bloqueos 409', async () => {
   const h = await harness();
   try {

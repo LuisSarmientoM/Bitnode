@@ -170,8 +170,19 @@ test('referencias: http/https hasta 4096, nombre opcional hasta 500, máximo 100
 });
 
 test('consulta de lista por proyecto opcional', () => {
-  assert.deepEqual(taskQuery({}), { projectId: undefined });
-  assert.deepEqual(taskQuery({ projectId: 'p1' }), { projectId: 'p1' });
+  assert.deepEqual(taskQuery({}), { projectId: undefined, roots: false, parentId: undefined });
+  assert.deepEqual(taskQuery({ projectId: 'p1' }), { projectId: 'p1', roots: false, parentId: undefined });
   assert.throws(() => taskQuery({ projectId: '' }), invalid);
   assert.throws(() => taskQuery({ projectId: ['a', 'b'] }), invalid);
+});
+
+test('consulta de árbol: roots solo con "true", parentId no vacío y combinaciones excluyentes', () => {
+  assert.deepEqual(taskQuery({ roots: 'true' }), { projectId: undefined, roots: true, parentId: undefined });
+  assert.deepEqual(taskQuery({ roots: 'true', projectId: 'p1' }), { projectId: 'p1', roots: true, parentId: undefined });
+  assert.deepEqual(taskQuery({ parentId: 't1' }), { projectId: undefined, roots: false, parentId: 't1' });
+  for (const value of [
+    { roots: 'false' }, { roots: '1' }, { roots: '' }, { roots: true }, { roots: ['true'] }, { roots: 'TRUE' },
+    { parentId: '' }, { parentId: ['a', 'b'] }, { parentId: 3 },
+    { roots: 'true', parentId: 't1' }, { parentId: 't1', projectId: 'p1' },
+  ]) assert.throws(() => taskQuery(value), invalid, JSON.stringify(value));
 });

@@ -58,7 +58,7 @@ interface Row {
   id: string; projectId: string; parentId: string | null; title: string; description: string; state: TaskState;
   priority: TaskPriority; plannedKind: string | null; plannedDay: string | null; plannedAt: number | null;
   dueKind: string | null; dueDay: string | null; dueAt: number | null; revision: number; createdAt: number; updatedAt: number;
-  lastCompletedAt: number | null;
+  lastCompletedAt: number | null; childCount: number;
   projectName: string; clientId: string; clientName: string;
 }
 
@@ -66,6 +66,7 @@ const columns = `t.id, t.project_id AS projectId, t.parent_id AS parentId, t.tit
   t.planned_kind AS plannedKind, t.planned_day AS plannedDay, t.planned_at AS plannedAt,
   t.due_kind AS dueKind, t.due_day AS dueDay, t.due_at AS dueAt,
   t.revision, t.created_at AS createdAt, t.updated_at AS updatedAt, t.last_completed_at AS lastCompletedAt,
+  (SELECT count(*) FROM tasks c WHERE c.parent_id = t.id) AS childCount,
   p.name AS projectName, p.client_id AS clientId, c.full_name AS clientName`;
 const from = 'tasks t JOIN projects p ON p.id = t.project_id JOIN clients c ON c.id = p.client_id';
 
@@ -86,6 +87,7 @@ export function taskStore(sqlite: Database.Database): TasksRepository {
       state: row.state, priority: row.priority, planned, due, references: references(row.id), warnings: taskWarnings(planned, due),
       context: { projectId: row.projectId, projectName: row.projectName, clientId: row.clientId, clientName: row.clientName },
       revision: row.revision, createdAt: row.createdAt, updatedAt: row.updatedAt, lastCompletedAt: row.lastCompletedAt,
+      childCount: row.childCount,
     };
   };
   const get = (id: string) => {
@@ -166,14 +168,21 @@ export function taskStore(sqlite: Database.Database): TasksRepository {
     }).immediate();
   return {
     list(offset, limit, query = { projectId: undefined }) {
-      const projectId = query.projectId ?? null;
-      return sqlite.transaction(() => ({
-        items: (sqlite.prepare(`SELECT ${columns} FROM ${from} WHERE (@projectId IS NULL OR t.project_id = @projectId)
-          ORDER BY t.created_at DESC, t.id LIMIT @limit OFFSET @offset`).all({ projectId, limit, offset }) as Row[]).map(toTask),
-        total: (sqlite.prepare('SELECT count(*) AS count FROM tasks WHERE (@projectId IS NULL OR project_id = @projectId)')
-          .get({ projectId }) as { count: number }).count,
-        offset, limit,
-      }))();
+      const filter = { projectId: query.projectId ?? null, roots: query.roots ? 1 : 0, parentId: query.parentId ?? null };
+      return sqlite.transaction(() => {
+        if (filter.parentId !== null) get(filter.parentId);
+        // Children read oldest first so a branch keeps creation order; every other listing is newest first.
+        return {
+          items: (sqlite.prepare(`SELECT ${columns} FROM ${from} WHERE (@projectId IS NULL OR t.project_id = @projectId)
+            AND (@roots = 0 OR t.parent_id IS NULL) AND (@parentId IS NULL OR t.parent_id = @parentId)
+            ORDER BY CASE WHEN @parentId IS NULL THEN -t.created_at ELSE t.created_at END, t.id LIMIT @limit OFFSET @offset`)
+            .all({ ...filter, limit, offset }) as Row[]).map(toTask),
+          total: (sqlite.prepare(`SELECT count(*) AS count FROM tasks WHERE (@projectId IS NULL OR project_id = @projectId)
+            AND (@roots = 0 OR parent_id IS NULL) AND (@parentId IS NULL OR parent_id = @parentId)`)
+            .get(filter) as { count: number }).count,
+          offset, limit,
+        };
+      })();
     },
     get: id => sqlite.transaction(() => get(id))(),
     create(value) {

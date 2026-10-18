@@ -28,6 +28,19 @@ Permitir subtareas multinivel y cambios de jerarquía dentro del mismo proyecto,
 - [x] UI de estados, cancelación y reapertura: RED válido 5/5 contra el código sin UI; GREEN 180/180 y 102 E2E (3 omitidas preexistentes).
 - [x] Commit `28dd335`; revisión `review-67839142ed238d57` aprobada y reconocida.
 
+## Mejoras de lectura de la lista
+
+Solicitud del usuario, literal: "La UI es edficiente, no sé qué tareas son hijas (se me ocurre anidarlas), los estados deben tener un código de color para facilitar la lectura, el cambio de estado debe ser un quick action". Colores, literal: "Nueva azul, En curso amarillo, bloqueada roo, en revisión violeta, completada verde, cancelada gris".
+
+- S1. Anidado con expandir y colapsar: la lista muestra tareas raíz con contador de hijas; al expandir se cargan sus hijas indentadas, a cualquier nivel, sin depender de la página.
+- S2. Color por estado: Nueva azul, En curso amarillo, Bloqueada rojo, En revisión violeta, Completada verde, Cancelada gris. Siempre con la etiqueta de texto y contraste legible en el tema oscuro.
+- S3. Acción rápida: la insignia de estado de cada fila abre un menú con los demás estados; cancelar y reabrir con efectos muestran la confirmación en el mismo lugar.
+
+Contrato acordado por el padre: `GET /api/v1/tasks?roots=true` (con `projectId`, `offset`, `limit`) lista solo raíces, recientes primero; `GET /api/v1/tasks?parentId=<id>` lista hijas directas, más antiguas primero, paginadas; ambos parámetros son excluyentes (400) y un padre inexistente da 404. El DTO `Task` añade `childCount` (hijas directas en cualquier estado). El listado plano actual no cambia.
+
+- [x] U1. Backend del árbol (S1): `roots`, `parentId`, `childCount`. RED 46/52, GREEN 52/52; typecheck y 185/185.
+- [ ] U2. UI (S1-S3): árbol expandible, insignias de color y menú de acción rápida, con E2E.
+
 ## Entrega
 
 Decisión del usuario: un solo PR con varios commits, sin crearlo todavía porque el trabajo no ha terminado. La rama suma unas 1890 líneas authored en 10 commits, cada uno revisado por separado; se conservan como commits independientes dentro del PR. No hacer push ni abrir el PR hasta una nueva indicación expresa.

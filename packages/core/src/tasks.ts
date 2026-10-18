@@ -15,6 +15,8 @@ export interface Task {
   id: string;
   projectId: string;
   parentId: string | null;
+  /** Direct children in any state; descendants further down are not counted. */
+  childCount: number;
   title: string;
   description: string;
   state: TaskState;
@@ -31,7 +33,8 @@ export interface Task {
 }
 
 export interface TaskPage { items: Task[]; total: number; offset: number; limit: number }
-export interface TaskQuery { projectId: string | undefined }
+/** `roots` and `parentId` select a level of the tree; they are mutually exclusive, and `parentId` excludes `projectId`. */
+export interface TaskQuery { projectId: string | undefined; roots?: boolean; parentId?: string | undefined }
 
 export interface TasksRepository {
   list(offset: number, limit: number, query?: TaskQuery): TaskPage;
@@ -267,7 +270,11 @@ export function taskPatch(value: unknown): { revision: number; changes: TaskChan
   return { revision, changes };
 }
 
-export function taskQuery(value: { projectId?: unknown }): TaskQuery {
+export function taskQuery(value: { projectId?: unknown; roots?: unknown; parentId?: unknown }): TaskQuery {
   if (value.projectId !== undefined && (typeof value.projectId !== 'string' || !value.projectId)) invalid('El filtro de proyecto no es válido.');
-  return { projectId: value.projectId as string | undefined };
+  if (value.roots !== undefined && value.roots !== 'true') invalid('El filtro de raíces solo admite el valor true.');
+  if (value.parentId !== undefined && (typeof value.parentId !== 'string' || !value.parentId)) invalid('El filtro de padre no es válido.');
+  if (value.roots !== undefined && value.parentId !== undefined) invalid('No se pueden combinar raíces y padre en la misma consulta.');
+  if (value.parentId !== undefined && value.projectId !== undefined) invalid('Las hijas de un padre ya pertenecen a su proyecto; no combines padre y proyecto.');
+  return { projectId: value.projectId as string | undefined, roots: value.roots === 'true', parentId: value.parentId as string | undefined };
 }

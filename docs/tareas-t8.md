@@ -124,6 +124,17 @@ E2E: la primera pasada RED tuvo cuatro fallos de preparación (el helper buscaba
 
 Revisión `review-67839142ed238d57`, sobre `681348d..28dd335`, aprobada con tres lentes y reconocida, sin correcciones. Observaciones no bloqueantes de legibilidad y fiabilidad (manejo de títulos de efectos, foco y casos de error de la confirmación) quedan como trabajo posterior.
 
+## Árbol de tareas, backend
+
+Solicitado por el usuario para leer la jerarquía en la lista.
+
+- `GET /api/v1/tasks?roots=true` (con `projectId`, `offset`, `limit` opcionales) lista solo tareas sin padre, recientes primero.
+- `GET /api/v1/tasks?parentId=<id>` lista las hijas directas, más antiguas primero, paginadas con total. Un padre inexistente da 404 `NOT_FOUND`. Combinar `roots` con `parentId`, enviar `roots` distinto de `true`, `parentId` vacío o `projectId` junto a `parentId` da 400 `VALIDATION_ERROR`.
+- `Task.childCount` cuenta las hijas directas en cualquier estado. Se calcula con una subconsulta en la misma lectura, sin una consulta extra por fila, y aparece en listados, `GET /:id` y en todas las mutaciones.
+- El listado plano sin esos parámetros no cambia; lo sigue usando el selector de padre. Sin cambios de esquema.
+
+RED: 46 pasan y 6 fallan. GREEN: 52/52 pruebas enfocadas. Tres aserciones antiguas comparaban la tarea padre completa y se ajustaron a `{ ...root, childCount: 1 }`, conservando que crear una hija no cambia sus datos ni su revisión. Padre: typecheck correcto y `npm test` 185/185.
+
 ## Continuación
 
 T8 queda completa en web/API en la rama local `feat/tasks-t8`, sin push ni merge. La forma de aceptación está duplicada de `client-scope.ts` porque allí no es genérica; extraerla exige editar ese módulo. Traslados entre proyectos quedan en T11. Sin push ni merge; las bases y certificados de prueba son temporales. Las aprobaciones registradas cubren cada commit por separado, no el acumulado de la rama.
