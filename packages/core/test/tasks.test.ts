@@ -1,9 +1,21 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { taskDateInput, taskDetach, taskInput, taskPatch, taskQuery, taskReparent, taskWarnings } from '../src/tasks.ts';
+import { taskChangeState, taskDateInput, taskDetach, taskInput, taskPatch, taskQuery, taskReparent, taskWarnings } from '../src/tasks.ts';
 
 const invalid = { code: 'VALIDATION_ERROR' };
 const at = (iso: string) => Date.parse(iso);
+
+test('change-state solo admite abiertos o done y exige revisión', () => {
+  for (const state of ['new', 'in_progress', 'blocked', 'in_review', 'done']) {
+    assert.deepEqual(taskChangeState({ state, expectedRevision: 2 }), { state, revision: 2 });
+  }
+  for (const value of [{ state: 'cancelled', expectedRevision: 1 }, { state: 'done' },
+    { state: 'done', expectedRevision: 0 }, { state: 'done', expectedRevision: 1, blockedReason: 'x' },
+    { state: 'done', expectedRevision: 1, lastCompletedAt: 123 }]) {
+    assert.throws(() => taskChangeState(value), invalid);
+  }
+  assert.throws(() => taskPatch({ expectedRevision: 1, lastCompletedAt: 123 }), invalid);
+});
 
 test('comandos de jerarquía exigen revisiones y rechazan campos ajenos', () => {
   const input = { expectedRevision: 2, parentId: 'p', expectedParentRevision: 3 };

@@ -51,6 +51,28 @@ async function error(response: globalThis.Response, status: number, code: string
   assert.equal(typeof body.error.message, 'string');
 }
 
+test('API change-state: finalización, revisiones, descendientes y reopen obligatorio', async () => {
+  const h = await harness();
+  try {
+    const projectId = h.project('Estados');
+    const root = await h.create({ projectId, title: 'Raíz' });
+    const child = await h.create({ projectId, title: 'Hija', parentId: root.id, expectedParentRevision: 1 });
+    const change = (id: string, state: string, expectedRevision = 1) => h.send('/' + id + '/change-state', 'POST', { state, expectedRevision });
+    await error(await change(root.id, 'done'), 409, 'CONFLICT', 'OPEN_DESCENDANTS');
+    await error(await change(child.id, 'cancelled'), 400, 'VALIDATION_ERROR');
+    const response = await change(child.id, 'done');
+    assert.equal(response.status, 200);
+    const done = await response.json();
+    assert.equal(typeof done.lastCompletedAt, 'number');
+    assert.equal(done.lastCompletedAt, done.updatedAt);
+    assert.deepEqual(await (await change(child.id, 'done', 2)).json(), done);
+    await error(await change(child.id, 'new', 2), 409, 'CONFLICT', 'REOPEN_REQUIRED');
+    await error(await change(child.id, 'done'), 409, 'CONFLICT', 'REVISION_MISMATCH');
+    assert.equal((await (await change(root.id, 'done')).json()).state, 'done');
+    await error(await change('missing', 'done'), 404, 'NOT_FOUND');
+  } finally { await h.close(); }
+});
+
 test('API reparent/detach: revisiones, no-op y conflictos de jerarquía', async () => {
   const h = await harness();
   try {

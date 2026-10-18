@@ -17,6 +17,7 @@ export interface Task {
   title: string;
   description: string;
   state: TaskState;
+  lastCompletedAt: number | null;
   priority: TaskPriority;
   planned: TaskDate;
   due: TaskDate;
@@ -38,6 +39,7 @@ export interface TasksRepository {
   update(id: string, value: unknown): Task;
   reparent(id: string, value: unknown): Task;
   detach(id: string, value: unknown): Task;
+  changeState(id: string, value: unknown): Task;
 }
 
 export interface ReferenceInput { id: string | null; url: string; name: string | null }
@@ -153,6 +155,15 @@ export function taskInput(value: unknown) {
     planned: input.planned === undefined ? null : taskDateInput(input.planned),
     due: input.due === undefined ? null : taskDateInput(input.due),
   };
+}
+
+/** Cancel and reopen use separate commands, not change-state or PATCH. */
+export function taskChangeState(value: unknown) {
+  const input = inputObject(value, ['expectedRevision', 'state']);
+  if (input.state !== 'done' && !OPEN_TASK_STATES.includes(input.state as TaskState)) {
+    invalid('Selecciona un estado abierto o completada. Cancelar requiere su propio comando.');
+  }
+  return { revision: taskRevision(input.expectedRevision), state: input.state as Exclude<TaskState, 'cancelled'> };
 }
 
 /** Hierarchy commands never accept project or state changes. */

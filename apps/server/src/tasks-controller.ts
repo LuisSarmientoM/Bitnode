@@ -9,6 +9,7 @@ export const TASKS_REPOSITORY = Symbol('tasks.repository');
 
 const CONFLICT_REASONS: Record<string, string> = {
   REVISION_CONFLICT: 'REVISION_MISMATCH', PROJECT_CLOSED: 'PROJECT_CLOSED',
+  OPEN_DESCENDANTS: 'OPEN_DESCENDANTS', REOPEN_REQUIRED: 'REOPEN_REQUIRED',
   PARENT_PROJECT_MISMATCH: 'PARENT_PROJECT_MISMATCH', PARENT_CLOSED: 'PARENT_CLOSED', HIERARCHY_CYCLE: 'HIERARCHY_CYCLE',
 };
 
@@ -24,7 +25,7 @@ class TaskErrors implements ExceptionFilter {
 
 const LIST_PARAMETERS = ['offset', 'limit', 'projectId'];
 
-/** Hierarchy has explicit commands; state, move and deletion remain separate future commands. */
+/** Hierarchy/state have explicit commands; cancel, reopen, move and deletion remain future commands. */
 @Controller('api/v1/tasks')
 @UseFilters(TaskErrors)
 export class TasksController {
@@ -50,6 +51,10 @@ export class TasksController {
   @Post(':id/detach')
   @HttpCode(200)
   detach(@Param('id') id: string, @Body() value: unknown) { return this.tasks.detach(id, value); }
+
+  @Post(':id/change-state')
+  @HttpCode(200)
+  changeState(@Param('id') id: string, @Body() value: unknown) { return this.tasks.changeState(id, value); }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() value: unknown) { return this.tasks.update(id, value); }

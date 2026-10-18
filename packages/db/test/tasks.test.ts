@@ -138,17 +138,17 @@ test('fallo posterior al UPDATE revierte parent_id y revisión de reparent/detac
   assert.deepEqual(db.tasks.get(task.id), moved);
 }));
 
-test('migra user_version 4 a 6 conservando datos, persiste al reabrir y rechaza versiones futuras', () => {
+test('migra user_version 4 a 7 conservando datos, persiste al reabrir y rechaza versiones futuras', () => {
   const directory = mkdtempSync(join(tmpdir(), 'bitnode-tasks-'));
   const path = join(directory, 'bitnode.sqlite');
   try {
     schema4(path).close();
     openNotes(path).close();
     const check = new Database(path);
-    assert.equal(check.pragma('user_version', { simple: true }), 6);
+    assert.equal(check.pragma('user_version', { simple: true }), 7);
     assert.deepEqual(check.prepare('SELECT title, revision FROM notes').all(), [{ title: 'Anterior', revision: 4 }]);
     assert.deepEqual(check.prepare('SELECT full_name AS n, revision AS r FROM clients').all(), [{ n: 'Acme', r: 3 }]);
-    check.pragma('user_version = 7');
+    check.pragma('user_version = 8');
     check.close();
     assert.throws(() => openNotes(path), /más reciente/);
   } finally { rmSync(directory, { recursive: true, force: true }); }

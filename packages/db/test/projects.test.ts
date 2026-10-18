@@ -48,8 +48,8 @@ test('migra user_version 4 a 6 conservando datos, persiste al reabrir y rechaza 
       assert.equal(db.clients.get('c1').tags[0]?.id, 't1');
     } finally { db.close(); }
     const check = new Database(path);
-    assert.equal(check.pragma('user_version', { simple: true }), 6);
-    check.pragma('user_version = 7');
+    assert.equal(check.pragma('user_version', { simple: true }), 7);
+    check.pragma('user_version = 8');
     check.close();
     assert.throws(() => openNotes(path), /más reciente/);
   } finally { rmSync(directory, { recursive: true, force: true }); }

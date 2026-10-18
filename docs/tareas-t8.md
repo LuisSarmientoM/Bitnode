@@ -1,6 +1,6 @@
 # T8: jerarquía y transiciones
 
-Creación de subtareas implementada en core, SQLite, API y web. Cambiar/quitar padre implementado en core, SQLite y API, pendiente de verificación global y revisión del padre. T8 sigue incompleta: faltan transiciones y UI de reparentado. La CLI queda excluida.
+Creación de subtareas implementada en core, SQLite, API y web. Cambiar/quitar padre backend verificado y guardado en 3a16c1a; revisión pendiente. Estados simples y finalización backend implementados, pendientes de verificación global y revisión del padre. T8 sigue incompleta: faltan cancelación, reapertura y UI de reparentado/estados. La CLI queda excluida.
 
 ## Contrato disponible
 
@@ -62,8 +62,25 @@ Mismo comando enfocado documentado arriba, timeout 30 segundos, fixtures aislada
 - Ejecución intermedia: código 1, 28 pasan y 1 falla. NestJS devolvía 201 en acciones; se añadió HttpCode(200) explícito.
 - GREEN: código 0, 29 pasan y 0 fallan, 2,19 s. Añade no-op, self/ciclo multinivel, padre ausente/ajeno, ancestros cerrados, proyecto cerrado, tarea cerrada, conservación de rama y rollback tras UPDATE mediante trigger de fixture.
 - Dos conexiones SQLite independientes verifican escrituras secuenciales con revisión obsoleta de tarea/padre, incluidos no-op. No prueba contención ni carrera multiproceso.
-- Verificación del padre: `npm run typecheck && npm test`, código 0 y 162 pruebas aprobadas. LSP activo confirmó dos archivos limpios y dejó cuatro inconclusos, sin hallazgos recibidos. Todavía sin E2E de reparentado ni revisión nativa de esta segunda unidad.
+- Verificación del padre: `npm run typecheck && npm test`, código 0 y 162 pruebas aprobadas. LSP activo confirmó dos archivos limpios y dejó cuatro inconclusos, sin hallazgos recibidos. Revisión nativa `review-3cfda30cb914bbab`, sobre `e2ac786..3a16c1a`, con cuatro lentes. El refutador confirmó un hallazgo CRITICAL causado por la unidad: el helper compartido cambiaba el mensaje PARENT_CLOSED de crear subtarea por el de cambiar jerarquía. La corrección acotada `3456380` pasa la acción al helper y fija el mensaje exacto en la prueba de creación (RED observado, GREEN 29/29). El validador dirigido la aprobó y la revisión quedó reconocida. Observaciones no bloqueantes: non-null de la revisión del padre y mensaje compartido parametrizado.
+
+## Estados simples y finalización, tercera unidad backend
+
+`POST /api/v1/tasks/:id/change-state` recibe `{expectedRevision, state}` y devuelve HTTP 200 con la tarea. Solo admite new/in_progress/blocked/in_review/done. Estado cancelled y campos desconocidos se rechazan con 400. PATCH no permite estado ni lastCompletedAt. blockedReason opcional queda fuera de esta unidad.
+
+- Entre abiertas no hay flujo obligatorio. Antes de guardar se exige proyecto active/paused y todos los ancestros abiertos, incluso si el destino es el mismo estado abierto.
+- Desde done/cancelled hacia abierta devuelve 409 CONFLICT, reason REOPEN_REQUIRED; requiere el futuro comando reopen, nunca reapertura implícita.
+- Completar vuelve a consultar toda la descendencia bajo IMMEDIATE y bloquea cualquier descendiente abierto con OPEN_DESCENDANTS, también desde cancelled. No cambia descendientes cerrados. Completar puede resolver una abierta en un contexto cerrado, porque no crea ninguna abierta.
+- Revisiones obsoletas devuelven REVISION_MISMATCH antes de reconocer no-op. done→done conserva revisión, updatedAt y lastCompletedAt. Un cierre real toma un único Date.now dentro de escritura para updatedAt y lastCompletedAt, antes del commit; si falla, todo revierte.
+- Migración v7: ALTER TABLE agrega last_completed_at INTEGER nullable dentro de la transacción de migración existente. No reconstruye tablas ni inventa fechas de finalización históricas: quedan null. DTO Task, GET y listado exponen lastCompletedAt. Las fixtures de versión actual pasan a 7 y de versión futura a 8; rollback histórico conserva sus versiones originales.
+- No implementa cancel/reopen, aceptación ni timers. Cancelar desde done deberá conservar lastCompletedAt; reabrir deberá limpiarlo. Estas reglas quedan pendientes, no se simulan mediante change-state.
+
+Comando enfocado, timeout 30 segundos, fixtures aisladas:
+
+`./node_modules/.bin/tsx --test packages/core/test/tasks.test.ts packages/db/test/tasks.test.ts packages/db/test/task-states.test.ts apps/server/test/tasks.test.ts`
+
+RED: código 1, 28 pasan y 7 fallan por rutas/métodos/migración ausentes, campo undefined y versión 6 en lugar de 7. GREEN: código 0, 35 pasan y 0 fallan. Reloj controlado, no-op, descendencia multinivel en los cuatro estados abiertos, cancelled→done, ancestros/proyecto cerrados, rollback tras UPDATE y rollback transaccional del ALTER cubiertos. Verificación del padre sobre esta unidad junto con la UI de reparentado sin confirmar: `npm run typecheck` correcto, `npm test` con 168 pruebas aprobadas y cero fallos, y 13 E2E de Tareas aprobados. No se ejecutó base real ni pruebas multiproceso. Abrir la base local real con esta versión la migraría a v7; no se hizo.
 
 ## Continuación
 
-Tras verificar y revisar esta segunda unidad, transiciones con migración last_completed_at: completar también desde cancelled bloquea descendientes abiertos; cancelar exige consentimiento para todos los abiertos; reapertura vuelve a in_progress y verifica ancestros/proyecto/cliente concurrentemente. Traslados entre proyectos quedan en T11. Adaptación de UI para reparentado y estados posterior. Sin push ni merge; las bases y certificados de prueba son temporales. Las aprobaciones registradas se limitan a creación backend y su UI, no al reparentado ni al resto de T8.
+Tras verificar y revisar esta unidad, cancelar exige consentimiento para todos los abiertos; reapertura vuelve a in_progress y verifica ancestros/proyecto/cliente concurrentemente. Traslados entre proyectos quedan en T11. Adaptación de UI para reparentado y estados posterior. Sin push ni merge; las bases y certificados de prueba son temporales. Las aprobaciones registradas se limitan a creación backend y su UI, no al reparentado ni al resto de T8.
