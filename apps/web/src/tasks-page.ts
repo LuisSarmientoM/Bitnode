@@ -1,6 +1,6 @@
 import { Component, ElementRef, HostListener, Injectable, OnInit, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ApiError, apiRequest } from './notes-api';
+import { ApiError, apiRequest, type ScopePreview } from './notes-api';
 
 export type TaskPriority = 'none' | 'low' | 'medium' | 'high';
 export type TaskDate = null | { kind: 'day'; day: string } | { kind: 'instant'; at: number; zone: string };
@@ -34,7 +34,14 @@ export interface DateDraft { mode: DateMode; day: string; time: string }
 export interface ReferenceDraft { id?: string; url: string; name: string }
 
 export const PRIORITY_LABELS: Record<TaskPriority, string> = { none: 'Ninguna', low: 'Baja', medium: 'Media', high: 'Alta' };
-const STATE_LABELS: Record<string, string> = { new: 'Nueva' };
+const STATE_LABELS: Record<string, string> = {
+  new: 'Nueva', in_progress: 'En curso', blocked: 'Bloqueada', in_review: 'En revisión', done: 'Completada', cancelled: 'Cancelada',
+};
+const OPEN_STATES = ['new', 'in_progress', 'blocked', 'in_review'];
+/** Targets named in a preview; the rest are summarised as a count. */
+const NAMED_TARGETS = 10;
+
+type EffectKind = 'cancel' | 'reopen';
 /** Colombia has no daylight saving time, so America/Bogota is a fixed UTC-5. */
 const BOGOTA_OFFSET_MS = 5 * 3600 * 1000;
 const noDate = (): DateDraft => ({ mode: '', day: '', time: '' });
@@ -86,6 +93,11 @@ export class TasksStore {
   readonly editing = signal<Task | null>(null);
   /** A fetched, saved task, never inferred from the paginated list. */
   readonly parent = signal<Task | null>(null);
+  readonly selectedState = signal('');
+  readonly formNotice = signal('');
+  /** Effects the server asked the user to accept; nothing is sent again until Confirmar. */
+  readonly effect = signal<{ kind: EffectKind; preview: ScopePreview } | null>(null);
+  readonly effectNames = signal<Record<string, string>>({});
   readonly hierarchyTarget = signal<Task | null>(null);
   readonly parentOptions = signal<Task[]>([]);
   readonly selectedParentId = signal('');
@@ -113,6 +125,25 @@ export class TasksStore {
   priorityLabel(priority: TaskPriority) { return PRIORITY_LABELS[priority]; }
   stateLabel(state: string) { return STATE_LABELS[state] ?? state; }
   hasWarning(task: Task) { return task.warnings.includes('PLANNED_AFTER_DUE'); }
+  isOpen(task: Task) { return OPEN_STATES.includes(task.state); }
+
+  /** Human-readable lines for the previewed effects; unknown effect codes get one generic line. */
+  readonly effectLines = computed(() => {
+    const effect = this.effect();
+    const task = this.editing();
+    if (!effect || !task) return [];
+    const names = this.effectNames();
+    const list = (targets: string[]) => {
+      const shown = targets.slice(0, NAMED_TARGETS).map(id => `«${names[id] ?? 'otra tarea'}»`).join(', ');
+      return targets.length > NAMED_TARGETS ? `${shown} y ${targets.length - NAMED_TARGETS} más` : shown;
+    };
+    return effect.preview.effects.map(item => {
+      if (item.code === 'CANCEL_DESCENDANTS') return `Se cancelarán estos descendientes abiertos: ${list(item.targets)}.`;
+      if (item.code === 'REOPEN_ANCESTORS') return `Se reabrirán estos ancestros cerrados: ${list(item.targets)}.`;
+      if (item.code === 'REACTIVATE_PROJECT') return `Se reactivará el proyecto «${task.context.projectName}».`;
+      return 'Este cambio también afecta a otros elementos relacionados con la tarea.';
+    });
+  });
 
   private listPath(offset: number) {
     const params = new URLSearchParams({ offset: String(offset), limit: String(this.pageSize) });
@@ -159,6 +190,10 @@ export class TasksStore {
   private fill(task: Task | null) {
     this.editing.set(task);
     this.parent.set(null);
+    this.selectedState.set(task?.state ?? '');
+    this.formNotice.set('');
+    this.effect.set(null);
+    this.effectNames.set({});
     this.hierarchyTarget.set(null);
     this.parentOptions.set([]);
     this.selectedParentId.set('');
@@ -303,6 +338,84 @@ export class TasksStore {
     await this.load();
   }
 
+  /** Applies a simple state. The revision is the one read when the form opened or the last server answer, never refreshed here. */
+  async applyState() {
+    const current = this.editing();
+    const state = this.selectedState();
+    if (!current || !state || this.busy()) return;
+    this.busy.set(true);
+    this.formError.set('');
+    this.formNotice.set('');
+    this.conflict.set(false);
+    try {
+      const saved = await apiRequest<Task>(`/tasks/${encodeURIComponent(current.id)}/change-state`, 'POST', { expectedRevision: current.revision, state });
+      this.editing.set(saved);
+      this.formNotice.set('Estado actualizado.');
+    } catch (error) {
+      this.conflict.set(error instanceof ApiError && error.reason === 'REVISION_MISMATCH');
+      this.formError.set(this.message(error));
+      this.busy.set(false);
+      return;
+    }
+    this.busy.set(false);
+    await this.load();
+  }
+
+  /** Titles already on the page or fetched by id; only the first targets are named. */
+  private async nameTargets(preview: ScopePreview) {
+    const known = new Map(this.items().map(item => [item.id, item.title]));
+    const ids = [...new Set(preview.effects.flatMap(item => item.code === 'REACTIVATE_PROJECT' ? [] : item.targets.slice(0, NAMED_TARGETS)))];
+    const titles = await Promise.all(ids.map(async (id): Promise<[string, string]> =>
+      [id, known.get(id) ?? await apiRequest<Task>('/tasks/' + encodeURIComponent(id)).then(task => task.title, () => '')]));
+    this.effectNames.set(Object.fromEntries(titles.filter(([, title]) => title)));
+  }
+
+  private async showEffect(kind: EffectKind, preview: ScopePreview) {
+    await this.nameTargets(preview);
+    this.effect.set({ kind, preview });
+  }
+
+  /** First request has no acceptance: the server answers with the effects, or applies directly when there are none. */
+  async requestEffect(kind: EffectKind, accepted?: ScopePreview) {
+    const current = this.editing();
+    if (!current || this.busy()) return;
+    this.busy.set(true);
+    this.formError.set('');
+    this.formNotice.set('');
+    this.conflict.set(false);
+    try {
+      await apiRequest<Task>(`/tasks/${encodeURIComponent(current.id)}/${kind === 'cancel' ? 'cancel' : 'reopen'}`, 'POST', {
+        expectedRevision: current.revision,
+        ...(accepted ? { acceptance: { previewDigest: accepted.previewDigest, effects: accepted.effects.map(({ code, targets }) => ({ code, targets })) } } : {}),
+      });
+    } catch (error) {
+      if (error instanceof ApiError && error.preview && (error.code === 'CONFIRMATION_REQUIRED' || error.reason === 'PREVIEW_CHANGED')) {
+        await this.showEffect(kind, error.preview);
+        if (error.reason === 'PREVIEW_CHANGED') this.formError.set('La información cambió. Revisa el resumen actualizado y confirma de nuevo.');
+      } else {
+        this.conflict.set(error instanceof ApiError && error.reason === 'REVISION_MISMATCH');
+        this.formError.set(this.message(error));
+      }
+      this.busy.set(false);
+      return;
+    }
+    this.formOpen.set(false);
+    this.notice.set(kind === 'cancel' ? 'Tarea cancelada.' : 'Tarea reabierta.');
+    this.busy.set(false);
+    await this.load();
+  }
+
+  confirmEffect() {
+    const effect = this.effect();
+    if (effect) void this.requestEffect(effect.kind, effect.preview);
+  }
+
+  /** Back from the confirmation panel: nothing was changed. */
+  dismissEffect() {
+    this.effect.set(null);
+    this.formError.set('');
+  }
+
   /** Returns false when the user keeps a dirty draft. */
   cancel(): boolean {
     if (this.busy()) return false;
@@ -396,6 +509,7 @@ export class TasksPage implements OnInit {
   readonly s = inject(TasksStore);
   readonly formatDate = formatTaskDate;
   readonly priorities = Object.entries(PRIORITY_LABELS) as [TaskPriority, string][];
+  readonly stateOptions = [...OPEN_STATES, 'done'];
   private readonly dialog = viewChild<ElementRef<HTMLDialogElement>>('taskDialog');
 
   constructor() {
@@ -408,6 +522,13 @@ export class TasksPage implements OnInit {
         requestAnimationFrame(() => dialog.querySelector<HTMLElement>(this.s.hierarchyTarget() ? '#task-parent' : '#task-title')?.focus());
       }
       else if (!this.s.formOpen() && dialog.open) dialog.close();
+    });
+    // A new or refreshed preview moves focus to its confirm button; going back returns it to the action that opened it.
+    let kind: EffectKind | undefined;
+    effect(() => {
+      const shown = this.s.effect();
+      if (shown) kind = shown.kind;
+      requestAnimationFrame(() => document.getElementById(shown ? 'task-effect-confirm' : kind === 'reopen' ? 'task-reopen' : 'task-cancel')?.focus());
     });
   }
 

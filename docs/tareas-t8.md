@@ -1,6 +1,6 @@
 # T8: jerarquía y transiciones
 
-Creación de subtareas implementada en core, SQLite, API y web. Cambiar/quitar padre en `3a16c1a` con corrección `3456380`, revisado. Estados simples y finalización con schema v7 en `952efa6`, revisado y con verificación independiente. UI de reparentado en `4a2be30`. Cancelar y reabrir con efectos aceptados en backend y API, verificados. T8 sigue incompleta: falta la UI de estados, cancelación y reapertura. La CLI queda excluida.
+Creación de subtareas implementada en core, SQLite, API y web. Cambiar/quitar padre en `3a16c1a` con corrección `3456380`, revisado. Estados simples y finalización con schema v7 en `952efa6`, revisado y con verificación independiente. UI de reparentado en `4a2be30`. Cancelar y reabrir con efectos aceptados en backend y API, verificados. UI de estados, cancelación y reapertura en la pantalla de Tareas. La CLI queda excluida.
 
 ## Contrato disponible
 
@@ -114,6 +114,14 @@ Comando enfocado, timeout 30 segundos, fixtures aisladas:
 - Límite conocido: la aceptación admite como máximo 1000 targets (`MAX_TARGETS`). Una rama con más de 1000 descendientes abiertos no podría cancelarse desde la API; queda como trabajo posterior, junto con las observaciones de baja severidad: una aceptación sin efectos pendientes se ignora en silencio, `contratos.md` describe `datasetGeneration` y `{type,id,revision}` mientras la implementación usa `details.revisions`, y cancelar una tarea completada en un proyecto cerrado no exige reactivarlo.
 - Tamaño: unas 476 líneas authored, por encima del presupuesto de ~400. Se confirma como un solo commit porque cancelar y reabrir comparten preview, digest y aceptación; separarlos dejaría la infraestructura de aceptación en un commit y su segundo consumidor en otro.
 
+## Web de estados, cancelación y reapertura
+
+La lista muestra el estado con sus seis etiquetas de producto: Nueva, En curso, Bloqueada, En revisión, Completada y Cancelada. El diálogo de edición añade el selector "Estado" con "Aplicar estado" (estados abiertos y Completada), "Cancelar tarea" y, en tareas cerradas, "Reabrir". Si el servidor responde CONFIRMATION_REQUIRED, un panel enumera los efectos con nombres legibles (descendientes que se cancelarán, ancestros que se reabrirán y proyecto que se reactivará), hasta 10 y "y N más", con "Confirmar" y "Volver". Solo Confirmar envía la aceptación. Ante PREVIEW_CHANGED se muestra el resumen nuevo y hay que confirmar otra vez. Para leer esos previews, `scopePreviewOf` en `notes-api.ts` acepta ahora `task.cancel` y `task.reopen`, sin cambiar el flujo de Clientes.
+
+Tras "Aplicar estado" el diálogo sigue abierto con la tarea devuelta por el servidor y su revisión nueva; cancelar y reabrir lo cierran. El selector de estado no cuenta como borrador: si se elige un estado y se cierra sin aplicar, se descarta sin aviso.
+
+E2E: la primera pasada RED tuvo cuatro fallos de preparación (el helper buscaba el botón "Editar" exacto y el botón de fila se llama "Editar <título>"). Tras corregir la preparación, el RED se repitió contra el código sin la UI: cinco pruebas fallidas por la funcionalidad ausente (etiqueta de estado, selector Estado y botón Cancelar tarea). GREEN: `npm run typecheck` correcto, `npm test` 180/180 y la suite E2E completa con 102 aprobadas y 3 omitidas preexistentes, incluida la prueba de 390 px.
+
 ## Continuación
 
-Tras verificar y revisar esta unidad, queda la UI de estados, cancelación y reapertura, con su propia unidad. La forma de aceptación está duplicada de `client-scope.ts` porque allí no es genérica; extraerla exige editar ese módulo. Traslados entre proyectos quedan en T11. Sin push ni merge; las bases y certificados de prueba son temporales. Las aprobaciones registradas cubren cada commit por separado, no el acumulado de la rama.
+T8 queda completa en web/API. La forma de aceptación está duplicada de `client-scope.ts` porque allí no es genérica; extraerla exige editar ese módulo. Traslados entre proyectos quedan en T11. Sin push ni merge; las bases y certificados de prueba son temporales. Las aprobaciones registradas cubren cada commit por separado, no el acumulado de la rama.

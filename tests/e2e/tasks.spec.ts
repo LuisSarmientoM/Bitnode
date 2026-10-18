@@ -21,6 +21,24 @@ async function seedTask(request: APIRequestContext, projectId: string, title: st
 
 const row = (page: Page, name: string) => page.getByRole('row').filter({ hasText: name });
 
+type Stored = { id: string; revision: number; state: string; lastCompletedAt: number | null };
+const fresh = async (request: APIRequestContext, id: string) => await (await request.get(`/api/v1/tasks/${id}`)).json() as Stored;
+
+async function closeTask(request: APIRequestContext, id: string) {
+  const done = await request.post(`/api/v1/tasks/${id}/change-state`, { data: { state: 'done', expectedRevision: (await fresh(request, id)).revision } });
+  expect(done.status()).toBe(200);
+}
+
+async function seedChild(request: APIRequestContext, projectId: string, parentId: string, title: string) {
+  return await seedTask(request, projectId, title, { parentId, expectedParentRevision: (await fresh(request, parentId)).revision });
+}
+
+async function editTask(page: Page, title: string) {
+  // The row button is labelled "Editar <title>", so the name must not be exact.
+  await row(page, title).getByRole('button', { name: 'Editar' }).click();
+  return page.getByRole('dialog', { name: 'Editar tarea' });
+}
+
 async function openTasks(page: Page) {
   await page.goto('/');
   const menu = page.getByRole('button', { name: 'Menú principal', exact: true, includeHidden: true });
@@ -271,6 +289,133 @@ test('cambiar padre conserva selección ante revisión obsoleta y error al separ
   await expect(select).toHaveValue('');
 });
 
+test('cambiar estado a En curso y Completada, bloqueado por una hija abierta', async ({ page, request }) => {
+  const { project } = await seedProject(request);
+  const title = unique('Tarea de estado');
+  const parent = await seedTask(request, project.id, title);
+  const child = await seedChild(request, project.id, parent.id, unique('Hija abierta'));
+  await openTasks(page);
+  await expect(row(page, title)).toContainText('Nueva');
+  const dialog = await editTask(page, title);
+  const state = dialog.getByLabel('Estado', { exact: true });
+  await state.selectOption('in_progress');
+  const sent = page.waitForRequest(req => req.method() === 'POST' && req.url().endsWith(`/tasks/${parent.id}/change-state`));
+  await dialog.getByRole('button', { name: 'Aplicar estado', exact: true }).click();
+  expect((await sent).postDataJSON()).toEqual({ expectedRevision: parent.revision, state: 'in_progress' });
+  await expect(row(page, title)).toContainText('En curso');
+  await state.selectOption('done');
+  await dialog.getByRole('button', { name: 'Aplicar estado', exact: true }).click();
+  await expect(dialog.getByRole('alert')).toContainText('descendientes abiertos');
+  await expect(state).toHaveValue('done');
+  expect((await fresh(request, parent.id)).state).toBe('in_progress');
+  await closeTask(request, child.id);
+  await dialog.getByRole('button', { name: 'Aplicar estado', exact: true }).click();
+  await expect(row(page, title)).toContainText('Completada');
+  expect((await fresh(request, parent.id)).state).toBe('done');
+  await expect(dialog.getByRole('button', { name: 'Reabrir', exact: true })).toBeVisible();
+  await expect(dialog.getByRole('button', { name: 'Cancelar tarea', exact: true })).toBeVisible();
+});
+
+test('cambiar estado con revisión obsoleta conserva el borrador', async ({ page, request }) => {
+  const { project } = await seedProject(request);
+  const title = unique('Tarea de estado obsoleto');
+  const task = await seedTask(request, project.id, title);
+  await openTasks(page);
+  const dialog = await editTask(page, title);
+  await dialog.getByLabel('Descripción').fill('Borrador sin guardar');
+  await request.patch(`/api/v1/tasks/${task.id}`, { data: { expectedRevision: task.revision, priority: 'low' } });
+  await dialog.getByLabel('Estado', { exact: true }).selectOption('blocked');
+  await dialog.getByRole('button', { name: 'Aplicar estado', exact: true }).click();
+  await expect(dialog.getByRole('alert')).toBeVisible();
+  await expect(dialog.getByLabel('Descripción')).toHaveValue('Borrador sin guardar');
+  await expect(dialog.getByLabel('Estado', { exact: true })).toHaveValue('blocked');
+  expect((await fresh(request, task.id)).state).toBe('new');
+});
+
+test('cancelar con descendientes muestra la revisión, Volver no cambia nada y Confirmar cancela las abiertas', async ({ page, request }) => {
+  const { project } = await seedProject(request);
+  const title = unique('Rama a cancelar');
+  const root = await seedTask(request, project.id, title);
+  const openChild = await seedChild(request, project.id, root.id, unique('Hija abierta'));
+  const deep = await seedChild(request, project.id, openChild.id, unique('Nieta abierta'));
+  const closedChild = await seedChild(request, project.id, root.id, unique('Hija completada'));
+  await closeTask(request, closedChild.id);
+  const closedBefore = await fresh(request, closedChild.id);
+  await openTasks(page);
+  const dialog = await editTask(page, title);
+  await dialog.getByRole('button', { name: 'Cancelar tarea', exact: true }).click();
+  const panel = dialog.getByRole('region', { name: 'Confirmar cancelación' });
+  await expect(panel).toContainText('Hija abierta');
+  await expect(panel).toContainText('Nieta abierta');
+  await expect(panel).not.toContainText('Hija completada');
+  await panel.getByRole('button', { name: 'Volver', exact: true }).click();
+  await expect(panel).toBeHidden();
+  await expect(dialog).toBeVisible();
+  for (const id of [root.id, openChild.id, deep.id]) expect((await fresh(request, id)).state).toBe('new');
+  await dialog.getByRole('button', { name: 'Cancelar tarea', exact: true }).click();
+  const accepted = page.waitForRequest(req => req.method() === 'POST' && req.url().endsWith(`/tasks/${root.id}/cancel`) && !!req.postDataJSON().acceptance);
+  await panel.getByRole('button', { name: 'Confirmar', exact: true }).click();
+  const body = (await accepted).postDataJSON();
+  expect(body).toMatchObject({ expectedRevision: root.revision, acceptance: { effects: [{ code: 'CANCEL_DESCENDANTS' }] } });
+  expect(body.acceptance.previewDigest).toMatch(/^sha256-[0-9a-f]{64}$/);
+  expect([...body.acceptance.effects[0].targets].sort()).toEqual([openChild.id, deep.id].sort());
+  await expect(dialog).toBeHidden();
+  for (const id of [root.id, openChild.id, deep.id]) expect((await fresh(request, id)).state).toBe('cancelled');
+  expect(await fresh(request, closedChild.id)).toEqual(closedBefore);
+  await expect(row(page, title)).toContainText('Cancelada');
+});
+
+test('reabrir con ancestro cerrado y proyecto completado muestra efectos y deja todo en curso', async ({ page, request }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const { project } = await seedProject(request);
+  const grand = await seedTask(request, project.id, unique('Abuela cerrada'));
+  const mid = await seedChild(request, project.id, grand.id, unique('Madre cerrada'));
+  const title = unique('Hoja a reabrir');
+  const leaf = await seedChild(request, project.id, mid.id, title);
+  for (const id of [leaf.id, mid.id, grand.id]) await closeTask(request, id);
+  const closed = await request.post(`/api/v1/projects/${project.id}/change-state`, { data: { state: 'completed', expectedRevision: project.revision } });
+  expect(closed.status()).toBe(200);
+  await openTasks(page);
+  const dialog = await editTask(page, title);
+  await expect(dialog.getByRole('button', { name: 'Cancelar tarea', exact: true })).toBeVisible();
+  await dialog.getByRole('button', { name: 'Reabrir', exact: true }).click();
+  const panel = dialog.getByRole('region', { name: 'Confirmar reapertura' });
+  await expect(panel).toContainText('Abuela cerrada');
+  await expect(panel).toContainText('Madre cerrada');
+  await expect(panel).toContainText(project.name);
+  const confirm = panel.getByRole('button', { name: 'Confirmar', exact: true });
+  await confirm.scrollIntoViewIfNeeded();
+  await expect(confirm).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await confirm.click();
+  await expect(dialog).toBeHidden();
+  for (const id of [leaf.id, mid.id, grand.id]) expect(await fresh(request, id)).toMatchObject({ state: 'in_progress', lastCompletedAt: null });
+  expect((await (await request.get(`/api/v1/projects/${project.id}`)).json()).state).toBe('active');
+  await expect(row(page, title)).toContainText('En curso');
+});
+
+test('cancelar con efectos cambiados muestra el resumen nuevo y exige confirmar de nuevo', async ({ page, request }) => {
+  const { project } = await seedProject(request);
+  const title = unique('Rama que cambia');
+  const root = await seedTask(request, project.id, title);
+  await seedChild(request, project.id, root.id, unique('Hija inicial'));
+  await openTasks(page);
+  const dialog = await editTask(page, title);
+  await dialog.getByRole('button', { name: 'Cancelar tarea', exact: true }).click();
+  const panel = dialog.getByRole('region', { name: 'Confirmar cancelación' });
+  await expect(panel).toContainText('Hija inicial');
+  const late = await seedChild(request, project.id, root.id, unique('Hija tardía'));
+  await panel.getByRole('button', { name: 'Confirmar', exact: true }).click();
+  await expect(panel).toContainText('Hija tardía');
+  await expect(dialog.getByRole('alert')).toContainText('cambió');
+  expect((await fresh(request, root.id)).state).toBe('new');
+  expect((await fresh(request, late.id)).state).toBe('new');
+  await panel.getByRole('button', { name: 'Confirmar', exact: true }).click();
+  await expect(dialog).toBeHidden();
+  expect((await fresh(request, late.id)).state).toBe('cancelled');
+  expect((await fresh(request, root.id)).state).toBe('cancelled');
+});
+
 test('editar prioridad, fechas y referencias persiste la revisión tras recargar', async ({ page, request }) => {
   const { project } = await seedProject(request);
   const title = unique('Tarea editable');
@@ -278,7 +423,7 @@ test('editar prioridad, fechas y referencias persiste la revisión tras recargar
   await openTasks(page);
   await row(page, title).getByRole('button', { name: 'Editar' }).click();
   const dialog = page.getByRole('dialog', { name: 'Editar tarea' });
-  await expect(dialog.getByText('Nueva', { exact: true })).toBeVisible();
+  await expect(dialog.getByLabel('Estado', { exact: true })).toHaveValue('new');
   await expect(dialog.getByLabel('Límite: día')).toHaveValue('2026-06-10');
   await expect(dialog.getByLabel('Límite: hora')).toHaveValue('09:15');
   await dialog.getByLabel('Prioridad').selectOption('high');

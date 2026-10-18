@@ -27,7 +27,8 @@ Permitir subtareas multinivel y cambios de jerarquía dentro del mismo proyecto,
 - [x] Commit `8f7586e`; revisión `review-8bc67c599bd773da` aprobada y reconocida; verificador independiente PASS. Límite conocido: MAX_TARGETS=1000.
 - [ ] Typecheck, suite completa, revisión y commit de cuarta unidad, a cargo del padre.
 - [ ] UI de estados, cancelación y reapertura con vista previa y aceptación.
-- [ ] Adaptar UI T7 tras comandos y contratos revisados.
+- [x] UI de estados, cancelación y reapertura: RED válido 5/5 contra el código sin UI; GREEN 180/180 y 102 E2E (3 omitidas preexistentes).
+- [ ] Revisión nativa de la UI de estados.
 
 ## Límites
 

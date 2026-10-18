@@ -23,6 +23,7 @@
         <tr>
           <th scope="col">Título</th>
           <th scope="col">Proyecto</th>
+          <th scope="col">Estado</th>
           <th scope="col">Prioridad</th>
           <th scope="col">Planificación</th>
           <th scope="col">Límite</th>
@@ -34,6 +35,7 @@
           <tr>
             <th scope="row">{{ task.title }}@if (s.hasWarning(task)) { <small class="row-warning">La planificación es posterior al límite.</small> }</th>
             <td>{{ task.context.projectName }}<small class="row-context">{{ task.context.clientName }}</small></td>
+            <td>{{ s.stateLabel(task.state) }}</td>
             <td>{{ s.priorityLabel(task.priority) }}</td>
             <td>{{ formatDate(task.planned) }}</td>
             <td>{{ formatDate(task.due) }}</td>
@@ -88,7 +90,26 @@
         }
         @if (s.editing(); as task) {
           <p class="breadcrumb">{{ task.context.projectName }} / {{ task.context.clientName }}</p>
-          <p class="readonly-field"><span>Estado</span> <strong>{{ s.stateLabel(task.state) }}</strong></p>
+          <label for="task-state">Estado</label>
+          <select id="task-state" name="state" [ngModel]="s.selectedState()" (ngModelChange)="s.selectedState.set($event)" [disabled]="s.busy()">
+            @if (task.state === 'cancelled') { <option value="cancelled" disabled>{{ s.stateLabel('cancelled') }}</option> }
+            @for (option of stateOptions; track option) { <option [value]="option">{{ s.stateLabel(option) }}</option> }
+          </select>
+          <div class="actions">
+            <button type="button" (click)="s.applyState()" [disabled]="s.busy() || s.selectedState() === 'cancelled'">Aplicar estado</button>
+            @if (task.state !== 'cancelled') { <button type="button" id="task-cancel" (click)="s.requestEffect('cancel')" [disabled]="s.busy()">Cancelar tarea</button> }
+            @if (!s.isOpen(task)) { <button type="button" id="task-reopen" (click)="s.requestEffect('reopen')" [disabled]="s.busy()">Reabrir</button> }
+          </div>
+          @if (s.formNotice()) { <p class="hint" role="status">{{ s.formNotice() }}</p> }
+          @if (s.effect(); as pending) {
+            <section class="warning" [attr.aria-label]="pending.kind === 'cancel' ? 'Confirmar cancelación' : 'Confirmar reapertura'">
+              @for (line of s.effectLines(); track $index) { <p>{{ line }}</p> }
+              <div class="actions">
+                <button type="button" id="task-effect-confirm" class="primary" (click)="s.confirmEffect()" [disabled]="s.busy()">Confirmar</button>
+                <button type="button" (click)="s.dismissEffect()" [disabled]="s.busy()">Volver</button>
+              </div>
+            </section>
+          }
           @if (s.hasWarning(task)) { <p class="warning" role="status">La planificación es posterior al límite.</p> }
         } @else if (s.parent(); as parent) {
           <p class="readonly-field"><span>Proyecto</span> <strong>{{ parent.context.projectName }}</strong></p>
