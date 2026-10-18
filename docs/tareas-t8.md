@@ -81,6 +81,12 @@ Comando enfocado, timeout 30 segundos, fixtures aisladas:
 
 RED: código 1, 28 pasan y 7 fallan por rutas/métodos/migración ausentes, campo undefined y versión 6 en lugar de 7. GREEN: código 0, 35 pasan y 0 fallan. Reloj controlado, no-op, descendencia multinivel en los cuatro estados abiertos, cancelled→done, ancestros/proyecto cerrados, rollback tras UPDATE y rollback transaccional del ALTER cubiertos. Verificación del padre sobre esta unidad junto con la UI de reparentado sin confirmar: `npm run typecheck` correcto, `npm test` con 168 pruebas aprobadas y cero fallos, y 13 E2E de Tareas aprobados. No se ejecutó base real ni pruebas multiproceso. Abrir la base local real con esta versión la migraría a v7; no se hizo.
 
+## Web de cambiar y quitar padre
+
+"Cambiar padre" abre un diálogo con el selector "Nuevo padre" y la opción "Sin padre". Los candidatos se cargan recorriendo todas las páginas del proyecto, sin el tope de 200 de la lista, y excluyen la tarea y sus descendientes. Esa lectura no es una instantánea transaccional; el backend vuelve a validar ciclos, proyecto y revisiones al guardar. "Sin padre" usa detach. Las revisiones de la tarea y del padre se toman al abrir y no se refrescan al enviar; ante conflicto o error de red se conserva la selección.
+
+E2E: RED real, código 1 por ausencia del botón Cambiar padre. La primera pasada GREEN falló (12 aprobadas, 1 fallida) porque la preparación cerraba un proyecto con tareas abiertas, algo que `HAS_OPEN_TASKS` impide. La prueba ahora completa las tareas reales con change-state antes de cerrar el proyecto. Resultado final: 13 E2E de Tareas aprobados, con más de 200 candidatos paginados, viewport móvil, conservación de proyecto/estado/descendientes, separación en proyecto cerrado y revisión obsoleta.
+
 ## Continuación
 
-Tras verificar y revisar esta unidad, cancelar exige consentimiento para todos los abiertos; reapertura vuelve a in_progress y verifica ancestros/proyecto/cliente concurrentemente. Traslados entre proyectos quedan en T11. Adaptación de UI para reparentado y estados posterior. Sin push ni merge; las bases y certificados de prueba son temporales. Las aprobaciones registradas se limitan a creación backend y su UI, no al reparentado ni al resto de T8.
+Tras verificar y revisar esta unidad, cancelar exige consentimiento para todos los abiertos; reapertura vuelve a in_progress y verifica ancestros/proyecto/cliente concurrentemente. Traslados entre proyectos quedan en T11. La UI de estados queda posterior a cancel/reopen. Sin push ni merge; las bases y certificados de prueba son temporales. Las aprobaciones registradas se limitan a creación backend y su UI, no al reparentado ni al resto de T8.

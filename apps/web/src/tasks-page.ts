@@ -86,6 +86,9 @@ export class TasksStore {
   readonly editing = signal<Task | null>(null);
   /** A fetched, saved task, never inferred from the paginated list. */
   readonly parent = signal<Task | null>(null);
+  readonly hierarchyTarget = signal<Task | null>(null);
+  readonly parentOptions = signal<Task[]>([]);
+  readonly selectedParentId = signal('');
   /** Only active or paused projects accept new tasks. */
   readonly openProjects = signal<ProjectOption[]>([]);
   readonly projectId = signal('');
@@ -101,7 +104,7 @@ export class TasksStore {
   private loadSeq = 0;
 
   private snapshot() {
-    return JSON.stringify([this.projectId(), this.title(), this.description(), this.priority(), this.planned(), this.due(), this.references()]);
+    return JSON.stringify([this.projectId(), this.title(), this.description(), this.priority(), this.planned(), this.due(), this.references(), this.selectedParentId()]);
   }
   readonly dirty = computed(() => this.formOpen() && this.snapshot() !== this.initial);
   readonly hasPages = computed(() => this.offset() > 0 || this.offset() + this.items().length < this.total());
@@ -156,6 +159,9 @@ export class TasksStore {
   private fill(task: Task | null) {
     this.editing.set(task);
     this.parent.set(null);
+    this.hierarchyTarget.set(null);
+    this.parentOptions.set([]);
+    this.selectedParentId.set('');
     this.projectId.set(task?.projectId ?? '');
     this.title.set(task?.title ?? '');
     this.description.set(task?.description ?? '');
@@ -218,6 +224,83 @@ export class TasksStore {
       this.formOpen.set(true);
     } catch (error) { this.listError.set(this.message(error)); }
     finally { this.busy.set(false); }
+  }
+
+  /** Load all project pages before offering candidates, independently of the visible list. */
+  private async projectTasks(projectId: string): Promise<Task[]> {
+    const tasks: Task[] = [];
+    let offset = 0;
+    while (true) {
+      const params = new URLSearchParams({ projectId, offset: String(offset), limit: String(this.pageSize) });
+      const page = await apiRequest<TaskPage>('/tasks?' + params);
+      tasks.push(...page.items);
+      offset += page.items.length;
+      if (offset >= page.total) return tasks;
+      if (!page.items.length) throw new Error('No se pudieron cargar todos los candidatos. Vuelve a abrir Cambiar padre.');
+    }
+  }
+
+  async openHierarchy(task: Task) {
+    if (this.busy()) return;
+    this.busy.set(true);
+    this.listError.set('');
+    this.notice.set('');
+    try {
+      const current = await apiRequest<Task>('/tasks/' + encodeURIComponent(task.id));
+      const tasks = await this.projectTasks(current.projectId);
+      const children = new Map<string, string[]>();
+      for (const candidate of tasks) {
+        if (!candidate.parentId) continue;
+        const siblings = children.get(candidate.parentId) ?? [];
+        siblings.push(candidate.id);
+        children.set(candidate.parentId, siblings);
+      }
+      const excluded = new Set<string>();
+      const pending = [current.id];
+      while (pending.length) {
+        const id = pending.pop()!;
+        if (excluded.has(id)) continue;
+        excluded.add(id);
+        pending.push(...(children.get(id) ?? []));
+      }
+      this.fill(null);
+      this.hierarchyTarget.set(current);
+      this.parentOptions.set(tasks.filter(candidate => candidate.projectId === current.projectId && !excluded.has(candidate.id)));
+      this.selectedParentId.set(current.parentId ?? '');
+      this.initial = this.snapshot();
+      this.formOpen.set(true);
+    } catch (error) { this.listError.set(this.message(error)); }
+    finally { this.busy.set(false); }
+  }
+
+  async saveHierarchy() {
+    const current = this.hierarchyTarget();
+    if (!current || this.busy()) return;
+    const parentId = this.selectedParentId();
+    const parent = this.parentOptions().find(candidate => candidate.id === parentId);
+    if (parentId && !parent) {
+      this.formError.set('Selecciona un padre de la lista o Sin padre.');
+      return;
+    }
+    this.busy.set(true);
+    this.formError.set('');
+    try {
+      // Revisions are the ones read when opening, including for a no-op.
+      await apiRequest<Task>('/tasks/' + encodeURIComponent(current.id) + (parent ? '/reparent' : '/detach'), 'POST', {
+        expectedRevision: current.revision,
+        ...(parent ? { parentId: parent.id, expectedParentRevision: parent.revision } : {}),
+      });
+    } catch (error) {
+      const hint = error instanceof ApiError && error.code === 'REVISION_CONFLICT'
+        ? ' Cancela y vuelve a abrir Cambiar padre para leer las revisiones actuales.' : '';
+      this.formError.set(this.message(error) + hint);
+      this.busy.set(false);
+      return;
+    }
+    this.formOpen.set(false);
+    this.notice.set('Padre guardado.');
+    this.busy.set(false);
+    await this.load();
   }
 
   /** Returns false when the user keeps a dirty draft. */
@@ -322,7 +405,7 @@ export class TasksPage implements OnInit {
       if (this.s.formOpen() && !dialog.open) {
         dialog.showModal();
         // The form renders after showModal, so the native autofocus pass finds nothing to focus.
-        requestAnimationFrame(() => dialog.querySelector<HTMLElement>('#task-title')?.focus());
+        requestAnimationFrame(() => dialog.querySelector<HTMLElement>(this.s.hierarchyTarget() ? '#task-parent' : '#task-title')?.focus());
       }
       else if (!this.s.formOpen() && dialog.open) dialog.close();
     });

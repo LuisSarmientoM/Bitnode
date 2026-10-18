@@ -40,6 +40,7 @@
             <td><div class="actions">
               <button type="button" (click)="s.openEdit(task)" [disabled]="s.busy()" [attr.aria-label]="'Editar ' + task.title">Editar</button>
               <button type="button" (click)="s.openSubtask(task)" [disabled]="s.busy()">Crear subtarea</button>
+              <button type="button" (click)="s.openHierarchy(task)" [disabled]="s.busy()">Cambiar padre</button>
             </div></td>
           </tr>
         }
@@ -59,8 +60,27 @@
     </nav>
   }
 
-  <dialog #taskDialog class="task-dialog" [attr.aria-label]="s.editing() ? 'Editar tarea' : s.parent() ? 'Nueva subtarea' : 'Nueva tarea'" (cancel)="onCancel($event)">
-    @if (s.formOpen()) {
+  <dialog #taskDialog class="task-dialog" [attr.aria-label]="s.hierarchyTarget() ? 'Cambiar padre' : s.editing() ? 'Editar tarea' : s.parent() ? 'Nueva subtarea' : 'Nueva tarea'" (cancel)="onCancel($event)">
+    @if (s.formOpen() && s.hierarchyTarget(); as task) {
+      <form (ngSubmit)="s.saveHierarchy()" novalidate>
+        <h2>Cambiar padre</h2>
+        <p class="breadcrumb">{{ task.title }}</p>
+        <p class="breadcrumb">{{ task.context.projectName }} / {{ task.context.clientName }}</p>
+        <label for="task-parent">Nuevo padre</label>
+        <select id="task-parent" name="parentId" [ngModel]="s.selectedParentId()" (ngModelChange)="s.selectedParentId.set($event)" [disabled]="s.busy()">
+          <option value="">Sin padre</option>
+          @for (candidate of s.parentOptions(); track candidate.id) {
+            <option [value]="candidate.id">{{ candidate.title }}</option>
+          }
+        </select>
+        <p class="hint">Solo tareas del mismo proyecto. Se conservan proyecto, estados y descendientes. Reabre el nuevo padre y sus ancestros cerrados antes de cambiarlo.</p>
+        @if (s.formError()) { <div class="message error" role="alert">{{ s.formError() }}</div> }
+        <footer>
+          <button type="button" (click)="s.cancel()" [disabled]="s.busy()">Cancelar</button>
+          <button type="submit" class="primary" [disabled]="s.busy()">{{ s.busy() ? 'Procesando…' : 'Guardar padre' }}</button>
+        </footer>
+      </form>
+    } @else if (s.formOpen()) {
       <form (ngSubmit)="s.save()" novalidate>
         <h2>{{ s.editing() ? 'Editar tarea' : s.parent() ? 'Nueva subtarea' : 'Nueva tarea' }}</h2>
         @if (s.parent(); as parent) {

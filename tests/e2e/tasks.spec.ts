@@ -153,6 +153,124 @@ test('subtarea conserva borrador ante conflicto del padre y ancestro cerrado', a
   await expect(dialog.getByText(`Padre: ${parentTitle}`, { exact: true })).toBeVisible();
 });
 
+test('cambiar padre pagina candidatos y separar conserva proyecto y descendientes', async ({ page, request }) => {
+  const { project } = await seedProject(request);
+  const title = unique('Rama');
+  const task = await seedTask(request, project.id, title);
+  const child = await seedTask(request, project.id, unique('Descendiente'), {
+    parentId: task.id, expectedParentRevision: task.revision,
+  });
+  const targetTitle = unique('Destino');
+  const target = await seedTask(request, project.id, targetTitle);
+  const targetBody = await (await request.get(`/api/v1/tasks/${target.id}`)).json();
+  const taskBody = await (await request.get(`/api/v1/tasks/${task.id}`)).json();
+  const childBody = await (await request.get(`/api/v1/tasks/${child.id}`)).json();
+  // A complete project larger than 200 tasks, without hundreds of fixture writes.
+  const candidates = Array.from({ length: 201 }, (_, index) => ({
+    ...targetBody, id: `candidate-${index}`, title: `Candidata ${index}`,
+  }));
+  candidates.push(taskBody, childBody, targetBody);
+  const offsets: number[] = [];
+  await page.route('**/api/v1/tasks?*', async route => {
+    const params = new URL(route.request().url()).searchParams;
+    if (params.get('projectId') !== project.id) { await route.continue(); return; }
+    const offset = Number(params.get('offset') ?? 0);
+    const limit = Number(params.get('limit') ?? 50);
+    offsets.push(offset);
+    await route.fulfill({ json: { items: candidates.slice(offset, offset + limit), total: candidates.length, offset, limit } });
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openTasks(page);
+  await row(page, title).getByRole('button', { name: 'Cambiar padre', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Cambiar padre', exact: true });
+  const select = dialog.getByLabel('Nuevo padre', { exact: true });
+  await expect(select).toBeFocused();
+  await expect(select.locator(`option[value="${target.id}"]`)).toHaveCount(1);
+  await expect(select.locator(`option[value="${task.id}"]`)).toHaveCount(0);
+  await expect(select.locator(`option[value="${child.id}"]`)).toHaveCount(0);
+  expect(offsets.some(offset => offset >= 200)).toBe(true);
+  await expect(dialog.getByRole('combobox', { name: 'Proyecto', exact: true })).toHaveCount(0);
+  await select.selectOption(target.id);
+  const reparented = page.waitForRequest(req => req.method() === 'POST' && req.url().endsWith(`/tasks/${task.id}/reparent`));
+  await dialog.getByRole('button', { name: 'Guardar padre', exact: true }).click();
+  expect((await reparented).postDataJSON()).toEqual({
+    expectedRevision: taskBody.revision, parentId: target.id, expectedParentRevision: targetBody.revision,
+  });
+  await expect(dialog).toBeHidden();
+  const saved = await (await request.get(`/api/v1/tasks/${task.id}`)).json();
+  expect(saved).toMatchObject({ parentId: target.id, projectId: project.id, state: taskBody.state });
+  expect(await (await request.get(`/api/v1/tasks/${child.id}`)).json()).toMatchObject({ parentId: task.id, projectId: project.id });
+
+  await row(page, title).getByRole('button', { name: 'Cambiar padre', exact: true }).click();
+  await expect(select).toHaveValue(target.id);
+  await dialog.getByRole('button', { name: 'Guardar padre', exact: true }).click();
+  await expect(dialog).toBeHidden();
+  expect((await (await request.get(`/api/v1/tasks/${task.id}`)).json()).revision).toBe(saved.revision);
+
+  // Close every real task leaf-first before closing the project, respecting HAS_OPEN_TASKS.
+  // The synthetic candidates above exist only in browser list responses.
+  for (const id of [child.id, task.id, target.id]) {
+    const current = await (await request.get(`/api/v1/tasks/${id}`)).json();
+    const completed = await request.post(`/api/v1/tasks/${id}/change-state`, {
+      data: { state: 'done', expectedRevision: current.revision },
+    });
+    expect(completed.status()).toBe(200);
+  }
+  const completedTask = await (await request.get(`/api/v1/tasks/${task.id}`)).json();
+  expect(completedTask.state).toBe('done');
+
+  // Separating is allowed even after the project has been closed.
+  const closed = await request.post(`/api/v1/projects/${project.id}/change-state`, {
+    data: { state: 'completed', expectedRevision: project.revision },
+  });
+  expect(closed.status()).toBe(200);
+  await row(page, title).getByRole('button', { name: 'Cambiar padre', exact: true }).click();
+  await expect(select).toHaveValue(target.id);
+  await select.selectOption({ label: 'Sin padre' });
+  const detached = page.waitForRequest(req => req.method() === 'POST' && req.url().endsWith(`/tasks/${task.id}/detach`));
+  await dialog.getByRole('button', { name: 'Guardar padre', exact: true }).click();
+  expect((await detached).postDataJSON()).toEqual({ expectedRevision: completedTask.revision });
+  await expect(dialog).toBeHidden();
+  expect(await (await request.get(`/api/v1/tasks/${task.id}`)).json()).toMatchObject({ parentId: null, projectId: project.id, state: 'done' });
+  expect(await (await request.get(`/api/v1/tasks/${child.id}`)).json()).toMatchObject({ parentId: task.id, projectId: project.id });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
+test('cambiar padre conserva selección ante revisión obsoleta y error al separar', async ({ page, request }) => {
+  const { project } = await seedProject(request);
+  const title = unique('Tarea con conflicto de padre');
+  const task = await seedTask(request, project.id, title);
+  const target = await seedTask(request, project.id, unique('Destino concurrente'));
+  const other = await seedProject(request);
+  const foreign = await seedTask(request, other.project.id, unique('Otro proyecto'));
+  await openTasks(page);
+  await row(page, title).getByRole('button', { name: 'Cambiar padre', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Cambiar padre', exact: true });
+  const select = dialog.getByLabel('Nuevo padre', { exact: true });
+  await expect(select.locator(`option[value="${foreign.id}"]`)).toHaveCount(0);
+  await select.selectOption(target.id);
+  const changed = await request.patch(`/api/v1/tasks/${target.id}`, {
+    data: { expectedRevision: target.revision, priority: 'low' },
+  });
+  expect(changed.status()).toBe(200);
+  const posted = page.waitForRequest(req => req.method() === 'POST' && req.url().endsWith(`/tasks/${task.id}/reparent`));
+  await dialog.getByRole('button', { name: 'Guardar padre', exact: true }).click();
+  expect((await posted).postDataJSON()).toEqual({ expectedRevision: task.revision, parentId: target.id, expectedParentRevision: target.revision });
+  await expect(dialog.getByRole('alert')).toBeVisible();
+  await expect(select).toHaveValue(target.id);
+  expect((await (await request.get(`/api/v1/tasks/${task.id}`)).json()).parentId).toBeNull();
+  page.once('dialog', confirm => confirm.dismiss());
+  await dialog.getByRole('button', { name: 'Cancelar', exact: true }).click();
+  await expect(dialog).toBeVisible();
+  await expect(select).toHaveValue(target.id);
+
+  await select.selectOption({ label: 'Sin padre' });
+  await page.route(`**/api/v1/tasks/${task.id}/detach`, route => route.abort());
+  await dialog.getByRole('button', { name: 'Guardar padre', exact: true }).click();
+  await expect(dialog.getByRole('alert')).toBeVisible();
+  await expect(select).toHaveValue('');
+});
+
 test('editar prioridad, fechas y referencias persiste la revisión tras recargar', async ({ page, request }) => {
   const { project } = await seedProject(request);
   const title = unique('Tarea editable');

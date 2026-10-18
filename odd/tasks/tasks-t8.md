@@ -19,7 +19,10 @@ Permitir subtareas multinivel y cambios de jerarquía dentro del mismo proyecto,
 - [x] Revisión nativa de segunda unidad `review-3cfda30cb914bbab`: una corrección acotada `3456380` (mensaje PARENT_CLOSED de creación), validada, aprobada y reconocida.
 - [x] Estados simples/finalización backend y migración v7 last_completed_at nullable: RED 28/35, GREEN 35/35; cierre desde cancelled también bloquea descendientes abiertos. Sin cancel/reopen ni UI.
 - [x] Typecheck y suite completa de tercera unidad: 168 pruebas aprobadas, cero fallos.
-- [ ] Commit y revisión nativa de tercera unidad, a cargo del padre.
+- [x] Commit local de tercera unidad `952efa6`.
+- [ ] Revisión nativa de tercera unidad.
+- [x] UI de cambiar/quitar padre: RED por botón ausente, preparación E2E corregida, 13 E2E de Tareas aprobados.
+- [ ] Revisión nativa de UI de reparentado.
 - [ ] Cancelar todos los descendientes abiertos o abortar, conservando cerrados y última fecha de finalización.
 - [ ] Reapertura in_progress con aceptación de ancestros/proyecto, limpieza de finalización y cliente archivado bloqueante.
 - [ ] Adaptar UI T7 tras comandos y contratos revisados.
