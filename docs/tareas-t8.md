@@ -153,4 +153,4 @@ Revisiones: backend del árbol `review-c52c14df61df1e0e` (`a72ba8c`), árbol web
 
 ## Continuación
 
-T8 queda completa en web/API en la rama local `feat/tasks-t8`, sin push ni merge. La forma de aceptación está duplicada de `client-scope.ts` porque allí no es genérica; extraerla exige editar ese módulo. Traslados entre proyectos quedan en T11. Sin push ni merge; las bases y certificados de prueba son temporales. Las aprobaciones registradas cubren cada commit por separado, no el acumulado de la rama.
+T8 queda completa en web/API y publicada en `main` con el PR #2, merge commit `e64e821`. Se usó merge commit para conservar los 15 commits y los SHAs citados en este registro. El usuario la probó en el navegador antes de publicarla. La forma de aceptación está duplicada de `client-scope.ts` porque allí no es genérica; extraerla exige editar ese módulo. Traslados entre proyectos quedan en T11. Las bases y certificados de prueba fueron temporales. Las aprobaciones registradas cubren cada commit por separado, no el acumulado de la rama.

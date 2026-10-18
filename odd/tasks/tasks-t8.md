@@ -1,6 +1,6 @@
 # T8: jerarquía y transiciones
 
-Estado: completada en web/API, sin publicar. Alcance acordado web/API, sin CLI. Creación backend en `744cae5`, con revisión nativa aprobada y reconocida. UI de creación en `e2ac786`, verificada y con revisión nativa propia aprobada y reconocida.
+Estado: completada en web/API y publicada en `main` (PR #2, merge commit `e64e821`). Alcance acordado web/API, sin CLI. Creación backend en `744cae5`, con revisión nativa aprobada y reconocida. UI de creación en `e2ac786`, verificada y con revisión nativa propia aprobada y reconocida.
 
 ## Intención
 
@@ -45,7 +45,7 @@ Contrato acordado por el padre: `GET /api/v1/tasks?roots=true` (con `projectId`,
 
 ## Entrega
 
-Decisión del usuario: un solo PR con varios commits, sin crearlo todavía porque el trabajo no ha terminado. La rama suma unas 1890 líneas authored en 10 commits, cada uno revisado por separado; se conservan como commits independientes dentro del PR. No hacer push ni abrir el PR hasta una nueva indicación expresa.
+Decisión del usuario: un solo PR con varios commits. Tras probar la UI, el usuario pidió push, PR y merge. Se publicó el PR #2 con 15 commits (unas 2700 líneas authored, cada commit revisado por separado) y se integró con merge commit `e64e821`, que conserva los SHAs citados en este documento. La rama remota `feat/tasks-t8` sigue existiendo.
 
 ## Límites
 
