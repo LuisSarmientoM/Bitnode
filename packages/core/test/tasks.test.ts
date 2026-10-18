@@ -1,9 +1,45 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { taskChangeState, taskDateInput, taskDetach, taskInput, taskPatch, taskQuery, taskReparent, taskWarnings } from '../src/tasks.ts';
+import {
+  taskAcceptanceMatches, taskCancel, taskChangeState, taskDateInput, taskDetach, taskInput, taskPatch, taskPreview,
+  taskQuery, taskReopen, taskReparent, taskWarnings,
+} from '../src/tasks.ts';
 
 const invalid = { code: 'VALIDATION_ERROR' };
 const at = (iso: string) => Date.parse(iso);
+
+test('cancel/reopen: revisión obligatoria y aceptación con digest y efectos válidos', () => {
+  const digest = 'sha256-' + 'a'.repeat(64);
+  const acceptance = { previewDigest: digest, effects: [{ code: 'CANCEL_DESCENDANTS', targets: ['t2'] }] };
+  assert.deepEqual(taskCancel({ expectedRevision: 3 }), { revision: 3, acceptance: undefined });
+  assert.deepEqual(taskReopen({ expectedRevision: 3, acceptance }), { revision: 3, acceptance });
+  for (const value of [{}, { expectedRevision: 0 }, { expectedRevision: 1, state: 'new' },
+    { expectedRevision: 1, acceptance: { previewDigest: 'x', effects: [] } },
+    { expectedRevision: 1, acceptance: { previewDigest: digest } },
+    { expectedRevision: 1, acceptance: { previewDigest: digest, effects: [{ code: '', targets: [] }] } },
+    { expectedRevision: 1, acceptance: { previewDigest: digest, effects: [{ code: 'A', targets: [1] }] } }]) {
+    assert.throws(() => taskCancel(value), invalid, JSON.stringify(value));
+    assert.throws(() => taskReopen(value), invalid);
+  }
+});
+
+test('digest de preview estable ante orden y sensible a revisiones, objetivo y operación', () => {
+  const task = { id: 't1', revision: 2 };
+  const effects = [{ code: 'CANCEL_DESCENDANTS', targets: [{ id: 'b', revision: 1 }, { id: 'a', revision: 4 }] }];
+  const base = taskPreview('task.cancel', task, effects);
+  assert.match(base.previewDigest, /^sha256-[0-9a-f]{64}$/);
+  assert.deepEqual(base.effects, [{ code: 'CANCEL_DESCENDANTS', targets: ['a', 'b'], details: { revisions: 'a:4,b:1' } }]);
+  assert.equal(taskPreview('task.cancel', task, [{ ...effects[0]!, targets: [...effects[0]!.targets].reverse() }]).previewDigest, base.previewDigest);
+  const other = (changes: object) => taskPreview('task.cancel', task, [{ ...effects[0]!, ...changes }]).previewDigest;
+  assert.notEqual(other({ targets: [{ id: 'b', revision: 2 }, { id: 'a', revision: 4 }] }), base.previewDigest);
+  assert.notEqual(other({ targets: [{ id: 'b', revision: 1 }] }), base.previewDigest);
+  assert.notEqual(taskPreview('task.cancel', { id: 't1', revision: 3 }, effects).previewDigest, base.previewDigest);
+  assert.notEqual(taskPreview('task.reopen', task, effects).previewDigest, base.previewDigest);
+  const accepted = (previewDigest: string, targets: string[]) => ({ previewDigest, effects: [{ code: 'CANCEL_DESCENDANTS', targets }] });
+  assert.equal(taskAcceptanceMatches(base, accepted(base.previewDigest, ['b', 'a'])), true);
+  assert.equal(taskAcceptanceMatches(base, accepted(base.previewDigest, ['a'])), false);
+  assert.equal(taskAcceptanceMatches(base, accepted('sha256-' + 'b'.repeat(64), ['a', 'b'])), false);
+});
 
 test('change-state solo admite abiertos o done y exige revisión', () => {
   for (const state of ['new', 'in_progress', 'blocked', 'in_review', 'done']) {

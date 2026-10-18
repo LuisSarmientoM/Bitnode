@@ -73,6 +73,50 @@ test('API change-state: finalización, revisiones, descendientes y reopen obliga
   } finally { await h.close(); }
 });
 
+test('API cancel/reopen: 200, CONFIRMATION_REQUIRED, PREVIEW_CHANGED y bloqueos 409', async () => {
+  const h = await harness();
+  try {
+    const projectId = h.project('Efectos');
+    const root = await h.create({ projectId, title: 'Raíz' });
+    const child = await h.create({ projectId, title: 'Hija', parentId: root.id, expectedParentRevision: 1 });
+    const post = (id: string, action: string, value: unknown) => h.send('/' + id + '/' + action, 'POST', value);
+    await error(await post(root.id, 'cancel', { expectedRevision: 9 }), 409, 'CONFLICT', 'REVISION_MISMATCH');
+    await error(await post(root.id, 'cancel', { expectedRevision: 1, state: 'cancelled' }), 400, 'VALIDATION_ERROR');
+    await error(await post(root.id, 'reopen', { expectedRevision: 1 }), 409, 'CONFLICT', 'TASK_NOT_CLOSED');
+    await error(await h.send('/' + root.id, 'PATCH', { expectedRevision: 1, state: 'cancelled' }), 400, 'VALIDATION_ERROR');
+    const required = await post(root.id, 'cancel', { expectedRevision: 1 });
+    assert.equal(required.status, 409);
+    const body = await required.json();
+    assert.equal(body.error.code, 'CONFIRMATION_REQUIRED');
+    assert.equal(body.error.reason, undefined);
+    assert.deepEqual([body.error.preview.operation, body.error.preview.targetId], ['task.cancel', root.id]);
+    assert.deepEqual(body.error.preview.effects.map((effect: { code: string; targets: string[] }) => [effect.code, effect.targets]),
+      [['CANCEL_DESCENDANTS', [child.id]]]);
+    const acceptance = { previewDigest: body.error.preview.previewDigest, effects: body.error.preview.effects };
+    await h.create({ projectId, title: 'Nieta', parentId: child.id, expectedParentRevision: 1 });
+    const changed = await post(root.id, 'cancel', { expectedRevision: 1, acceptance });
+    assert.equal(changed.status, 409);
+    const changedBody = await changed.json();
+    assert.deepEqual([changedBody.error.code, changedBody.error.reason], ['CONFLICT', 'PREVIEW_CHANGED']);
+    assert.equal(changedBody.error.preview.effects[0].targets.length, 2);
+    assert.equal((await (await h.send('/' + root.id)).json()).state, 'new');
+    const fresh = changedBody.error.preview;
+    const cancelled = await post(root.id, 'cancel', { expectedRevision: 1, acceptance: { previewDigest: fresh.previewDigest, effects: fresh.effects } });
+    assert.equal(cancelled.status, 200);
+    assert.equal((await cancelled.json()).state, 'cancelled');
+    const reopened = await post(root.id, 'reopen', { expectedRevision: 2 });
+    assert.equal(reopened.status, 200);
+    assert.deepEqual([(await reopened.json()).state, (await (await h.send('/' + child.id)).json()).state], ['in_progress', 'cancelled']);
+    h.raw.prepare("UPDATE tasks SET state = 'done' WHERE id = ?").run(root.id);
+    h.raw.prepare("UPDATE projects SET state = 'archived' WHERE id = ?").run(projectId);
+    const reopenPreview = await post(child.id, 'reopen', { expectedRevision: 2 });
+    assert.equal((await reopenPreview.json()).error.code, 'CONFIRMATION_REQUIRED');
+    h.raw.prepare('UPDATE clients SET archived_at = 1').run();
+    await error(await post(child.id, 'reopen', { expectedRevision: 2 }), 409, 'CONFLICT', 'CLIENT_ARCHIVED');
+    await error(await post('missing', 'cancel', { expectedRevision: 1 }), 404, 'NOT_FOUND');
+  } finally { await h.close(); }
+});
+
 test('API reparent/detach: revisiones, no-op y conflictos de jerarquía', async () => {
   const h = await harness();
   try {

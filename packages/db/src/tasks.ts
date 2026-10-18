@@ -2,7 +2,8 @@ import type Database from 'better-sqlite3';
 import { randomUUID } from 'node:crypto';
 import { DomainError } from '../../core/src/notes.ts';
 import {
-  OPEN_TASK_STATES, taskChangeState, taskDetach, taskInput, taskPatch, taskReparent, taskWarnings,
+  OPEN_TASK_STATES, TaskConfirmationError, taskAcceptanceMatches, taskCancel, taskChangeState, taskDetach, taskInput, taskPatch,
+  taskPreview, taskReopen, taskReparent, taskWarnings, type TaskAcceptance,
   type ReferenceInput, type Task, type TaskDate, type TaskPriority, type TaskReference, type TaskState, type TasksRepository,
 } from '../../core/src/tasks.ts';
 
@@ -125,6 +126,26 @@ export function taskStore(sqlite: Database.Database): TasksRepository {
       throw new DomainError('PARENT_CLOSED', `Reabre explícitamente el padre y sus ancestros cerrados antes de ${closedAction}.`);
     }
   };
+  type Target = { id: string; revision: number };
+  // Both sets are re-read inside the write transaction, so the preview digest covers current membership and revisions.
+  const openDescendants = (id: string) => sqlite.prepare(`WITH RECURSIVE branch(id) AS (
+    SELECT id FROM tasks WHERE parent_id = ?
+    UNION
+    SELECT t.id FROM tasks t JOIN branch b ON t.parent_id = b.id
+  ) SELECT t.id, t.revision FROM tasks t JOIN branch b ON t.id = b.id WHERE t.state IN ('new', 'in_progress', 'blocked', 'in_review')`).all(id) as Target[];
+  const closedAncestors = (parentId: string) => sqlite.prepare(`WITH RECURSIVE ancestors(id, parent_id) AS (
+    SELECT id, parent_id FROM tasks WHERE id = ?
+    UNION
+    SELECT t.id, t.parent_id FROM tasks t JOIN ancestors a ON t.id = a.parent_id
+  ) SELECT t.id, t.revision FROM tasks t JOIN ancestors a ON t.id = a.id WHERE t.state IN ('done', 'cancelled')`).all(parentId) as Target[];
+  const requireAcceptance = (operation: 'task.cancel' | 'task.reopen', task: Target, effects: { code: string; targets: Target[] }[],
+    acceptance: TaskAcceptance | undefined, message: string) => {
+    const preview = taskPreview(operation, task, effects);
+    if (!acceptance) throw new TaskConfirmationError('CONFIRMATION_REQUIRED', message, preview);
+    if (!taskAcceptanceMatches(preview, acceptance)) {
+      throw new TaskConfirmationError('PREVIEW_CHANGED', 'Los efectos cambiaron desde la vista previa. Revisa la vista previa actual.', preview);
+    }
+  };
   const changeParent = (id: string, revision: number, parentId: string | null, parentRevision?: number) =>
     sqlite.transaction(() => {
       const found = get(id);
@@ -220,6 +241,60 @@ export function taskStore(sqlite: Database.Database): TasksRepository {
         const now = Date.now();
         sqlite.prepare(`UPDATE tasks SET state = ?, last_completed_at = ?, revision = revision + 1, updated_at = ?
           WHERE id = ? AND revision = ?`).run(state, state === 'done' ? now : found.lastCompletedAt, now, id, revision);
+        return get(id);
+      }).immediate();
+    },
+    cancel(id, value) {
+      const { revision, acceptance } = taskCancel(value);
+      return sqlite.transaction(() => {
+        const found = get(id);
+        if (found.revision !== revision) {
+          throw new DomainError('REVISION_CONFLICT', 'La tarea cambió. Vuelve a abrir la versión guardada.');
+        }
+        if (found.state === 'cancelled') return found;
+        const descendants = openDescendants(id);
+        if (descendants.length) {
+          requireAcceptance('task.cancel', found, [{ code: 'CANCEL_DESCENDANTS', targets: descendants }], acceptance,
+            'Cancelar la tarea cancela también todos sus descendientes abiertos.');
+        }
+        const now = Date.now();
+        const cancel = sqlite.prepare(`UPDATE tasks SET state = 'cancelled', revision = revision + 1, updated_at = ? WHERE id = ?`);
+        // Closed descendants and last_completed_at are untouched; the target is written last.
+        for (const descendant of descendants) cancel.run(now, descendant.id);
+        cancel.run(now, id);
+        return get(id);
+      }).immediate();
+    },
+    reopen(id, value) {
+      const { revision, acceptance } = taskReopen(value);
+      return sqlite.transaction(() => {
+        const found = get(id);
+        if (found.revision !== revision) {
+          throw new DomainError('REVISION_CONFLICT', 'La tarea cambió. Vuelve a abrir la versión guardada.');
+        }
+        if (OPEN_TASK_STATES.includes(found.state)) throw new DomainError('TASK_NOT_CLOSED', 'La tarea ya está abierta.');
+        const project = sqlite.prepare(`SELECT p.state, p.revision, c.archived_at AS archivedAt FROM projects p
+          JOIN clients c ON c.id = p.client_id WHERE p.id = ?`).get(found.projectId) as { state: string; revision: number; archivedAt: number | null };
+        if (project.archivedAt !== null) {
+          throw new DomainError('CLIENT_ARCHIVED', 'El cliente está archivado. Reactívalo antes de reabrir tareas.');
+        }
+        const ancestors = found.parentId === null ? [] : closedAncestors(found.parentId);
+        const projectClosed = project.state === 'completed' || project.state === 'archived';
+        const effects = [
+          ...projectClosed ? [{ code: 'REACTIVATE_PROJECT', targets: [{ id: found.projectId, revision: project.revision }] }] : [],
+          ...ancestors.length ? [{ code: 'REOPEN_ANCESTORS', targets: ancestors }] : [],
+        ];
+        if (effects.length) {
+          requireAcceptance('task.reopen', found, effects, acceptance, 'Reabrir la tarea reabre ancestros cerrados y reactiva el proyecto.');
+        }
+        const now = Date.now();
+        if (projectClosed) {
+          sqlite.prepare(`UPDATE projects SET state = 'active', revision = revision + 1, updated_at = ? WHERE id = ?`).run(now, found.projectId);
+        }
+        const reopen = sqlite.prepare(`UPDATE tasks SET state = 'in_progress', last_completed_at = NULL,
+          revision = revision + 1, updated_at = ? WHERE id = ?`);
+        for (const ancestor of ancestors) reopen.run(now, ancestor.id);
+        reopen.run(now, id);
         return get(id);
       }).immediate();
     },

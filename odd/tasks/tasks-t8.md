@@ -20,16 +20,18 @@ Permitir subtareas multinivel y cambios de jerarquía dentro del mismo proyecto,
 - [x] Estados simples/finalización backend y migración v7 last_completed_at nullable: RED 28/35, GREEN 35/35; cierre desde cancelled también bloquea descendientes abiertos. Sin cancel/reopen ni UI.
 - [x] Typecheck y suite completa de tercera unidad: 168 pruebas aprobadas, cero fallos.
 - [x] Commit local de tercera unidad `952efa6`.
-- [ ] Revisión nativa de tercera unidad.
+- [x] Revisión nativa de tercera unidad `review-4cad1f83d4db7387`, aprobada y reconocida; verificador independiente PASS en migración, rollback, change-state y rutas existentes.
 - [x] UI de cambiar/quitar padre: RED por botón ausente, preparación E2E corregida, 13 E2E de Tareas aprobados.
 - [ ] Revisión nativa de UI de reparentado.
-- [ ] Cancelar todos los descendientes abiertos o abortar, conservando cerrados y última fecha de finalización.
-- [ ] Reapertura in_progress con aceptación de ancestros/proyecto, limpieza de finalización y cliente archivado bloqueante.
+- [x] Cancelar con CANCEL_DESCENDANTS aceptado, conservando cerrados y última finalización, y reabrir a in_progress con REOPEN_ANCESTORS/REACTIVATE_PROJECT aceptados, limpieza de finalización y cliente archivado bloqueante. Backend/API: RED 12/47, GREEN 47/47. Padre: typecheck correcto, 180/180 pruebas y 13 E2E. ~476 líneas en un commit, por encima del presupuesto.
+- [ ] Revisión nativa y verificación independiente de cancelar/reabrir (reactiva proyectos y recalcula efectos bajo concurrencia).
+- [ ] Typecheck, suite completa, revisión y commit de cuarta unidad, a cargo del padre.
+- [ ] UI de estados, cancelación y reapertura con vista previa y aceptación.
 - [ ] Adaptar UI T7 tras comandos y contratos revisados.
 
 ## Límites
 
-Sin migración en creación; v7 agrega fecha nullable para finalización en tercera unidad. Sin traslado de proyectos T11, timers, eliminación, consentimiento combinado ni cancel/reopen ahora. No se modifica odd/tasks/projects-t6.md ajeno.
+Sin migración en creación; v7 agrega fecha nullable para finalización en tercera unidad. Sin traslado de proyectos T11, timers, selección Hoy, eliminación ni UI de cancel/reopen ahora. No se modifica odd/tasks/projects-t6.md ajeno.
 
 Riesgo: escrituras de jerarquía y estado concurrentes. Creación y cambio de padre validan estado actual bajo IMMEDIATE, sin reclamar prueba multiproceso. Las operaciones futuras de rama deben verificar membresía y revisiones, no confiar solo en raíz.
 
@@ -38,3 +40,5 @@ Rollback de creación: retirar creación con padre, su validación, mapeo HTTP, 
 Rollback de segunda unidad: retirar reparent/detach de core, DB y API con sus tests/registro; restaurar validación de padre inline de creación si se retira el helper compartido. No revierte cambios de parent_id ya guardados. Base de esta unidad e2ac786; no modifica UI, esquema, estados ni proyectos.
 
 Rollback de tercera unidad: retirar change-state, DTO/columna de finalización, migración v7 y tests/registro añadidos. Una base ya migrada a v7 no debe abrirse con un binario que solo acepta v6; no bajar user_version ni eliminar columna de una base real. Antes de commit, solo fixtures aisladas. No hay migración descendente implementada.
+
+Rollback de cuarta unidad: retirar cancel/reopen, el preview/aceptación de tareas, rutas, tests y registro. No hay cambio de esquema. Las tareas ya canceladas o reabiertas y proyectos reactivados no se revierten, y las revisiones ya incrementadas no bajan.

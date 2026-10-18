@@ -1,4 +1,5 @@
-import { inputObject, invalid } from './notes.ts';
+import { createHash } from 'node:crypto';
+import { DomainError, inputObject, invalid } from './notes.ts';
 
 export type TaskState = 'new' | 'in_progress' | 'blocked' | 'in_review' | 'done' | 'cancelled';
 export type TaskPriority = 'none' | 'low' | 'medium' | 'high';
@@ -40,6 +41,8 @@ export interface TasksRepository {
   reparent(id: string, value: unknown): Task;
   detach(id: string, value: unknown): Task;
   changeState(id: string, value: unknown): Task;
+  cancel(id: string, value: unknown): Task;
+  reopen(id: string, value: unknown): Task;
 }
 
 export interface ReferenceInput { id: string | null; url: string; name: string | null }
@@ -164,6 +167,70 @@ export function taskChangeState(value: unknown) {
     invalid('Selecciona un estado abierto o completada. Cancelar requiere su propio comando.');
   }
   return { revision: taskRevision(input.expectedRevision), state: input.state as Exclude<TaskState, 'cancelled'> };
+}
+
+/** Same shape as the client scope protocol; `details.revisions` is covered by the digest, not compared on acceptance. */
+export interface TaskEffect { code: string; targets: string[]; details?: Record<string, string | number | null> }
+export interface TaskPreview { operation: 'task.cancel' | 'task.reopen'; targetId: string; previewDigest: string; effects: TaskEffect[] }
+export interface TaskAcceptance { previewDigest: string; effects: { code: string; targets: string[] }[] }
+
+/** Carries a preview for CONFIRMATION_REQUIRED (nothing accepted yet) or PREVIEW_CHANGED (acceptance no longer matches). */
+export class TaskConfirmationError extends DomainError {
+  constructor(code: 'CONFIRMATION_REQUIRED' | 'PREVIEW_CHANGED', message: string, public readonly preview: TaskPreview) {
+    super(code, message);
+  }
+}
+
+const DIGEST = /^sha256-[0-9a-f]{64}$/;
+const MAX_EFFECTS = 50;
+const MAX_TARGETS = 1000;
+
+function acceptanceInput(value: unknown): TaskAcceptance {
+  const input = inputObject(value, ['previewDigest', 'effects']);
+  if (typeof input.previewDigest !== 'string' || !DIGEST.test(input.previewDigest)) invalid('La aceptación no incluye un digest válido.');
+  if (!Array.isArray(input.effects) || input.effects.length > MAX_EFFECTS) invalid('La aceptación debe listar los efectos aceptados.');
+  const effects = input.effects.map((entry: unknown) => {
+    const effect = inputObject(entry, ['code', 'targets', 'details']);
+    if (typeof effect.code !== 'string' || !effect.code || !Array.isArray(effect.targets) || effect.targets.length > MAX_TARGETS
+      || effect.targets.some((target: unknown) => typeof target !== 'string')) invalid('Un efecto aceptado no es válido.');
+    return { code: effect.code, targets: effect.targets as string[] };
+  });
+  return { previewDigest: input.previewDigest, effects };
+}
+
+function effectsCommand(value: unknown) {
+  const input = inputObject(value, ['expectedRevision', 'acceptance']);
+  return {
+    revision: taskRevision(input.expectedRevision),
+    acceptance: input.acceptance === undefined ? undefined : acceptanceInput(input.acceptance),
+  };
+}
+
+/** Cancel and reopen share one contract; the operation, not the payload, tells them apart. */
+export const taskCancel = effectsCommand;
+export const taskReopen = effectsCommand;
+
+const sorted = <T>(values: T[], key: (value: T) => string) => [...values].sort((a, b) => key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0);
+
+/** Pure: targets carry the revision read inside the write transaction, so a changed set or revision changes the digest. */
+export function taskPreview(operation: TaskPreview['operation'], task: { id: string; revision: number },
+  effects: { code: string; targets: { id: string; revision: number }[] }[]): TaskPreview {
+  const canonical = sorted(effects, effect => effect.code).map(effect => {
+    const targets = sorted(effect.targets, target => target.id);
+    return { code: effect.code, targets: targets.map(target => target.id),
+      details: { revisions: targets.map(target => `${target.id}:${target.revision}`).join(',') } };
+  });
+  const digest = createHash('sha256').update(JSON.stringify({
+    operation, targetId: task.id, revision: task.revision, effects: canonical,
+  })).digest('hex');
+  return { operation, targetId: task.id, previewDigest: `sha256-${digest}`, effects: canonical };
+}
+
+/** The digest is not trusted alone: the accepted codes and targets must also equal the recomputed effects. */
+export function taskAcceptanceMatches(preview: TaskPreview, acceptance: TaskAcceptance): boolean {
+  const shape = (effects: { code: string; targets: string[] }[]) => JSON.stringify(
+    sorted(effects, effect => effect.code).map(effect => [effect.code, sorted(effect.targets, target => target)]));
+  return acceptance.previewDigest === preview.previewDigest && shape(acceptance.effects) === shape(preview.effects);
 }
 
 /** Hierarchy commands never accept project or state changes. */

@@ -1,6 +1,6 @@
 # T8: jerarquía y transiciones
 
-Creación de subtareas implementada en core, SQLite, API y web. Cambiar/quitar padre backend verificado y guardado en 3a16c1a; revisión pendiente. Estados simples y finalización backend implementados, pendientes de verificación global y revisión del padre. T8 sigue incompleta: faltan cancelación, reapertura y UI de reparentado/estados. La CLI queda excluida.
+Creación de subtareas implementada en core, SQLite, API y web. Cambiar/quitar padre en `3a16c1a` con corrección `3456380`, revisado. Estados simples y finalización con schema v7 en `952efa6`, revisado y con verificación independiente. UI de reparentado en `4a2be30`. Cancelar y reabrir con efectos aceptados en backend y API, verificados. T8 sigue incompleta: falta la UI de estados, cancelación y reapertura. La CLI queda excluida.
 
 ## Contrato disponible
 
@@ -87,6 +87,27 @@ RED: código 1, 28 pasan y 7 fallan por rutas/métodos/migración ausentes, camp
 
 E2E: RED real, código 1 por ausencia del botón Cambiar padre. La primera pasada GREEN falló (12 aprobadas, 1 fallida) porque la preparación cerraba un proyecto con tareas abiertas, algo que `HAS_OPEN_TASKS` impide. La prueba ahora completa las tareas reales con change-state antes de cerrar el proyecto. Resultado final: 13 E2E de Tareas aprobados, con más de 200 candidatos paginados, viewport móvil, conservación de proyecto/estado/descendientes, separación en proyecto cerrado y revisión obsoleta.
 
+## Cancelar y reabrir con efectos aceptados, cuarta unidad backend
+
+Solo backend y API; sin UI. `PATCH` y `change-state` siguen sin permitir cancelar ni reabrir.
+
+- `POST /api/v1/tasks/:id/cancel` y `/reopen` reciben `{expectedRevision, acceptance?}` y devuelven 200 con la tarea. Una revisión obsoleta devuelve 409 `REVISION_MISMATCH` antes de calcular cualquier preview.
+- Protocolo copiado del cambio de ámbito de clientes. Sin aceptación: 409 `{error:{code:'CONFIRMATION_REQUIRED', message, preview}}`, sin `reason`. Con aceptación distinta de lo recalculado: 409 `{code:'CONFLICT', reason:'PREVIEW_CHANGED', message, preview}` con el preview nuevo y nada escrito. `preview` es `{operation, targetId, previewDigest, effects}`; `operation` es `task.cancel` o `task.reopen`.
+- `acceptance` es `{previewDigest, effects:[{code, targets}]}`. El digest es SHA-256 canónico (`sha256-` + 64 hex) sobre operación, tarea, su revisión y efectos ordenados. Cada efecto lleva `details.revisions` (`id:revisión,...`), que entra al digest. Se comparan digest, códigos y targets; los `details` reenviados se ignoran.
+- Cancelar: desde abierta o done. Sin descendientes abiertos cancela directo. Con ellos, efecto `CANCEL_DESCENDANTS` con todos los abiertos de cualquier nivel. Aceptado, los cancela en la misma transacción y la tarea objetivo se escribe al final. Cerrados, `lastCompletedAt` y descendientes cerrados no cambian. cancelled→cancelled devuelve la tarea sin nueva revisión.
+- Reabrir: solo desde done/cancelled; en abierta devuelve 409 `TASK_NOT_CLOSED`. Siempre deja `in_progress` y limpia `lastCompletedAt`. Cliente archivado devuelve 409 `CLIENT_ARCHIVED` antes de cualquier preview, también sin aceptación. Ancestros cerrados dan `REOPEN_ANCESTORS` (ids y revisiones); proyecto completed/archived da `REACTIVATE_PROJECT`. Aceptados, los ancestros pasan a `in_progress` con `lastCompletedAt` null y el proyecto a `active` con revisión +1. Sin efectos necesarios reabre directo. Un proyecto paused no genera efecto.
+- Todo se recalcula bajo IMMEDIATE: conjunto, revisiones y estado de proyecto. Una hija abierta creada o reabierta, o una revisión de miembro cambiada, produce PREVIEW_CHANGED. Si falla cualquier escritura posterior, revierte toda la operación.
+- Sin timers, selección Hoy ni traslado de proyecto. `blockedReason` sigue fuera.
+
+Comando enfocado, timeout 30 segundos, fixtures aisladas:
+
+`./node_modules/.bin/tsx --test packages/core/test/tasks.test.ts packages/db/test/tasks.test.ts packages/db/test/task-states.test.ts packages/db/test/task-effects.test.ts apps/server/test/tasks.test.ts`
+
+- RED: código 1, 35 pasan y 12 fallan (parsers, preview y métodos inexistentes).
+- GREEN: código 0, 47 pasan y 0 fallan, 2,77 s. Cubre digest estable ante orden y sensible a revisión, objetivo y operación; aceptación correcta; PREVIEW_CHANGED tras crear hija, reabrir una cerrada, cambiar una revisión de descendiente o de ancestro y cambiar el proyecto; rollback con trigger de fixture; cerrados intactos; `lastCompletedAt` conservado al cancelar y limpiado al reabrir; cliente archivado; reactivación con revisión +1; y HTTP 200/409/404.
+- Verificación del padre: `npm run typecheck` correcto, `npm test` con 180 pruebas aprobadas y cero fallos (con `pipefail`), y 13 E2E de Tareas aprobados. Sin base real ni concurrencia multiproceso.
+- Tamaño: unas 476 líneas authored, por encima del presupuesto de ~400. Se confirma como un solo commit porque cancelar y reabrir comparten preview, digest y aceptación; separarlos dejaría la infraestructura de aceptación en un commit y su segundo consumidor en otro.
+
 ## Continuación
 
-Tras verificar y revisar esta unidad, cancelar exige consentimiento para todos los abiertos; reapertura vuelve a in_progress y verifica ancestros/proyecto/cliente concurrentemente. Traslados entre proyectos quedan en T11. La UI de estados queda posterior a cancel/reopen. Sin push ni merge; las bases y certificados de prueba son temporales. Las aprobaciones registradas se limitan a creación backend y su UI, no al reparentado ni al resto de T8.
+Tras verificar y revisar esta unidad, queda la UI de estados, cancelación y reapertura, con su propia unidad. La forma de aceptación está duplicada de `client-scope.ts` porque allí no es genérica; extraerla exige editar ese módulo. Traslados entre proyectos quedan en T11. Sin push ni merge; las bases y certificados de prueba son temporales. Las aprobaciones registradas se limitan a creación backend y su UI, no al reparentado ni al resto de T8.
