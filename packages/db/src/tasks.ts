@@ -97,7 +97,7 @@ export function taskStore(sqlite: Database.Database): TasksRepository {
     const insert = sqlite.prepare('INSERT INTO task_references (id, task_id, url, name, position) VALUES (?, ?, ?, ?, ?)');
     next.forEach((reference, position) => insert.run(reference.id ?? randomUUID(), taskId, reference.url, reference.name, position));
   };
-  const checkParent = (projectId: string, parentId: string, revision: number, movingId?: string) => {
+  const checkParent = (projectId: string, parentId: string, revision: number, closedAction: string, movingId?: string) => {
     const parent = get(parentId);
     if (parent.projectId !== projectId) {
       throw new DomainError('PARENT_PROJECT_MISMATCH', 'El padre debe pertenecer al mismo proyecto.');
@@ -115,7 +115,7 @@ export function taskStore(sqlite: Database.Database): TasksRepository {
       throw new DomainError('HIERARCHY_CYCLE', 'La tarea no puede adoptar como padre a sí misma ni a un descendiente.');
     }
     if (ancestors.some(ancestor => !OPEN_TASK_STATES.includes(ancestor.state))) {
-      throw new DomainError('PARENT_CLOSED', 'Reabre explícitamente el padre y sus ancestros cerrados antes de cambiar la jerarquía.');
+      throw new DomainError('PARENT_CLOSED', `Reabre explícitamente el padre y sus ancestros cerrados antes de ${closedAction}.`);
     }
   };
   const changeParent = (id: string, revision: number, parentId: string | null, parentRevision?: number) =>
@@ -129,7 +129,7 @@ export function taskStore(sqlite: Database.Database): TasksRepository {
         if (project.state !== 'active' && project.state !== 'paused') {
           throw new DomainError('PROJECT_CLOSED', 'Reactiva el proyecto antes de reparentar tareas.');
         }
-        checkParent(found.projectId, parentId, parentRevision!, id);
+        checkParent(found.projectId, parentId, parentRevision!, 'cambiar la jerarquía', id);
       }
       if (found.parentId === parentId) return found;
       sqlite.prepare(`UPDATE tasks SET parent_id = ?, revision = revision + 1, updated_at = ?
@@ -156,7 +156,7 @@ export function taskStore(sqlite: Database.Database): TasksRepository {
         if (project.state !== 'active' && project.state !== 'paused') {
           throw new DomainError('PROJECT_CLOSED', 'El proyecto está completado o archivado; reactívalo antes de crear tareas.');
         }
-        if (input.parentId !== null) checkParent(input.projectId, input.parentId, input.parentRevision!);
+        if (input.parentId !== null) checkParent(input.projectId, input.parentId, input.parentRevision!, 'crear la subtarea');
         const id = randomUUID();
         const now = Date.now();
         sqlite.prepare(`INSERT INTO tasks (id, project_id, parent_id, title, description, state, priority,

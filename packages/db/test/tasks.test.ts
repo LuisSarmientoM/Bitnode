@@ -229,7 +229,7 @@ test('subtareas exigen reapertura previa de padre y de todos los ancestros, sin 
       raw.prepare('UPDATE tasks SET state = ? WHERE id = ?').run(state, closedId);
       const before = db.tasks.list(0, 50);
       assert.throws(() => db.tasks.create({ projectId, parentId: child.id, expectedParentRevision: 1, title: 'x' }),
-        { code: 'PARENT_CLOSED' });
+        { code: 'PARENT_CLOSED', message: 'Reabre explícitamente el padre y sus ancestros cerrados antes de crear la subtarea.' });
       assert.deepEqual(db.tasks.list(0, 50), before);
       raw.prepare("UPDATE tasks SET state = 'new' WHERE id = ?").run(closedId);
     }
