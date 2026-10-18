@@ -39,6 +39,7 @@
             <td>{{ formatDate(task.due) }}</td>
             <td><div class="actions">
               <button type="button" (click)="s.openEdit(task)" [disabled]="s.busy()" [attr.aria-label]="'Editar ' + task.title">Editar</button>
+              <button type="button" (click)="s.openSubtask(task)" [disabled]="s.busy()">Crear subtarea</button>
             </div></td>
           </tr>
         }
@@ -58,14 +59,21 @@
     </nav>
   }
 
-  <dialog #taskDialog class="task-dialog" [attr.aria-label]="s.editing() ? 'Editar tarea' : 'Nueva tarea'" (cancel)="onCancel($event)">
+  <dialog #taskDialog class="task-dialog" [attr.aria-label]="s.editing() ? 'Editar tarea' : s.parent() ? 'Nueva subtarea' : 'Nueva tarea'" (cancel)="onCancel($event)">
     @if (s.formOpen()) {
       <form (ngSubmit)="s.save()" novalidate>
-        <h2>{{ s.editing() ? 'Editar tarea' : 'Nueva tarea' }}</h2>
+        <h2>{{ s.editing() ? 'Editar tarea' : s.parent() ? 'Nueva subtarea' : 'Nueva tarea' }}</h2>
+        @if (s.parent(); as parent) {
+          <p class="breadcrumb">Padre: {{ parent.title }}</p>
+        }
         @if (s.editing(); as task) {
           <p class="breadcrumb">{{ task.context.projectName }} / {{ task.context.clientName }}</p>
           <p class="readonly-field"><span>Estado</span> <strong>{{ s.stateLabel(task.state) }}</strong></p>
           @if (s.hasWarning(task)) { <p class="warning" role="status">La planificación es posterior al límite.</p> }
+        } @else if (s.parent(); as parent) {
+          <p class="readonly-field"><span>Proyecto</span> <strong>{{ parent.context.projectName }}</strong></p>
+          <p class="breadcrumb">{{ parent.context.clientName }}</p>
+          <p class="hint">El proyecto es el del padre. Reabre el padre y sus ancestros cerrados antes de crear la subtarea.</p>
         } @else {
           <label for="task-project">Proyecto</label>
           <select id="task-project" name="projectId" required [ngModel]="s.projectId()" (ngModelChange)="s.projectId.set($event)" [disabled]="s.busy()">
@@ -121,7 +129,7 @@
         </div>
         @if (s.formError()) {
           <div class="message error" role="alert">{{ s.formError() }}
-            @if (s.conflict()) { <button type="button" (click)="s.reloadSaved()" [disabled]="s.busy()">Cargar versión guardada</button> }
+            @if (s.conflict() && s.editing()) { <button type="button" (click)="s.reloadSaved()" [disabled]="s.busy()">Cargar versión guardada</button> }
           </div>
         }
         <footer>

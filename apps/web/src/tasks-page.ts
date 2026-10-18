@@ -11,6 +11,7 @@ export interface TaskReference { id: string; url: string; name: string | null; p
 export interface Task {
   id: string;
   projectId: string;
+  parentId: string | null;
   title: string;
   description: string | null;
   state: string;
@@ -83,6 +84,8 @@ export class TasksStore {
 
   readonly formOpen = signal(false);
   readonly editing = signal<Task | null>(null);
+  /** A fetched, saved task, never inferred from the paginated list. */
+  readonly parent = signal<Task | null>(null);
   /** Only active or paused projects accept new tasks. */
   readonly openProjects = signal<ProjectOption[]>([]);
   readonly projectId = signal('');
@@ -152,6 +155,7 @@ export class TasksStore {
 
   private fill(task: Task | null) {
     this.editing.set(task);
+    this.parent.set(null);
     this.projectId.set(task?.projectId ?? '');
     this.title.set(task?.title ?? '');
     this.description.set(task?.description ?? '');
@@ -177,6 +181,32 @@ export class TasksStore {
     finally { this.busy.set(false); }
   }
 
+  async openSubtask(task: Task) {
+    if (this.busy()) return;
+    this.busy.set(true);
+    this.listError.set('');
+    this.notice.set('');
+    try {
+      const parent = await apiRequest<Task>('/tasks/' + encodeURIComponent(task.id));
+      if (parent.state === 'done' || parent.state === 'cancelled') {
+        this.listError.set('Reabre explícitamente el padre y sus ancestros cerrados antes de crear la subtarea.');
+        return;
+      }
+      this.fill(null);
+      this.parent.set(parent);
+      this.projectId.set(parent.projectId);
+      this.initial = this.snapshot();
+      this.formOpen.set(true);
+    } catch (error) { this.listError.set(this.message(error)); }
+    finally { this.busy.set(false); }
+  }
+
+  private async fillSaved(task: Task) {
+    const parent = task.parentId ? await apiRequest<Task>('/tasks/' + encodeURIComponent(task.parentId)) : null;
+    this.fill(task);
+    this.parent.set(parent);
+  }
+
   /** Edit always starts from the server's current revision, never from the possibly stale row. */
   async openEdit(task: Task) {
     if (this.busy()) return;
@@ -184,7 +214,7 @@ export class TasksStore {
     this.listError.set('');
     this.notice.set('');
     try {
-      this.fill(await apiRequest<Task>('/tasks/' + encodeURIComponent(task.id)));
+      await this.fillSaved(await apiRequest<Task>('/tasks/' + encodeURIComponent(task.id)));
       this.formOpen.set(true);
     } catch (error) { this.listError.set(this.message(error)); }
     finally { this.busy.set(false); }
@@ -203,7 +233,7 @@ export class TasksStore {
     if (!current || this.busy()) return;
     if (this.dirty() && !window.confirm('Se reemplazará tu borrador por la versión guardada. ¿Continuar?')) return;
     this.busy.set(true);
-    try { this.fill(await apiRequest<Task>('/tasks/' + encodeURIComponent(current.id))); }
+    try { await this.fillSaved(await apiRequest<Task>('/tasks/' + encodeURIComponent(current.id))); }
     catch (error) { this.formError.set(this.message(error)); }
     finally { this.busy.set(false); }
   }
@@ -245,7 +275,8 @@ export class TasksStore {
         });
       } else {
         await apiRequest<Task>('/tasks', 'POST', {
-          projectId: this.projectId(), title: this.title(),
+          projectId: this.projectId(), parentId: this.parent()?.id ?? null, title: this.title(),
+          ...(this.parent() ? { expectedParentRevision: this.parent()!.revision } : {}),
           ...(this.description().trim() ? { description: this.description() } : {}),
           ...(this.planned().mode ? { planned: toInput(this.planned()) } : {}),
           ...(this.due().mode ? { due: toInput(this.due()) } : {}),
@@ -254,7 +285,9 @@ export class TasksStore {
       }
     } catch (error) {
       this.conflict.set(error instanceof ApiError && (error.code === 'REVISION_CONFLICT' || error.reason === 'REVISION_MISMATCH'));
-      this.formError.set(this.message(error));
+      const retryHint = !current && this.parent() && this.conflict()
+        ? ' Cancela y vuelve a abrir Crear subtarea para leer el padre actualizado. Conserva tu texto antes de cancelar.' : '';
+      this.formError.set(this.message(error) + retryHint);
       this.busy.set(false);
       return;
     }

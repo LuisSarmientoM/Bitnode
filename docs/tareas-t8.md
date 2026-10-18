@@ -1,6 +1,6 @@
-# T8: creación de subtareas
+# T8: jerarquía y transiciones
 
-Primera subunidad implementada en core, SQLite y API. T8 sigue incompleta: cambiar/quitar padre vendrá después de la revisión de esta unidad. No hay cambios de UI ni CLI.
+Creación de subtareas implementada en core, SQLite, API y web. T8 sigue incompleta: faltan cambiar/quitar padre y transiciones. La CLI queda excluida.
 
 ## Contrato disponible
 
@@ -32,8 +32,17 @@ Comando RED y GREEN, timeout 30 segundos, con fixtures temporales aisladas:
 - RED: código 1, 19 pasan y 4 fallan. API respondió 400 en lugar de 201; DB rechazó expectedParentRevision como campo desconocido; core no devolvía el padre normalizado.
 - GREEN: código 0, 23 pasan, 0 fallan. Incluye multinivel, padre inexistente/ajeno, revisión obsoleta, padre/ancestro done o cancelled, proyecto cerrado, ausencia de cambios parciales y rechazo de parentId por PATCH.
 - Verificación del padre: `npm run typecheck && npm test`, código 0; 156 pruebas aprobadas, cero fallos. LSP confirmó un archivo limpio y dejó cinco inconclusos, sin diagnósticos recibidos; no se presenta como validación global.
-- E2E de creación de subtareas en preparación, todavía sin UI implementada. No se verificó concurrencia multiproceso.
+- E2E UI: RED real, código 1 por ausencia del botón Crear subtarea. Tras implementar, `BITNODE_E2E_PORT=3118 npx playwright test tests/e2e/tasks.spec.ts` pasó con código 0 y 11 pruebas aprobadas. Incluye escritorio/móvil, foco, proyecto fijo, revisión del padre, conservación de borrador y consulta del padre fuera de la página. El rechazo de ancestro cerrado se simula en HTTP en una prueba UI; su regla real está cubierta en DB/API.
+- No se verificó concurrencia multiproceso.
+
+## Web de creación
+
+Crear subtarea consulta el padre por ID al abrir el formulario y fija su proyecto. Guarda la revisión leída al abrir, sin refrescarla al enviar. Ante conflicto conserva el texto y pide cancelar y volver a abrir explícitamente. Al editar una hija, consulta el padre por ID aunque no esté en la página de resultados. No construye un árbol incompleto desde la lista paginada.
+
+## Revisión de la primera unidad
+
+Commit local `744cae5`, 193 líneas añadidas más eliminadas. Revisión nativa `review-e31e7d4d4e6173d8`, sobre `f5d0b50..744cae5`, aprobada con cuatro lentes y reconocida en el worktree local `bitnode-t8-review`. No cubre la UI ni el resto de T8. Observaciones no bloqueantes: consulta de ancestros inline y falta de prueba específica de terminación ante un ciclo corrupto. No abrieron corrección ni requieren repetir ese candidato.
 
 ## Continuación
 
-Reparentar y separar conservando proyecto y rama, con revisión optimista y prevención de ciclos, en otra unidad. Después, transiciones con migración last_completed_at: completar también desde cancelled bloquea descendientes abiertos; cancelar exige consentimiento para todos los abiertos; reapertura vuelve a in_progress y verifica ancestros/proyecto/cliente concurrentemente. Traslados entre proyectos quedan en T11. Adaptación de UI T7 posterior. Sin aprobación nativa ni commits realizados por el worker.
+Reparentar y separar conservando proyecto y rama, con revisión optimista y prevención de ciclos, en otra unidad. Después, transiciones con migración last_completed_at: completar también desde cancelled bloquea descendientes abiertos; cancelar exige consentimiento para todos los abiertos; reapertura vuelve a in_progress y verifica ancestros/proyecto/cliente concurrentemente. Traslados entre proyectos quedan en T11. Adaptación de UI para reparentado y estados posterior. Sin push ni merge; las bases y certificados de prueba son temporales. La aprobación registrada se limita a la primera unidad backend.

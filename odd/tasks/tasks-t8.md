@@ -1,6 +1,6 @@
 # T8: jerarquía y transiciones
 
-Estado: parcial. Alcance acordado web/API, sin CLI. Primera subunidad lista para revisión del padre, sin commit ni aprobación nativa.
+Estado: parcial. Alcance acordado web/API, sin CLI. Creación backend en `744cae5`, con revisión nativa aprobada y reconocida. UI de creación verificada, pendiente de revisión nativa propia.
 
 ## Intención
 
@@ -10,8 +10,10 @@ Permitir subtareas multinivel y cambios de jerarquía dentro del mismo proyecto,
 
 - [x] Crear subtareas: core, DB, API y tests deterministas. Padre del mismo proyecto, revisión esperada, ancestros abiertos y transacción IMMEDIATE. Evidencia RED/GREEN en [registro T8](../../docs/tareas-t8.md).
 - [x] Lectura estructural, typecheck y suite completa de creación: 156 pruebas aprobadas, cero fallos.
-- [ ] Commit local y revisión nativa de primera subunidad, a cargo del padre.
-- [ ] Cambiar/quitar padre: revisión optimista, ciclos, misma rama/proyecto, negativos y rollback. Comenzar solo después de la revisión y commit local anteriores.
+- [x] Commit local `744cae5` y revisión nativa `review-e31e7d4d4e6173d8` aprobada y reconocida. Solo backend de creación, 193 líneas authored.
+- [x] UI de creación de subtareas: RED por botón ausente, GREEN 11 pruebas E2E Tareas aprobadas, con viewport móvil y contexto fuera de la página.
+- [ ] Revisión nativa de UI de creación, en su propio candidato local.
+- [ ] Cambiar/quitar padre: revisión optimista, ciclos, mismo proyecto, negativos y rollback.
 - [ ] Transiciones: migración last_completed_at, completar sin descendientes abiertos también desde cancelled, cancelar todos los descendientes abiertos o abortar, reapertura in_progress con ancestros/proyecto y cliente archivado bloqueante.
 - [ ] Adaptar UI T7 tras comandos y contratos revisados.
 

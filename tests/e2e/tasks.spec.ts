@@ -69,8 +69,88 @@ test('crear una tarea en un proyecto la muestra en la lista con su contexto', as
   await expect(created).toContainText('04/06/2026');
   await expect(created).toContainText('10/06/2026 14:30');
   const stored = await (await request.get('/api/v1/tasks?projectId=' + project.id)).json();
-  expect(stored.items[0]).toMatchObject({ title, description: '## Objetivo\nRevisar.', priority: 'none', state: 'new',
+  expect(stored.items[0]).toMatchObject({ title, parentId: null, description: '## Objetivo\nRevisar.', priority: 'none', state: 'new',
     planned: { kind: 'day', day: '2026-06-04' }, due: { kind: 'instant', zone: 'America/Bogota' } });
+});
+
+test('crear subtarea fija proyecto y muestra padre aunque no esté en la página', async ({ page, request }) => {
+  const { client, project } = await seedProject(request);
+  const parentTitle = unique('Padre');
+  const parent = await seedTask(request, project.id, parentTitle);
+  const title = unique('Subtarea');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openTasks(page);
+  await row(page, parentTitle).getByRole('button', { name: 'Crear subtarea', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Nueva subtarea', exact: true });
+  await expect(dialog.getByLabel('Título')).toBeFocused();
+  await expect(dialog.getByText(`Padre: ${parentTitle}`, { exact: true })).toBeVisible();
+  await expect(dialog.getByText(project.name, { exact: true })).toBeVisible();
+  await expect(dialog.getByRole('combobox', { name: 'Proyecto', exact: true })).toHaveCount(0);
+  await expect(dialog.getByLabel('Prioridad')).toHaveCount(0);
+  await dialog.getByLabel('Título').fill(title);
+  await dialog.getByLabel('Descripción').fill('Borrador de subtarea');
+  await page.route('**/api/v1/tasks', route => route.request().method() === 'POST' ? route.abort() : route.continue());
+  await dialog.getByRole('button', { name: 'Guardar tarea' }).click();
+  await expect(dialog.getByRole('alert')).toBeVisible();
+  await expect(dialog.getByLabel('Título')).toHaveValue(title);
+  await expect(dialog.getByLabel('Descripción')).toHaveValue('Borrador de subtarea');
+  await expect(dialog.getByText(`Padre: ${parentTitle}`, { exact: true })).toBeVisible();
+  await page.unroute('**/api/v1/tasks');
+  const posted = page.waitForRequest(req => req.method() === 'POST' && req.url().endsWith('/api/v1/tasks'));
+  await dialog.getByRole('button', { name: 'Guardar tarea' }).click();
+  expect((await posted).postDataJSON()).toMatchObject({ projectId: project.id, parentId: parent.id, expectedParentRevision: parent.revision });
+  await expect(dialog).toBeHidden();
+  await expect(row(page, title)).toContainText(client.fullName);
+  const stored = await (await request.get('/api/v1/tasks?projectId=' + project.id)).json();
+  const child = stored.items.find((task: { title: string }) => task.title === title);
+  expect(child).toMatchObject({ projectId: project.id, parentId: parent.id, state: 'new', priority: 'none' });
+
+  // The paginated list is not a tree. Hide the parent from this page, not from GET by id.
+  await page.route('**/api/v1/tasks?*', async route => {
+    const response = await route.fetch();
+    const body = await response.json();
+    body.items = body.items.filter((task: { id: string }) => task.id !== parent.id);
+    await route.fulfill({ response, json: body });
+  });
+  await openTasks(page);
+  await expect(row(page, parentTitle)).toHaveCount(0);
+  await row(page, title).getByRole('button', { name: 'Editar' }).click();
+  const edit = page.getByRole('dialog', { name: 'Editar tarea' });
+  await expect(edit.getByText(`Padre: ${parentTitle}`, { exact: true })).toBeVisible();
+  await expect(edit.getByText(`${project.name} / ${client.fullName}`, { exact: true })).toBeVisible();
+  await expect(edit.getByRole('button', { name: 'Guardar tarea' })).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
+test('subtarea conserva borrador ante conflicto del padre y ancestro cerrado', async ({ page, request }) => {
+  const { project } = await seedProject(request);
+  const parentTitle = unique('Padre concurrente');
+  const parent = await seedTask(request, project.id, parentTitle);
+  await openTasks(page);
+  await row(page, parentTitle).getByRole('button', { name: 'Crear subtarea', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Nueva subtarea', exact: true });
+  const title = unique('Borrador hijo');
+  await dialog.getByLabel('Título').fill(title);
+  const changed = await request.patch(`/api/v1/tasks/${parent.id}`, {
+    data: { expectedRevision: parent.revision, priority: 'low' },
+  });
+  expect(changed.status()).toBe(200);
+  const posted = page.waitForRequest(req => req.method() === 'POST' && req.url().endsWith('/api/v1/tasks'));
+  await dialog.getByRole('button', { name: 'Guardar tarea' }).click();
+  expect((await posted).postDataJSON().expectedParentRevision).toBe(parent.revision);
+  await expect(dialog.getByRole('alert')).toBeVisible();
+  await expect(dialog.getByLabel('Título')).toHaveValue(title);
+  await expect(dialog.getByRole('button', { name: 'Cargar versión guardada' })).toHaveCount(0);
+
+  // Transitions belong to the next unit. Exercise the server's closed-ancestor rejection here.
+  await page.route('**/api/v1/tasks', route => route.fulfill({
+    status: 409, contentType: 'application/json',
+    body: JSON.stringify({ error: { code: 'PARENT_CLOSED', message: 'Reabre explícitamente el padre y sus ancestros cerrados antes de crear la subtarea.' } }),
+  }));
+  await dialog.getByRole('button', { name: 'Guardar tarea' }).click();
+  await expect(dialog.getByRole('alert')).toContainText('Reabre explícitamente');
+  await expect(dialog.getByLabel('Título')).toHaveValue(title);
+  await expect(dialog.getByText(`Padre: ${parentTitle}`, { exact: true })).toBeVisible();
 });
 
 test('editar prioridad, fechas y referencias persiste la revisión tras recargar', async ({ page, request }) => {
