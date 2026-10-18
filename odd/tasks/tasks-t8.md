@@ -40,7 +40,8 @@ Contrato acordado por el padre: `GET /api/v1/tasks?roots=true` (con `projectId`,
 
 - [x] U1. Backend del árbol (S1): `roots`, `parentId`, `childCount`. RED 46/52, GREEN 52/52; typecheck y 185/185.
 - [x] U2a. UI del árbol (S1): RED válido, GREEN 185/185 y 104 E2E.
-- [ ] U2b. UI de colores y acción rápida (S2-S3), con E2E en `tests/e2e/tasks-quick.spec.ts`.
+- [x] U2a revisada: `7334e02`, `review-0bb999dd52bcab3b` aprobada y reconocida.
+- [x] U2b. UI de colores y acción rápida (S2-S3): RED válido, GREEN 185/185 y 110 E2E.
 
 ## Entrega
 

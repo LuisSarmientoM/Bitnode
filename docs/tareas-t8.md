@@ -141,6 +141,14 @@ La lista muestra solo tareas raíz (`roots=true`), con el filtro de proyecto y l
 
 E2E: RED válido con el backend real, por la UI ausente. Se ajustaron tres pruebas existentes que dependían de la lista plana (crear subtarea, cambiar padre y reabrir con ancestro cerrado): ahora expanden el padre para llegar a la hija. GREEN: typecheck correcto, 185/185 pruebas y 104 E2E aprobados con 3 omitidas preexistentes, sin contar `tasks-quick.spec.ts`, que pertenece a la unidad siguiente.
 
+## Colores por estado y acción rápida en la web
+
+Cada estado tiene una insignia con su etiqueta, un punto y un fondo de color: Nueva azul, En curso amarillo, Bloqueada rojo, En revisión violeta, Completada verde y Cancelada gris. Los tonos son variables CSS propias de la pantalla de Tareas, con texto claro sobre fondo oscuro opaco y contraste de al menos 4.5:1 comprobado en E2E; la paleta global no cambia. La columna Estado va justo después del título para que la insignia se vea en 390 px.
+
+La insignia es un botón ("Cambiar estado de <título>: <estado>") que abre un menú con los demás estados abiertos, Completada y "Cancelar tarea"; en tareas cerradas solo ofrece "Reabrir". Escape o un clic fuera lo cierran y el foco vuelve a la insignia. Los estados usan change-state con la revisión de la fila tal como se cargó. Si cancelar o reabrir tienen efectos, el panel Confirmar/Volver aparece en la fila siguiente; PREVIEW_CHANGED muestra el resumen nuevo. Ante otro error, el mensaje queda en la fila y la lista se recarga conservando lo expandido. El diálogo de edición conserva sus controles.
+
+E2E en `tests/e2e/tasks-quick.spec.ts`: RED válido por la insignia ausente; GREEN con typecheck correcto, 185/185 pruebas y la suite E2E completa con 110 aprobadas y 3 omitidas preexistentes.
+
 ## Continuación
 
 T8 queda completa en web/API en la rama local `feat/tasks-t8`, sin push ni merge. La forma de aceptación está duplicada de `client-scope.ts` porque allí no es genérica; extraerla exige editar ese módulo. Traslados entre proyectos quedan en T11. Sin push ni merge; las bases y certificados de prueba son temporales. Las aprobaciones registradas cubren cada commit por separado, no el acumulado de la rama.

@@ -46,6 +46,8 @@ const OPEN_STATES = ['new', 'in_progress', 'blocked', 'in_review'];
 const NAMED_TARGETS = 10;
 
 type EffectKind = 'cancel' | 'reopen';
+const MENU_WIDTH = 184;
+const MENU_ITEM_HEIGHT = 38;
 /** Colombia has no daylight saving time, so America/Bogota is a fixed UTC-5. */
 const BOGOTA_OFFSET_MS = 5 * 3600 * 1000;
 const noDate = (): DateDraft => ({ mode: '', day: '', time: '' });
@@ -104,7 +106,14 @@ export class TasksStore {
   readonly selectedState = signal('');
   readonly formNotice = signal('');
   /** Effects the server asked the user to accept; nothing is sent again until Confirmar. */
-  readonly effect = signal<{ kind: EffectKind; preview: ScopePreview } | null>(null);
+  readonly effect = signal<{ kind: EffectKind; preview: ScopePreview; task: Task; inRow: boolean } | null>(null);
+  /** Shown inside a row's confirmation panel, e.g. when the preview changed. */
+  readonly effectNotice = signal('');
+  /** Id of the task whose quick-action menu is open, and where it is drawn (fixed, clamped to the viewport). */
+  readonly menuFor = signal('');
+  readonly menuPos = signal({ left: 8, top: 8 });
+  /** An error from a quick action, kept next to its row because a reload would clear the list error. */
+  readonly rowMessage = signal<{ id: string; text: string } | null>(null);
   readonly effectNames = signal<Record<string, string>>({});
   readonly hierarchyTarget = signal<Task | null>(null);
   readonly parentOptions = signal<Task[]>([]);
@@ -157,8 +166,8 @@ export class TasksStore {
   /** Human-readable lines for the previewed effects; unknown effect codes get one generic line. */
   readonly effectLines = computed(() => {
     const effect = this.effect();
-    const task = this.editing();
-    if (!effect || !task) return [];
+    if (!effect) return [];
+    const task = effect.task;
     const names = this.effectNames();
     const list = (targets: string[]) => {
       const shown = targets.slice(0, NAMED_TARGETS).map(id => `«${names[id] ?? 'otra tarea'}»`).join(', ');
@@ -171,6 +180,47 @@ export class TasksStore {
       return 'Este cambio también afecta a otros elementos relacionados con la tarea.';
     });
   });
+
+  menuItems(task: Task): { id: string; label: string }[] {
+    if (!this.isOpen(task)) return [{ id: 'reopen', label: 'Reabrir' }];
+    const states = [...OPEN_STATES.filter(state => state !== task.state), 'done'].map(id => ({ id, label: STATE_LABELS[id]! }));
+    return [...states, { id: 'cancel', label: 'Cancelar tarea' }];
+  }
+
+  toggleMenu(task: Task, anchor: EventTarget | null) {
+    if (this.menuFor() === task.id) { this.menuFor.set(''); return; }
+    this.rowMessage.set(null);
+    const rect = (anchor as HTMLElement).getBoundingClientRect();
+    const height = this.menuItems(task).length * MENU_ITEM_HEIGHT + 8;
+    const fitsBelow = rect.bottom + 4 + height <= window.innerHeight;
+    this.menuPos.set({
+      left: Math.max(8, Math.min(rect.left, window.innerWidth - MENU_WIDTH - 8)),
+      top: Math.max(8, fitsBelow ? rect.bottom + 4 : rect.top - 4 - height),
+    });
+    this.menuFor.set(task.id);
+  }
+
+  closeMenu() { this.menuFor.set(''); }
+
+  pickMenuItem(task: Task, id: string) {
+    this.menuFor.set('');
+    if (id === 'cancel' || id === 'reopen') void this.requestEffect(id, undefined, task);
+    else void this.quickState(task, id);
+  }
+
+  /** Uses the revision of the row as loaded; on any error the message stays on the row and the list reloads. */
+  private async quickState(task: Task, state: string) {
+    if (this.busy()) return;
+    this.busy.set(true);
+    this.rowMessage.set(null);
+    this.notice.set('');
+    try {
+      await apiRequest<Task>(`/tasks/${encodeURIComponent(task.id)}/change-state`, 'POST', { expectedRevision: task.revision, state });
+      this.notice.set('Estado actualizado.');
+    } catch (error) { this.rowMessage.set({ id: task.id, text: this.message(error) }); }
+    this.busy.set(false);
+    await this.load();
+  }
 
   private listPath(offset: number) {
     const params = new URLSearchParams({ roots: 'true', offset: String(offset), limit: String(this.pageSize) });
@@ -473,18 +523,21 @@ export class TasksStore {
     this.effectNames.set(Object.fromEntries(titles.filter(([, title]) => title)));
   }
 
-  private async showEffect(kind: EffectKind, preview: ScopePreview) {
+  private async showEffect(kind: EffectKind, preview: ScopePreview, task: Task, inRow: boolean) {
     await this.nameTargets(preview);
-    this.effect.set({ kind, preview });
+    this.effect.set({ kind, preview, task, inRow });
   }
 
   /** First request has no acceptance: the server answers with the effects, or applies directly when there are none. */
-  async requestEffect(kind: EffectKind, accepted?: ScopePreview) {
-    const current = this.editing();
+  async requestEffect(kind: EffectKind, accepted?: ScopePreview, rowTask?: Task) {
+    const current = rowTask ?? this.editing();
     if (!current || this.busy()) return;
+    const inRow = !!rowTask;
     this.busy.set(true);
     this.formError.set('');
     this.formNotice.set('');
+    this.effectNotice.set('');
+    this.rowMessage.set(null);
     this.conflict.set(false);
     try {
       await apiRequest<Task>(`/tasks/${encodeURIComponent(current.id)}/${kind === 'cancel' ? 'cancel' : 'reopen'}`, 'POST', {
@@ -493,8 +546,15 @@ export class TasksStore {
       });
     } catch (error) {
       if (error instanceof ApiError && error.preview && (error.code === 'CONFIRMATION_REQUIRED' || error.reason === 'PREVIEW_CHANGED')) {
-        await this.showEffect(kind, error.preview);
-        if (error.reason === 'PREVIEW_CHANGED') this.formError.set('La información cambió. Revisa el resumen actualizado y confirma de nuevo.');
+        await this.showEffect(kind, error.preview, current, inRow);
+        const changed = 'La información cambió. Revisa el resumen actualizado y confirma de nuevo.';
+        if (error.reason === 'PREVIEW_CHANGED') (inRow ? this.effectNotice : this.formError).set(changed);
+      } else if (inRow) {
+        this.effect.set(null);
+        this.rowMessage.set({ id: current.id, text: this.message(error) });
+        this.busy.set(false);
+        await this.load();
+        return;
       } else {
         this.conflict.set(error instanceof ApiError && error.reason === 'REVISION_MISMATCH');
         this.formError.set(this.message(error));
@@ -502,7 +562,8 @@ export class TasksStore {
       this.busy.set(false);
       return;
     }
-    this.formOpen.set(false);
+    if (inRow) this.effect.set(null);
+    else this.formOpen.set(false);
     this.notice.set(kind === 'cancel' ? 'Tarea cancelada.' : 'Tarea reabierta.');
     this.busy.set(false);
     await this.load();
@@ -510,13 +571,14 @@ export class TasksStore {
 
   confirmEffect() {
     const effect = this.effect();
-    if (effect) void this.requestEffect(effect.kind, effect.preview);
+    if (effect) void this.requestEffect(effect.kind, effect.preview, effect.inRow ? effect.task : undefined);
   }
 
   /** Back from the confirmation panel: nothing was changed. */
   dismissEffect() {
     this.effect.set(null);
     this.formError.set('');
+    this.effectNotice.set('');
   }
 
   /** Returns false when the user keeps a dirty draft. */
@@ -627,12 +689,47 @@ export class TasksPage implements OnInit {
       else if (!this.s.formOpen() && dialog.open) dialog.close();
     });
     // A new or refreshed preview moves focus to its confirm button; going back returns it to the action that opened it.
-    let kind: EffectKind | undefined;
+    let last: { kind: EffectKind; id: string; inRow: boolean } | undefined;
     effect(() => {
       const shown = this.s.effect();
-      if (shown) kind = shown.kind;
-      requestAnimationFrame(() => document.getElementById(shown ? 'task-effect-confirm' : kind === 'reopen' ? 'task-reopen' : 'task-cancel')?.focus());
+      if (shown) last = { kind: shown.kind, id: shown.task.id, inRow: shown.inRow };
+      const target = (): string => {
+        if (shown) return shown.inRow ? 'task-row-confirm' : 'task-effect-confirm';
+        if (!last) return '';
+        if (last.inRow) return `task-badge-${last.id}`;
+        return last.kind === 'reopen' ? 'task-reopen' : 'task-cancel';
+      };
+      requestAnimationFrame(() => document.getElementById(target())?.focus());
     });
+    // An opened menu takes focus on its first item.
+    effect(() => {
+      if (this.s.menuFor()) requestAnimationFrame(() => document.querySelector<HTMLElement>('.state-menu [role="menuitem"]')?.focus());
+    });
+  }
+
+  /** Closing with Escape or a click elsewhere; only Escape returns focus to the badge that opened the menu. */
+  @HostListener('document:keydown.escape')
+  escapeMenu() {
+    const id = this.s.menuFor();
+    if (!id) return;
+    this.s.closeMenu();
+    document.getElementById(`task-badge-${id}`)?.focus();
+  }
+
+  @HostListener('document:click', ['$event'])
+  clickAway(event: MouseEvent) {
+    if (this.s.menuFor() && !(event.target as Element).closest('.state-menu, .state-badge')) this.s.closeMenu();
+  }
+
+  @HostListener('window:resize')
+  resized() { this.s.closeMenu(); }
+
+  onMenuKey(event: KeyboardEvent) {
+    const step = event.key === 'ArrowDown' ? 1 : event.key === 'ArrowUp' ? -1 : 0;
+    if (!step) return;
+    event.preventDefault();
+    const items = [...(event.currentTarget as HTMLElement).querySelectorAll<HTMLElement>('[role="menuitem"]')];
+    items[(items.indexOf(document.activeElement as HTMLElement) + step + items.length) % items.length]?.focus();
   }
 
   ngOnInit() {

@@ -22,8 +22,8 @@
       <thead>
         <tr>
           <th scope="col">Título</th>
-          <th scope="col">Proyecto</th>
           <th scope="col">Estado</th>
+          <th scope="col">Proyecto</th>
           <th scope="col">Prioridad</th>
           <th scope="col">Planificación</th>
           <th scope="col">Límite</th>
@@ -50,8 +50,19 @@
                 <span class="visually-hidden" [id]="'count-' + task.id">{{ task.childCount }} subtareas</span>
               } @else { <span class="tree-spacer" aria-hidden="true"></span> }
               {{ task.title }}@if (s.hasWarning(task)) { <small class="row-warning">La planificación es posterior al límite.</small> }</th>
+            <td>
+              <button type="button" class="state-badge" [class]="'state-' + task.state" [id]="'task-badge-' + task.id" aria-haspopup="menu"
+                [attr.aria-expanded]="s.menuFor() === task.id" [attr.aria-label]="'Cambiar estado de ' + task.title + ': ' + s.stateLabel(task.state)"
+                (click)="s.toggleMenu(task, $event.currentTarget)" [disabled]="s.busy()">{{ s.stateLabel(task.state) }}</button>
+              @if (s.menuFor() === task.id) {
+                <div class="state-menu" role="menu" [attr.aria-label]="'Estado de ' + task.title" [style.left.px]="s.menuPos().left" [style.top.px]="s.menuPos().top" (keydown)="onMenuKey($event)">
+                  @for (item of s.menuItems(task); track item.id) {
+                    <button type="button" role="menuitem" [class.danger]="item.id === 'cancel'" (click)="s.pickMenuItem(task, item.id)">{{ item.label }}</button>
+                  }
+                </div>
+              }
+            </td>
             <td>{{ task.context.projectName }}<small class="row-context">{{ task.context.clientName }}</small></td>
-            <td>{{ s.stateLabel(task.state) }}</td>
             <td>{{ s.priorityLabel(task.priority) }}</td>
             <td>{{ formatDate(task.planned) }}</td>
             <td>{{ formatDate(task.due) }}</td>
@@ -61,6 +72,27 @@
               <button type="button" (click)="s.openHierarchy(task)" [disabled]="s.busy()">Cambiar padre</button>
             </div></td>
           </tr>
+          @if (s.effect(); as pending) {
+            @if (pending.inRow && pending.task.id === task.id) {
+              <tr class="effect-row">
+                <td colspan="7">
+                  <section class="warning" [attr.aria-label]="pending.kind === 'cancel' ? 'Confirmar cancelación' : 'Confirmar reapertura'">
+                    @if (s.effectNotice()) { <p class="message error" role="alert">{{ s.effectNotice() }}</p> }
+                    @for (line of s.effectLines(); track $index) { <p>{{ line }}</p> }
+                    <div class="actions">
+                      <button type="button" id="task-row-confirm" class="primary" (click)="s.confirmEffect()" [disabled]="s.busy()">Confirmar</button>
+                      <button type="button" (click)="s.dismissEffect()" [disabled]="s.busy()">Volver</button>
+                    </div>
+                  </section>
+                </td>
+              </tr>
+            }
+          }
+          @if (s.rowMessage(); as note) {
+            @if (note.id === task.id) {
+              <tr class="effect-row"><td colspan="7"><p class="message error" role="alert">{{ note.text }}</p></td></tr>
+            }
+          }
           }
         }
       </tbody>
