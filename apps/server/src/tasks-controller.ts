@@ -7,7 +7,10 @@ import { taskQuery, type TasksRepository } from '../../../packages/core/src/task
 
 export const TASKS_REPOSITORY = Symbol('tasks.repository');
 
-const CONFLICT_REASONS: Record<string, string> = { REVISION_CONFLICT: 'REVISION_MISMATCH', PROJECT_CLOSED: 'PROJECT_CLOSED' };
+const CONFLICT_REASONS: Record<string, string> = {
+  REVISION_CONFLICT: 'REVISION_MISMATCH', PROJECT_CLOSED: 'PROJECT_CLOSED',
+  PARENT_PROJECT_MISMATCH: 'PARENT_PROJECT_MISMATCH', PARENT_CLOSED: 'PARENT_CLOSED',
+};
 
 @Catch(DomainError)
 class TaskErrors implements ExceptionFilter {
@@ -21,7 +24,7 @@ class TaskErrors implements ExceptionFilter {
 
 const LIST_PARAMETERS = ['offset', 'limit', 'projectId'];
 
-/** State, hierarchy, move and deletion routes arrive with T8+; T7 exposes create/read/edit only. */
+/** Creation accepts a parent; state, reparent, detach, move and deletion remain separate future commands. */
 @Controller('api/v1/tasks')
 @UseFilters(TaskErrors)
 export class TasksController {

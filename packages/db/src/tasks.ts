@@ -2,7 +2,7 @@ import type Database from 'better-sqlite3';
 import { randomUUID } from 'node:crypto';
 import { DomainError } from '../../core/src/notes.ts';
 import {
-  taskInput, taskPatch, taskWarnings,
+  OPEN_TASK_STATES, taskInput, taskPatch, taskWarnings,
   type ReferenceInput, type Task, type TaskDate, type TaskPriority, type TaskReference, type TaskState, type TasksRepository,
 } from '../../core/src/tasks.ts';
 
@@ -117,11 +117,29 @@ export function taskStore(sqlite: Database.Database): TasksRepository {
         if (project.state !== 'active' && project.state !== 'paused') {
           throw new DomainError('PROJECT_CLOSED', 'El proyecto está completado o archivado; reactívalo antes de crear tareas.');
         }
+        if (input.parentId !== null) {
+          const parent = get(input.parentId);
+          if (parent.projectId !== input.projectId) {
+            throw new DomainError('PARENT_PROJECT_MISMATCH', 'El padre debe pertenecer al mismo proyecto.');
+          }
+          if (parent.revision !== input.parentRevision) {
+            throw new DomainError('REVISION_CONFLICT', 'El padre cambió. Vuelve a abrir la versión guardada.');
+          }
+          // UNION also terminates if an externally corrupted database already contains a cycle.
+          const ancestors = sqlite.prepare(`WITH RECURSIVE ancestors(id, parent_id, state) AS (
+            SELECT id, parent_id, state FROM tasks WHERE id = ?
+            UNION
+            SELECT t.id, t.parent_id, t.state FROM tasks t JOIN ancestors a ON t.id = a.parent_id
+          ) SELECT state FROM ancestors`).all(parent.id) as { state: TaskState }[];
+          if (ancestors.some(ancestor => !OPEN_TASK_STATES.includes(ancestor.state))) {
+            throw new DomainError('PARENT_CLOSED', 'Reabre explícitamente el padre y sus ancestros cerrados antes de crear la subtarea.');
+          }
+        }
         const id = randomUUID();
         const now = Date.now();
         sqlite.prepare(`INSERT INTO tasks (id, project_id, parent_id, title, description, state, priority,
           planned_kind, planned_day, planned_at, due_kind, due_day, due_at, revision, created_at, updated_at)
-          VALUES (?, ?, NULL, ?, ?, 'new', 'none', ?, ?, ?, ?, ?, ?, 1, ?, ?)`).run(id, input.projectId, input.title,
+          VALUES (?, ?, ?, ?, ?, 'new', 'none', ?, ?, ?, ?, ?, ?, 1, ?, ?)`).run(id, input.projectId, input.parentId, input.title,
           input.description, ...dateParams(input.planned), ...dateParams(input.due), now, now);
         return get(id);
       }).immediate();

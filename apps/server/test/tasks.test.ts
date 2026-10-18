@@ -40,7 +40,7 @@ async function harness() {
     db.close();
     rmSync(directory, { recursive: true, force: true });
   };
-  return { url, project, send, create, total, close };
+  return { url, project, send, create, total, close, raw };
 }
 
 async function error(response: globalThis.Response, status: number, code: string, reason?: string) {
@@ -87,6 +87,32 @@ test('API de tareas rechaza creación inválida, proyecto inexistente o cerrado 
   } finally { await h.close(); }
 });
 
+test('API crea subtareas y distingue padre inexistente, ajeno y revisión obsoleta', async () => {
+  const h = await harness();
+  try {
+    const projectId = h.project('Portal');
+    const root = await h.create({ projectId, title: 'Raíz' });
+    const input = { projectId, parentId: root.id, expectedParentRevision: 1, title: 'Hija' };
+    const child = await h.create(input);
+    assert.equal(child.parentId, root.id);
+    assert.equal((await (await h.send('/' + child.id)).json()).parentId, root.id);
+    await error(await h.send('', 'POST', { ...input, parentId: 'missing' }), 404, 'NOT_FOUND');
+    await error(await h.send('', 'POST', { ...input, projectId: h.project('Otro') }),
+      409, 'CONFLICT', 'PARENT_PROJECT_MISMATCH');
+    await h.send('/' + root.id, 'PATCH', { expectedRevision: 1, title: 'Editada' });
+    await error(await h.send('', 'POST', input), 409, 'CONFLICT', 'REVISION_MISMATCH');
+    assert.equal(await h.total(), 2);
+    for (const state of ['done', 'cancelled']) {
+      h.raw.prepare('UPDATE tasks SET state = ? WHERE id = ?').run(state, root.id);
+      await error(await h.send('', 'POST', {
+        projectId, parentId: child.id, expectedParentRevision: 1, title: 'Nieta',
+      }), 409, 'CONFLICT', 'PARENT_CLOSED');
+    }
+    assert.equal(await h.total(), 2);
+    assert.equal((await (await h.send('/' + root.id)).json()).state, 'cancelled');
+  } finally { await h.close(); }
+});
+
 test('API de tareas edita con revisión y rechaza estado, proyecto y revisión vieja sin cambiar datos', async () => {
   const h = await harness();
   try {
@@ -102,7 +128,7 @@ test('API de tareas edita con revisión y rechaza estado, proyecto y revisión v
     assert.deepEqual(edited.planned, { kind: 'instant', at: Date.parse('2026-06-04T14:00:00Z'), zone: 'America/Bogota' });
     assert.deepEqual(edited.references.map((reference: { url: string }) => reference.url), ['https://example.com/a', 'https://example.com/a']);
     await error(await h.send('/' + task.id, 'PATCH', { expectedRevision: 1, title: 'Viejo' }), 409, 'CONFLICT', 'REVISION_MISMATCH');
-    for (const field of ['state', 'projectId']) {
+    for (const field of ['state', 'projectId', 'parentId']) {
       await error(await h.send('/' + task.id, 'PATCH', { expectedRevision: 2, [field]: 'x' }), 400, 'VALIDATION_ERROR');
     }
     await error(await h.send('/missing', 'PATCH', { expectedRevision: 1, title: 'x' }), 404, 'NOT_FOUND');

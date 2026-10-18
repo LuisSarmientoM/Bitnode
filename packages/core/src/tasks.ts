@@ -138,13 +138,16 @@ export function taskRevision(value: unknown): number {
   return value;
 }
 
-/** New tasks are always `new` with no priority; hierarchy arrives in T8, so only a null parent is accepted. */
+/** New tasks are always `new` with no priority; a parent requires the revision the caller read. */
 export function taskInput(value: unknown) {
-  const input = inputObject(value, ['projectId', 'parentId', 'title', 'description', 'planned', 'due']);
+  const input = inputObject(value, ['projectId', 'parentId', 'expectedParentRevision', 'title', 'description', 'planned', 'due']);
   if (typeof input.projectId !== 'string' || !input.projectId) invalid('Selecciona el proyecto de la tarea.');
-  if (input.parentId !== undefined && input.parentId !== null) invalid('Las subtareas aún no están disponibles.');
+  const parentId = input.parentId ?? null;
+  if (parentId !== null && (typeof parentId !== 'string' || !parentId.trim())) invalid('Selecciona el padre de la subtarea.');
+  if (parentId === null && input.expectedParentRevision !== undefined) invalid('La revisión del padre requiere un padre.');
+  const parentRevision = parentId === null ? null : taskRevision(input.expectedParentRevision);
   return {
-    projectId: input.projectId, title: titleInput(input.title), description: descriptionInput(input.description),
+    projectId: input.projectId, parentId, parentRevision, title: titleInput(input.title), description: descriptionInput(input.description),
     planned: input.planned === undefined ? null : taskDateInput(input.planned),
     due: input.due === undefined ? null : taskDateInput(input.due),
   };

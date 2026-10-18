@@ -5,21 +5,26 @@ import { taskDateInput, taskInput, taskPatch, taskQuery, taskWarnings } from '..
 const invalid = { code: 'VALIDATION_ERROR' };
 const at = (iso: string) => Date.parse(iso);
 
-test('crear fuerza nueva y sin prioridad, exige proyecto y título, y solo admite padre null', () => {
+test('crear fuerza nueva y sin prioridad, exige proyecto y título, y admite padre con revisión', () => {
   const input = taskInput({
     projectId: 'p1', parentId: null, title: ' Revisar propuesta ', description: '## Objetivo\nRevisar el contrato.',
     planned: { kind: 'day', day: '2026-06-04' }, due: null,
   });
   assert.deepEqual(input, {
-    projectId: 'p1', title: 'Revisar propuesta', description: '## Objetivo\nRevisar el contrato.',
+    projectId: 'p1', parentId: null, parentRevision: null, title: 'Revisar propuesta', description: '## Objetivo\nRevisar el contrato.',
     planned: { kind: 'day', day: '2026-06-04' }, due: null,
   });
   assert.deepEqual(taskInput({ projectId: 'p1', title: 'Sin fechas' }),
-    { projectId: 'p1', title: 'Sin fechas', description: '', planned: null, due: null });
+    { projectId: 'p1', parentId: null, parentRevision: null, title: 'Sin fechas', description: '', planned: null, due: null });
   assert.throws(() => taskInput({ title: 'Sin proyecto' }), invalid);
   assert.throws(() => taskInput({ projectId: '', title: 'x' }), invalid);
   assert.throws(() => taskInput({ projectId: 'p1', title: '   ' }), invalid);
-  assert.throws(() => taskInput({ projectId: 'p1', title: 'x', parentId: 't1' }), invalid);
+  assert.equal(taskInput({ projectId: 'p1', title: 'Hija', parentId: 't1', expectedParentRevision: 2 }).parentId, 't1');
+  for (const fields of [
+    { parentId: 't1' }, { parentId: '' }, { parentId: 1 },
+    { parentId: 't1', expectedParentRevision: 0 }, { parentId: 't1', expectedParentRevision: '1' },
+    { expectedParentRevision: 1 }, { parentId: null, expectedParentRevision: 1 },
+  ]) assert.throws(() => taskInput({ projectId: 'p1', title: 'x', ...fields }), invalid);
   assert.throws(() => taskInput({ projectId: 'p1', title: 'x', state: 'done' }), invalid);
   assert.throws(() => taskInput({ projectId: 'p1', title: 'x', priority: 'high' }), invalid);
 });

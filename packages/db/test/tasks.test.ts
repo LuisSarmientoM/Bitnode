@@ -27,7 +27,7 @@ function schema4(path: string) {
  * Opens a temporary database plus a raw connection that seeds projects directly, so these tests depend only on
  * the projects columns T7 consumes (id, client_id, name, state) and not on the T6 repository API.
  */
-function withDb(run: (db: ReturnType<typeof openNotes>, project: (name: string, state?: string) => string) => void) {
+function withDb(run: (db: ReturnType<typeof openNotes>, project: (name: string, state?: string) => string, raw: Database.Database) => void) {
   const directory = mkdtempSync(join(tmpdir(), 'bitnode-tasks-'));
   const path = join(directory, 'bitnode.sqlite');
   const db = openNotes(path);
@@ -41,7 +41,7 @@ function withDb(run: (db: ReturnType<typeof openNotes>, project: (name: string, 
         VALUES (?, ?, ?, ?, '', ?, 1, 1, 1)`).run(id, client.id, name, name.toLowerCase(), state);
       return id;
     };
-    run(db, project);
+    run(db, project, raw);
   } finally {
     raw.close();
     db.close();
@@ -108,6 +108,49 @@ test('crear tarea en proyecto cerrado o inexistente falla sin guardar nada', () 
   assert.throws(() => db.tasks.create({ projectId: 'missing', title: 'x' }), { code: 'NOT_FOUND' });
   assert.throws(() => db.tasks.get('missing'), { code: 'NOT_FOUND' });
   assert.equal(db.tasks.list(0, 50).total, 0);
+}));
+
+test('subtareas multinivel: mismo proyecto, revisión del padre y sin cambios en ancestros', () => withDb((db, project) => {
+  const projectId = project('Pausado', 'paused');
+  const root = db.tasks.create({ projectId, title: 'Raíz' });
+  const child = db.tasks.create({ projectId, parentId: root.id, expectedParentRevision: 1, title: 'Hija' });
+  const leaf = db.tasks.create({ projectId, parentId: child.id, expectedParentRevision: 1, title: 'Nieta' });
+  assert.deepEqual([child.parentId, leaf.parentId, leaf.projectId, leaf.state, leaf.revision],
+    [root.id, child.id, projectId, 'new', 1]);
+  assert.deepEqual(db.tasks.get(root.id), root);
+  assert.deepEqual(db.tasks.get(child.id), child);
+  assert.equal(db.tasks.list(0, 50, { projectId }).items.find(task => task.id === leaf.id)?.parentId, child.id);
+  db.tasks.update(root.id, { expectedRevision: 1, title: 'Editada' });
+  const total = db.tasks.list(0, 50).total;
+  assert.throws(() => db.tasks.create({ projectId, parentId: root.id, expectedParentRevision: 1, title: 'Vieja' }),
+    { code: 'REVISION_CONFLICT' });
+  assert.throws(() => db.tasks.create({ projectId, parentId: 'missing', expectedParentRevision: 1, title: 'x' }),
+    { code: 'NOT_FOUND' });
+  assert.throws(() => db.tasks.create({ projectId: project('Otro'), parentId: root.id, expectedParentRevision: 2, title: 'x' }),
+    { code: 'PARENT_PROJECT_MISMATCH' });
+  assert.equal(db.tasks.list(0, 50).total, total);
+}));
+
+test('subtareas exigen reapertura previa de padre y de todos los ancestros, sin efectos parciales', () => withDb((db, project, raw) => {
+  const projectId = project('Portal');
+  const root = db.tasks.create({ projectId, title: 'Raíz' });
+  const child = db.tasks.create({ projectId, parentId: root.id, expectedParentRevision: 1, title: 'Hija' });
+  for (const closedId of [root.id, child.id]) {
+    for (const state of ['done', 'cancelled']) {
+      raw.prepare('UPDATE tasks SET state = ? WHERE id = ?').run(state, closedId);
+      const before = db.tasks.list(0, 50);
+      assert.throws(() => db.tasks.create({ projectId, parentId: child.id, expectedParentRevision: 1, title: 'x' }),
+        { code: 'PARENT_CLOSED' });
+      assert.deepEqual(db.tasks.list(0, 50), before);
+      raw.prepare("UPDATE tasks SET state = 'new' WHERE id = ?").run(closedId);
+    }
+  }
+  for (const state of ['completed', 'archived']) {
+    raw.prepare('UPDATE projects SET state = ? WHERE id = ?').run(state, projectId);
+    assert.throws(() => db.tasks.create({ projectId, parentId: child.id, expectedParentRevision: 1, title: 'x' }),
+      { code: 'PROJECT_CLOSED' });
+  }
+  assert.equal(db.tasks.list(0, 50).total, 2);
 }));
 
 test('editar: revisión, prioridad, fechas, aviso recalculado, no-op sin nueva revisión y conflicto', () => withDb((db, project) => {
