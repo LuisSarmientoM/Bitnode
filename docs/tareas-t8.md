@@ -149,6 +149,8 @@ La insignia es un botón ("Cambiar estado de <título>: <estado>") que abre un m
 
 E2E en `tests/e2e/tasks-quick.spec.ts`: RED válido por la insignia ausente; GREEN con typecheck correcto, 185/185 pruebas y la suite E2E completa con 110 aprobadas y 3 omitidas preexistentes.
 
+Revisiones: backend del árbol `review-c52c14df61df1e0e` (`a72ba8c`), árbol web `review-0bb999dd52bcab3b` (`7334e02`) y colores y acción rápida `review-b723a65f710a5503` (`a5069db`), todas aprobadas y reconocidas sin correcciones. Observaciones no bloqueantes para trabajo posterior: el menú de estados se separa de la insignia si se desplaza la tabla; tras un cambio rápido el foco no siempre vuelve a la insignia; el clic fuera, las flechas del menú y el error dentro del panel de la fila no tienen prueba propia; el refresco del árbol mantiene ocupada la lista mientras recarga, y un nodo que falla al refrescarse conserva sus filas sin avisar.
+
 ## Continuación
 
 T8 queda completa en web/API en la rama local `feat/tasks-t8`, sin push ni merge. La forma de aceptación está duplicada de `client-scope.ts` porque allí no es genérica; extraerla exige editar ese módulo. Traslados entre proyectos quedan en T11. Sin push ni merge; las bases y certificados de prueba son temporales. Las aprobaciones registradas cubren cada commit por separado, no el acumulado de la rama.
