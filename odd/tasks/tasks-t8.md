@@ -25,24 +25,16 @@ Permitir subtareas multinivel y cambios de jerarquía dentro del mismo proyecto,
 - [x] Revisión nativa de UI de reparentado `review-11d38cce0d7d63e9`, aprobada y reconocida.
 - [x] Cancelar con CANCEL_DESCENDANTS aceptado, conservando cerrados y última finalización, y reabrir a in_progress con REOPEN_ANCESTORS/REACTIVATE_PROJECT aceptados, limpieza de finalización y cliente archivado bloqueante. Backend/API: RED 12/47, GREEN 47/47. Padre: typecheck correcto, 180/180 pruebas y 13 E2E. ~476 líneas en un commit, por encima del presupuesto.
 - [x] Commit `8f7586e`; revisión `review-8bc67c599bd773da` aprobada y reconocida; verificador independiente PASS. Límite conocido: MAX_TARGETS=1000.
-- [ ] Typecheck, suite completa, revisión y commit de cuarta unidad, a cargo del padre.
-- [ ] UI de estados, cancelación y reapertura con vista previa y aceptación.
 - [x] UI de estados, cancelación y reapertura: RED válido 5/5 contra el código sin UI; GREEN 180/180 y 102 E2E (3 omitidas preexistentes).
 - [x] Commit `28dd335`; revisión `review-67839142ed238d57` aprobada y reconocida.
 
-## Entrega propuesta
+## Entrega
 
-La rama suma unas 1860 líneas authored en 10 commits, cada uno revisado por separado. Si se publica, se propone una cadena de tres PRs, cada uno con su backend, UI, pruebas y registro:
-
-1. Subtareas: `744cae5`, `e2ac786`.
-2. Cambiar y quitar padre: `3a16c1a`, `3456380`, `4a2be30`.
-3. Estados, cancelación y reapertura con schema v7: `952efa6`, `8f7586e`, `681348d`, `28dd335` y el cierre documental.
-
-Push, PRs y merge son decisión del usuario.
+Decisión del usuario: un solo PR con varios commits, sin crearlo todavía porque el trabajo no ha terminado. La rama suma unas 1890 líneas authored en 10 commits, cada uno revisado por separado; se conservan como commits independientes dentro del PR. No hacer push ni abrir el PR hasta una nueva indicación expresa.
 
 ## Límites
 
-Sin migración en creación; v7 agrega fecha nullable para finalización en tercera unidad. Sin traslado de proyectos T11, timers, selección Hoy, eliminación ni UI de cancel/reopen ahora. No se modifica odd/tasks/projects-t6.md ajeno.
+Sin migración en creación; v7 agrega fecha nullable para finalización en tercera unidad. Sin traslado de proyectos T11, timers, selección Hoy ni eliminación. No se modifica odd/tasks/projects-t6.md ajeno.
 
 Riesgo: escrituras de jerarquía y estado concurrentes. Creación y cambio de padre validan estado actual bajo IMMEDIATE, sin reclamar prueba multiproceso. Las operaciones futuras de rama deben verificar membresía y revisiones, no confiar solo en raíz.
 
