@@ -1,6 +1,6 @@
 # T8: jerarquía y transiciones
 
-Estado: parcial. Alcance acordado web/API, sin CLI. Creación backend en `744cae5`, con revisión nativa aprobada y reconocida. UI de creación en `e2ac786`, verificada y con revisión nativa propia aprobada y reconocida.
+Estado: completada en web/API, sin publicar. Alcance acordado web/API, sin CLI. Creación backend en `744cae5`, con revisión nativa aprobada y reconocida. UI de creación en `e2ac786`, verificada y con revisión nativa propia aprobada y reconocida.
 
 ## Intención
 
@@ -28,7 +28,17 @@ Permitir subtareas multinivel y cambios de jerarquía dentro del mismo proyecto,
 - [ ] Typecheck, suite completa, revisión y commit de cuarta unidad, a cargo del padre.
 - [ ] UI de estados, cancelación y reapertura con vista previa y aceptación.
 - [x] UI de estados, cancelación y reapertura: RED válido 5/5 contra el código sin UI; GREEN 180/180 y 102 E2E (3 omitidas preexistentes).
-- [ ] Revisión nativa de la UI de estados.
+- [x] Commit `28dd335`; revisión `review-67839142ed238d57` aprobada y reconocida.
+
+## Entrega propuesta
+
+La rama suma unas 1860 líneas authored en 10 commits, cada uno revisado por separado. Si se publica, se propone una cadena de tres PRs, cada uno con su backend, UI, pruebas y registro:
+
+1. Subtareas: `744cae5`, `e2ac786`.
+2. Cambiar y quitar padre: `3a16c1a`, `3456380`, `4a2be30`.
+3. Estados, cancelación y reapertura con schema v7: `952efa6`, `8f7586e`, `681348d`, `28dd335` y el cierre documental.
+
+Push, PRs y merge son decisión del usuario.
 
 ## Límites
 

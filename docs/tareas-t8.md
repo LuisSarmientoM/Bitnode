@@ -122,6 +122,8 @@ Tras "Aplicar estado" el diálogo sigue abierto con la tarea devuelta por el ser
 
 E2E: la primera pasada RED tuvo cuatro fallos de preparación (el helper buscaba el botón "Editar" exacto y el botón de fila se llama "Editar <título>"). Tras corregir la preparación, el RED se repitió contra el código sin la UI: cinco pruebas fallidas por la funcionalidad ausente (etiqueta de estado, selector Estado y botón Cancelar tarea). GREEN: `npm run typecheck` correcto, `npm test` 180/180 y la suite E2E completa con 102 aprobadas y 3 omitidas preexistentes, incluida la prueba de 390 px.
 
+Revisión `review-67839142ed238d57`, sobre `681348d..28dd335`, aprobada con tres lentes y reconocida, sin correcciones. Observaciones no bloqueantes de legibilidad y fiabilidad (manejo de títulos de efectos, foco y casos de error de la confirmación) quedan como trabajo posterior.
+
 ## Continuación
 
-T8 queda completa en web/API. La forma de aceptación está duplicada de `client-scope.ts` porque allí no es genérica; extraerla exige editar ese módulo. Traslados entre proyectos quedan en T11. Sin push ni merge; las bases y certificados de prueba son temporales. Las aprobaciones registradas cubren cada commit por separado, no el acumulado de la rama.
+T8 queda completa en web/API en la rama local `feat/tasks-t8`, sin push ni merge. La forma de aceptación está duplicada de `client-scope.ts` porque allí no es genérica; extraerla exige editar ese módulo. Traslados entre proyectos quedan en T11. Sin push ni merge; las bases y certificados de prueba son temporales. Las aprobaciones registradas cubren cada commit por separado, no el acumulado de la rama.
